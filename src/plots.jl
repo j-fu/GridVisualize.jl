@@ -37,7 +37,7 @@ function reveal(ctx::SubVis,TP::Type{PlotsType})
 end
 
 
-function visualize!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid)
+function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid)
     Plots=ctx[:Plotter]
     
     if !haskey(ctx,:ax)
@@ -76,7 +76,7 @@ function visualize!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid)
     reveal(ctx,TP)
 end
 
-function visualize!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid)
+function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid)
     Plots=ctx[:Plotter]
     if !haskey(ctx,:ax)
         ctx[:ax]=Plots.plot(title=ctx[:title])
@@ -119,7 +119,7 @@ function visualize!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid)
     reveal(ctx,TP)
 end
 
-function visualize!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
+function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
     Plots=ctx[:Plotter]
     if !haskey(ctx,:ax)
         ctx[:ax]=Plots.plot(title=ctx[:title])
@@ -188,7 +188,7 @@ function rectdata(grid,U)
 end
 
 
-function visualize!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid, func)
+function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid, func)
     rdata=rectdata(grid,func)
     if rdata==nothing
         return nothing
@@ -211,7 +211,7 @@ function visualize!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid, func)
 end
 
 
-function visualize!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grid)
+function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grid)
     Plots=ctx[:Plotter]
     if !haskey(ctx,:ax)
         ctx[:ax]=Plots.plot(title=ctx[:title])
@@ -219,7 +219,7 @@ function visualize!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grid)
     reveal(ctx,TP)
 end
     
-function visualize!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grid,func)
+function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grid,func)
     Plots=ctx[:Plotter]
     if !haskey(ctx,:ax)
         ctx[:ax]=Plots.plot(title=ctx[:title])

@@ -45,7 +45,7 @@ end
 
 
 
-function visualize!(ctx, TP::Type{VTKViewType},grid)
+function gridplot!(ctx, TP::Type{VTKViewType},grid)
     VTKView=ctx[:Plotter]
     frame=ctx[:frame]
     if !haskey(ctx,:dataset)
@@ -65,11 +65,11 @@ function visualize!(ctx, TP::Type{VTKViewType},grid)
 end
 
 
-visualize!(ctx, T::Type{VTKViewType}, ::Type{Val{2}},grid)=visualize!(ctx, T,grid)
-visualize!(ctx, T::Type{VTKViewType}, ::Type{Val{3}},grid)=visualize!(ctx, T,grid)
+gridplot!(ctx, T::Type{VTKViewType}, ::Type{Val{2}},grid)=gridplot!(ctx, T,grid)
+gridplot!(ctx, T::Type{VTKViewType}, ::Type{Val{3}},grid)=gridplot!(ctx, T,grid)
 
 
-function visualize!(ctx, TP::Type{VTKViewType},grid,func)
+function scalarplot!(ctx, TP::Type{VTKViewType},grid,func)
     VTKView=ctx[:Plotter]
     frame=ctx[:frame]
     if !haskey(ctx,:dataset)
@@ -97,11 +97,11 @@ end
 
 
 
-visualize!(ctx, T::Type{VTKViewType}, ::Type{Val{2}},grid, func)=visualize!(ctx, T,grid,func)
-visualize!(ctx, T::Type{VTKViewType}, ::Type{Val{3}},grid, func)=visualize!(ctx, T,grid,func)
-visualize!(ctx, T::Type{VTKViewType}, ::Type{Val{1}},grid)=nothing
+scalarplot!(ctx, T::Type{VTKViewType}, ::Type{Val{2}},grid, func)=scalarplot!(ctx, T,grid,func)
+scalarplot!(ctx, T::Type{VTKViewType}, ::Type{Val{3}},grid, func)=scalarplot!(ctx, T,grid,func)
+gridplot!(ctx, T::Type{VTKViewType}, ::Type{Val{1}},grid)=nothing
 
-function visualize!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}},grid, func)
+function scalarplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}},grid, func)
     VTKView=ctx[:Plotter]
     frame=ctx[:frame]
     if !haskey(ctx,:plot)

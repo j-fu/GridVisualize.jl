@@ -113,7 +113,7 @@ makestatus(grid::ExtendableGrid)="p: $(num_nodes(grid)) t: $(num_cells(grid)) b:
 
 
 #1D grid
-function visualize!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
+function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
     
     Makie=ctx[:Plotter]
     nregions=num_cellregions(grid)
@@ -189,7 +189,7 @@ function visualize!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
 end
 
 # 1D function
-function visualize!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
+function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
     Makie=ctx[:Plotter]
 
     if ctx[:title]==""
@@ -255,7 +255,7 @@ function visualize!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 end
 
 # 2D grid
-function visualize!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
+function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
     Makie=ctx[:Plotter]
     nregions=num_cellregions(grid)
     nbregions=num_bfaceregions(grid)
@@ -285,7 +285,7 @@ end
 
 
 # 2D function
-function visualize!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
+function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
     Makie=ctx[:Plotter]
     
     function make_mesh(grid::ExtendableGrid,func,elevation)
@@ -352,7 +352,7 @@ Keyboard interactions:
 pgup/pgdown: coarse control control value
           h: print this message
 """
-function visualize!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
+function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
 
     make_mesh(pts,fcs)=Mesh(meta(pts,normals=normals(pts, fcs)),fcs)
     
@@ -438,7 +438,7 @@ function visualize!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
     reveal(ctx,TP)
 end
 
-function visualize!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
+function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     
     make_mesh(pts,fcs)=Mesh(pts,fcs)
     

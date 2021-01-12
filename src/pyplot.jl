@@ -55,7 +55,7 @@ plaincolormap(ctx)=colorschemes[ctx[:colormap]].colors
 
 
 ### 1D grid
-function visualize!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grid)
+function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grid)
     PyPlot=ctx[:Plotter]
 
     if !haskey(ctx,:ax)
@@ -118,7 +118,7 @@ end
 
 
 ### 2D grid
-function visualize!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid)
+function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid)
     PyPlot=ctx[:Plotter]
     if !haskey(ctx,:ax)
         ctx[:ax]=ctx[:figure].add_subplot(ctx[:layout]...,ctx[:iplot])
@@ -170,7 +170,7 @@ end
 
 
 ### 3D Grid
-function visualize!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid)
+function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid)
     # See https://jakevdp.github.io/PythonDataScienceHandbook/04.12-three-dimensional-plotting.html
 
     PyPlot=ctx[:Plotter]
@@ -251,7 +251,7 @@ function visualize!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid)
 end
 
 ### 1D Function
-function visualize!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
+function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
     PyPlot=ctx[:Plotter]
     if !haskey(ctx,:ax)
         ctx[:ax]=ctx[:figure].add_subplot(ctx[:layout]...,ctx[:iplot])
@@ -297,7 +297,7 @@ function visualize!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
 end
 
 ### 2D Function
-function visualize!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
+function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     PyPlot=ctx[:Plotter]
     if !haskey(ctx,:ax)
         ctx[:ax]=ctx[:figure].add_subplot(ctx[:layout]...,ctx[:iplot])
@@ -339,7 +339,7 @@ function visualize!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     reveal(ctx,TP)
 end
 
-function visualize!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid,func)
+function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid,func)
 
     PyPlot=ctx[:Plotter]
     if !haskey(ctx,:ax)

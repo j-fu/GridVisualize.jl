@@ -21,7 +21,9 @@ include("meshcat.jl")
 include("plots.jl")
 
 
-export visualize,visualize!,save,reveal
+export scalarplot,scalarplot!
+export gridplot,gridplot!
+export save,reveal
 export isplots,isvtkview,ispyplot,ismakie
 export GridVisualizer, SubVis
 export plottertype

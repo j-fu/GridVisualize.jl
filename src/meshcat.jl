@@ -25,15 +25,15 @@ function reveal(ctx::SubVis,TP::Type{MeshCatType})
 end
 
 
-visualize!(ctx, TP::Type{MeshCatType}, ::Type{Val{1}}, grid)=nothing
-visualize!(ctx, TP::Type{MeshCatType}, ::Type{Val{1}}, grid,func)=nothing
+gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{1}}, grid)=nothing
+scalarplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{1}}, grid,func)=nothing
 
 
 
 
 
 # 2D grid
-function visualize!(ctx, TP::Type{MeshCatType}, ::Type{Val{2}},grid)
+function gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{2}},grid)
     MeshCat=ctx[:Plotter]
     vis=ctx[:figure]
     
@@ -66,7 +66,7 @@ end
 
 
 
-function visualize!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}},grid)
+function gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}},grid)
     
     MeshCat=ctx[:Plotter]
     vis=ctx[:figure]
@@ -124,7 +124,7 @@ function visualize!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}},grid)
     reveal(ctx,TP)
 end
 
-function visualize!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}},grid,func)
+function scalarplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}},grid,func)
     
     MeshCat=ctx[:Plotter]
     vis=ctx[:figure]

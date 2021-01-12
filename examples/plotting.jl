@@ -1,7 +1,8 @@
+
 # Plotting examples
 # =================
 # ## Plotters
-#  All plot functions in ExtendableGrids.jl have a `Plotter` keyword argument
+#  All plot functions in GridVisualize.jl have a `Plotter` keyword argument
 #  which defaults to `nothing`.  This allows to pass a module as plotting backend
 #  without creating a dependency. Fully supported are `PyPlot` and `GLMakie`.
 #  `WGLMakie` and `CairoMakie` work in principle but in the moment don't deliver
@@ -13,6 +14,10 @@
 #
 # ## Grid plots
 # Here, we define some sample grids for plotting purposes.
+
+using ExtendableGrids
+using GridVisualize
+
 function grid1d(;n=50)
     X=collect(0:1/n:1)
     g=simplexgrid(X)
@@ -28,7 +33,7 @@ function grid3d(;n=15)
     g=simplexgrid(X,X,X)
 end
 #
-# Now, we can use the plot command of ExtendableGrids to plot grids
+# Now, we can use the plot command of GridVisualize to plot grids
 # Note the kwargs `xplane`, `yplane` and `zplane` which allow to control
 # cutplanes which peel off some elements from the grid in 3d and allow to
 # explore the inner triangulation.
@@ -67,7 +72,7 @@ end
 # For Makie and VTKView, the cutplane values and the flevel can be controlled interactively.
 function plotting_func3d(;Plotter=nothing)
     g,f=func3d()
-    gridplot(g,f, Plotter=Plotter, zplane=0.49,xplane=0.49,flevel=0.25)
+    scalarplot(g,f, Plotter=Plotter, zplane=0.49,xplane=0.49,flevel=0.25)
 end
 # ![](plotting_func3d.svg)
 
@@ -82,12 +87,12 @@ function plotting_multiscene(;Plotter=nothing)
     p=GridVisualizer(;Plotter=Plotter,layout=(2,3),clear=true,resolution=(800,500))
 
     # 3D must come first for Makie, see https://github.com/JuliaPlots/Makie.jl/issues/805
-    visualize!(p[1,3],grid3d(),zplane=0.49,title="3D grid")
-    visualize!(p[2,3],func3d()...,zplane=0.49,flevel=0.5,colormap=:bamako, title="3D grid function")
-    visualize!(p[1,1],grid1d(), title="1D grid")
-    visualize!(p[2,1],func1d()..., title="1D grid function")
-    visualize!(p[1,2],grid2d(),title="2D grid")
-    visualize!(p[2,2],func2d()...,colormap=:bamako,title="2D grid function")
+    gridplot!(p[1,3],grid3d(),zplane=0.49,title="3D grid")
+    scalarplot!(p[2,3],func3d()...,zplane=0.49,flevel=0.5,colormap=:bamako, title="3D grid function")
+    gridplot!(p[1,1],grid1d(), title="1D grid")
+    scalarplot!(p[2,1],func1d()..., title="1D grid function")
+    gridplot!(p[1,2],grid2d(),title="2D grid")
+    scalarplot!(p[2,2],func2d()...,colormap=:bamako,title="2D grid function")
     reveal(p)
 end
 # ![](plotting_multiscene.svg)

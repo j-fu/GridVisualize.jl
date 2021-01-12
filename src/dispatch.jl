@@ -170,7 +170,7 @@ default_plot_kwargs()=Dict{Symbol,Pair{Any,String}}(
     :subplot => Pair((1,1),"Actual subplot"),
     :color => Pair((0,0,0),"Color of lines on plot"),
     :edges => Pair(true,"Plot grid edges when plotting grid"),
-    :alpha => Pair(1.0,"Surface alpha value"),
+    :alpha => Pair(0.1,"Surface alpha value"),
     :interior => Pair(true,"Plot interior of grid"),
     :outline => Pair(true,"Plot outline of domain"),
     :xplane => Pair(prevfloat(Inf),"xplane for 3D visualization"),
@@ -208,24 +208,24 @@ to create heavy default package dependencies.
 
 
 Depending on the `layout` keyword argument, a 2D grid of subplots is created.
-Further `visualize!` commands then plot into one of these subplots:
+Further `...plot!` commands then plot into one of these subplots:
 
 ```julia
 p=GridVisualizer(Plotter=PyPlot, layout=(2,2)
-visualize!(p[1,2], ...)
+...plot!(p[1,2], ...)
 ````
 
-A `plot`  command just implicitely creates a plot context:
+A `...plot`  command just implicitely creates a plot context:
 ```julia
-visualize(..., Plotter=PyPlot) 
+...plot(..., Plotter=PyPlot) 
 ```
 is equivalent to
 ```julia
 p=GridVisualizer(Plotter=PyPlot, layout=(1,1)
-visualize!(p,...) 
+...plot!(p,...) 
 ```
 
-Please not that the return values of all plot commands are specific to the Plotter.
+Please note that the return values of all plot commands are specific to the Plotter.
 
 Depending on the backend, interactive mode switch between "gallery view" showing all plots at
 onece and "focused view" showing only one plot is possible.
@@ -268,9 +268,9 @@ Keyword arguments:
 
 $(_myprint(default_plot_kwargs()))
 """
-function visualize!(ctx::SubVis,grid::ExtendableGrid; kwargs...)
+function gridplot!(ctx::SubVis,grid::ExtendableGrid; kwargs...)
     _update_context!(ctx,kwargs)
-    visualize!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid)
+    gridplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid)
 end
 
 """
@@ -282,7 +282,7 @@ Keyword arguments:
 
 $(_myprint(default_plot_kwargs()))
 """
-visualize!(p::GridVisualizer,grid::ExtendableGrid; kwargs...)=visualize!(p[1,1],grid,kwargs...)
+gridplot!(p::GridVisualizer,grid::ExtendableGrid; kwargs...)=gridplot!(p[1,1],grid,kwargs...)
 
 
 """
@@ -294,22 +294,22 @@ Keyword arguments:
 
 $(_myprint(default_plot_kwargs()))
 """
-visualize(grid::ExtendableGrid; Plotter=nothing, kwargs...)=visualize!(GridVisualizer(Plotter=Plotter; show=true, kwargs...),grid)
+gridplot(grid::ExtendableGrid; Plotter=nothing, kwargs...)=gridplot!(GridVisualizer(Plotter=Plotter; show=true, kwargs...),grid)
 
 
 """
 $(SIGNATURES)
 
-Plot vector on grid as P1 FEM function.
+Plot scalar function on grid as P1 FEM function.
 
 Keyword arguments
 
 $(_myprint(default_plot_kwargs()))
 """
-function visualize!(ctx::SubVis,grid::ExtendableGrid,func; kwargs...)
+function scalarplot!(ctx::SubVis,grid::ExtendableGrid,func; kwargs...)
     _update_context!(ctx,Dict(:clear=>true,:show=>false,:reveal=>false))
     _update_context!(ctx,kwargs)
-    visualize!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid,func)
+    scalarplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid,func)
 end
 
 
@@ -322,20 +322,20 @@ Keyword arguments:
 
 $(_myprint(default_plot_kwargs()))
 """
-visualize(grid::ExtendableGrid,func ;Plotter=nothing,kwargs...)=visualize!(GridVisualizer(Plotter=Plotter;kwargs...),grid,func,show=true)
+scalarplot(grid::ExtendableGrid,func ;Plotter=nothing,kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter;kwargs...),grid,func,show=true)
 
-visualize!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...)=visualize!(p[1,1],grid,func; kwargs...)
-visualize!(p::GridVisualizer,grid::ExtendableGrid, kwargs...)=visualize!(p[1,1],grid; kwargs...)
+scalarplot!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...) = scalarplot!(p[1,1],grid,func; kwargs...)
+gridplot!(p::GridVisualizer,grid::ExtendableGrid, kwargs...) = gridplot!(p[1,1],grid; kwargs...)
 
 
-visualize(X::Vector,func ;kwargs...)=visualize(simplexgrid(X),func;kwargs...)
-visualize!(ctx::SubVis,X::Vector,func; kwargs...)=visualize!(ctx,simplexgrid(X),func;kwargs...)
-visualize!(ctx::GridVisualizer,X::Vector,func; kwargs...)=visualize!(ctx,simplexgrid(X),func;kwargs...)
+scalarplot(X::Vector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
+scalarplot!(ctx::SubVis,X::Vector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
+scalarplot!(ctx::GridVisualizer,X::Vector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
 
 """
 $(SIGNATURES)
 
-Finish and show plot. Same as setting `:reveal=true` or `:show=true` in last visualize statment
+Finish and show plot. Same as setting `:reveal=true` or `:show=true` in last scalarplot statment
 for a context.
 """
 reveal(p::GridVisualizer)=reveal(p, plottertype(p.Plotter))
@@ -353,16 +353,16 @@ save(fname,p::GridVisualizer)=save(fname,p, plottertype(p.Plotter))
 #
 _update_context!(::Nothing,kwargs)=nothing
 Base.copy(::Nothing)=nothing
-visualize!(ctx::Nothing,grid::ExtendableGrid;kwargs...)=nothing
-visualize!(ctx::Nothing,grid::ExtendableGrid,func;kwargs...)=nothing
+gridplot!(ctx::Nothing,grid::ExtendableGrid;kwargs...)=nothing
+scalarplot!(ctx::Nothing,grid::ExtendableGrid,func;kwargs...)=nothing
 
-visualize!(ctx, ::Type{Nothing}, ::Type{Val{1}},grid)=nothing
-visualize!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid)=nothing
-visualize!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid)=nothing
+gridplot!(ctx, ::Type{Nothing}, ::Type{Val{1}}, grid)=nothing
+gridplot!(ctx, ::Type{Nothing}, ::Type{Val{2}}, grid)=nothing
+gridplot!(ctx, ::Type{Nothing}, ::Type{Val{3}}, grid)=nothing
 
-visualize!(ctx, ::Type{Nothing}, ::Type{Val{1}},grid,func)=nothing
-visualize!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid,func)=nothing
-visualize!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid,func)=nothing
+scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{1}},grid,func)=nothing
+scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid,func)=nothing
+scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid,func)=nothing
 
 
 displayable(ctx,Any)=nothing
