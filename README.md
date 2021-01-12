@@ -18,7 +18,7 @@ Available plotting backends and functionality. 'i' means some
 level of interactive control.
 
 |            | PyPlot | *Makie | Plots | VTKView |
-|------------+--------+--------+-------+---------|
+|-----------:|--------|--------|-------|---------|
 | scalar, 1D | y      | y      | y     | y       |
 | grid, 1D   | y      | y      | y     | n       |
 | scalar, 2D | y      | y,i    | y$^1$ | y,i     |
