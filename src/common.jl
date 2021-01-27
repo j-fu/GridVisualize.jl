@@ -280,14 +280,16 @@ end
 function marching_tetrahedra(grid::ExtendableGrid,func,planes,flevels;tol=0.0,
                              primepoints=zeros(0,0), primevalues=zeros(0), Tv=Float32,
                              Tp=SVector{3,Float32},Tf=SVector{3,Int32})
+
+    # We could rewrite this for Meshing.jl
+    # CellNodes::Vector{Ttet}, Coord::Vector{Tpt}
+
     nplanes=length(planes)
     nlevels=length(flevels)
     
     coord=grid[Coordinates]
     cellnodes=grid[CellNodes]
-    cellregions=grid[CellRegions]
-    nregions=grid[NumCellRegions]
-    
+
     all_ixfaces=Vector{Tf}(undef,0)
     all_ixcoord=Vector{Tp}(undef,0)
     all_ixvalues=Vector{Tv}(undef,0)

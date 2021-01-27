@@ -2,8 +2,6 @@ ENV["MPLBACKEND"]="agg"
 using Documenter, ExtendableGrids, Literate, GridVisualize
 import PyPlot
 
-example_md_dir  = joinpath(@__DIR__,"src","examples")
-
 plotting=joinpath(@__DIR__,"..","examples","plotting.jl")
 include(plotting)
 

@@ -561,3 +561,12 @@ end
 # arr = normalize([cosd(azim/2), 0, sind(azim/2), -sind(azim/2)])
 # Makie.rotate!(rect, Makie.Quaternionf0(arr...))
 
+  
+# 3 replies
+# Julius Krumbiegel  5 hours ago
+# try lines(x, y, axis = (limits = lims,)), the other keyword arguments go to the plot
+# Julius Krumbiegel  5 hours ago
+# although I think it should be targetlimits because the limits are computed from them usually, considering that there might be aspect constraints that should be met or linked axes (edited) 
+# Christophe Meyer  4 hours ago
+# Thanks!  lines(x, y, axis = (targetlimits = lims,))  indeed makes the limits update.^
+# I found that autolimits!(axis) gave good results, even better than me manually computing limits!

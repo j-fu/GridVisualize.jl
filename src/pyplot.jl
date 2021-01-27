@@ -278,17 +278,22 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
     
     cellnodes=grid[CellNodes]
     coord=grid[Coordinates]
-    for icell=1:num_cells(grid)
-        i1=cellnodes[1,icell]
-        i2=cellnodes[2,icell]
-        x1=coord[1,i1]
-        x2=coord[1,i2]
-        if icell==1
-            ax.plot([x1,x2],[func[i1],func[i2]],color=ctx[:color],label=ctx[:label])
-        else
-            ax.plot([x1,x2],[func[i1],func[i2]],color=ctx[:color])
-        end                
+    if ctx[:cellwise]
+        for icell=1:num_cells(grid)
+            i1=cellnodes[1,icell]
+            i2=cellnodes[2,icell]
+            x1=coord[1,i1]
+            x2=coord[1,i2]
+            if icell==1
+                ax.plot([x1,x2],[func[i1],func[i2]],color=ctx[:color],label=ctx[:label])
+            else
+                ax.plot([x1,x2],[func[i1],func[i2]],color=ctx[:color])
+            end                
+        end
+    else
+        ax.plot(coord[1,:],func,color=ctx[:color],label=ctx[:label])
     end
+    
     if ctx[:legend]
         ax.legend(loc=ctx[:legend_location])
     end
