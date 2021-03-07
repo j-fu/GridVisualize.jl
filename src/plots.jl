@@ -206,7 +206,7 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid, func)
         umax=flimits[2]
     end
     levels=collect(umin:(umax-umin)/(ctx[:isolines]-1):umax)
-    Plots.contourf!(p,rdata...,aspect_ratio=ctx[:aspect],fill=ctx[:colormap],levels=levels)
+    Plots.contourf!(p,rdata...,aspect_ratio=ctx[:aspect],fill=ctx[:colormap],c=:black,levels=levels)
     reveal(ctx,TP)
 end
 

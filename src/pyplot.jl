@@ -24,8 +24,9 @@ function reveal(p::GridVisualizer,::Type{PyPlotType})
     p.context[:revealed]=true
     p.Plotter.tight_layout()
     if !(isdefined(Main,:PlutoRunner))&& isinteractive()
-         p.Plotter.pause(1.0e-10)
-         p.Plotter.draw()
+        p.Plotter.pause(1.0e-10)
+        p.Plotter.draw()
+        sleep(1.0e-3)
     end
     p.context[:figure]
 end
