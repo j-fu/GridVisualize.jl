@@ -31,3 +31,6 @@ on rectangular resp. cuboid grids.
 | scalar, 3D | y      | y,i    | no    | y,i     |
 | grid, 3D   | y      | y,i    | no    | y,i     |
 
+
+With current Makie, the Makie part probably will have some problems.
+
