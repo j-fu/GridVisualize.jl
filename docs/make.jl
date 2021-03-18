@@ -10,6 +10,7 @@ include(plotting)
 
 include("makeplots.jl")
 
+example_md_dir  = joinpath(@__DIR__,"src","examples")
 
 
 function mkdocs()
