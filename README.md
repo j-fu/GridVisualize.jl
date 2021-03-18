@@ -32,5 +32,5 @@ on rectangular resp. cuboid grids.
 | grid, 3D   | y      | y,i    | no    | y,i     |
 
 
-With current Makie, the Makie part probably will have some problems.
+Currently, the  Makie part probably will have some problems.
 
