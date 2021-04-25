@@ -7,7 +7,7 @@ module FlippableLayout
 # which avoids creating dependencies on plotting backends.
 # So we provide a way to emulate "import Makie" by allowing
 # to set it as a global variable. This Makie can be GLMakie,WGLMakie,CairoMakie
-
+# As a consequence, we can't use Makie types at compile time.
 Makie=nothing
 
 """
@@ -20,7 +20,7 @@ mutable struct FLayout
     visible #::GridLayout
     offscreen #::GridLayout
     blocked::Bool
-    layoutables::Dict{Tuple{Int64,Int64},Any} # Any -> Layoutable
+    layoutables::Dict{Tuple{Int64,Int64},Any} # Union{Makie.MakieLayout.Layoutable,Makie.GridLayout}
     condition::Condition
     FLayout(visible;blocked=false)=new(visible,
                                        Makie.GridLayout(bbox = Makie.BBox(-500, -400, -500, -400)),
@@ -33,7 +33,6 @@ end
 function Base.setindex!(flayout::FLayout,layoutable,i,j)
     if isnothing(layoutable)
         flayout.offscreen[1, 1] = flayout.layoutables[(i,j)]
-#        delete!(flayout.visible,flayout.layoutables[(i,j)])#may be this does not work anymore
         delete!(flayout.layoutables,(i,j)) 
     elseif !isa(layoutable,Union{Makie.MakieLayout.Layoutable,Makie.GridLayout})
         error("can only set layoutables")
@@ -56,7 +55,6 @@ function _showall(flayout::FLayout)
 end
 
 
-
 #
 # Check if mouse position is  within pixel area of scene
 #
@@ -66,7 +64,6 @@ function _inarea(area,pos)
         pos[2]>area.origin[2] &&
         pos[2] < area.origin[2]+area.widths[2]
 end
-
 
 function _inscene(l,pos)
     if isa(l,Makie.MakieLayout.Layoutable)
@@ -101,9 +98,8 @@ function flayoutscene(;blocked=false,
 
     parent = Makie.Scene(; camera = Makie.campixel!, kwargs...)
     layout = Makie.GridLayout(parent,alignmode = Makie.Outside(5))
-
-#    (parent, layout) = Makie.layoutscene(; kwargs...)
-
+    
+    
     Makie.rowgap!(layout,Makie.Relative(0.0))
     Makie.colgap!(layout,Makie.Relative(0.0))
     

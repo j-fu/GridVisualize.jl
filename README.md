@@ -31,6 +31,4 @@ on rectangular resp. cuboid grids.
 | scalar, 3D | y      | y,i    | no    | y,i     |
 | grid, 3D   | y      | y,i    | no    | y,i     |
 
-
-Currently, the  Makie part probably will have some problems.
-
+![pyplot](assets/multiscene_pyplot.png?raw=true)
