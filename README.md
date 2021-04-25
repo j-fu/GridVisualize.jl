@@ -35,13 +35,16 @@ For multiple plots in one plotting window, see the documentation.
 
 
 ## [PyPlot](https://github.com/JuliaPy/PyPlot.jl):
-![pyplot](docs/src/assets/multiscene_pyplot.png?raw=true)
 
-## [Plots/gr](https://github.com/JuliaPlots/Plots.jl):
-![plots](docs/src/assets/multiscene_plots.png?raw=true)
+
+<img src="docs/src/assets/multiscene_pyplot.png?raw=true" width=300/> 
+
 
 ## [GLMakie](https://github.com/JuliaPlots/GLMakie.jl):
 ![glmakie](docs/src/assets/multiscene_glmakie.png?raw=true)
+
+## [Plots/gr](https://github.com/JuliaPlots/Plots.jl):
+![plots](docs/src/assets/multiscene_plots.png?raw=true)
 
 ## [VTKView](https://github.com/j-fu/VTKView.jl):
 ![vtkview](docs/src/assets/multiscene_vtkview.png?raw=true)
