@@ -1,13 +1,12 @@
 module FlippableLayout
 
-# Thanks to Julius Krummbiegel for providing
-# a basic implementation to focus switching
+# Thanks to Julius Krummbiegel for providing  a basic implementation to focus switching
 
 
-# Currently this module sits within the plotting section of ExtendableGrids.jl
+# Currently this module sits within GridVisualize.jl
 # which avoids creating dependencies on plotting backends.
 # So we provide a way to emulate "import Makie" by allowing
-# to set it as a global variable.
+# to set it as a global variable. This Makie can be GLMakie,WGLMakie,CairoMakie
 
 Makie=nothing
 
@@ -92,14 +91,9 @@ set by the `blocked` kwarg.
 
 The `kwargs...` are the same as of `AbstractPlotting.layoutscene`.
 
-
 The idea is that this can work in some cases as a drop-in replacement
 of `layoutscene`.     
 """
-
-
-
-
 function flayoutscene(;blocked=false,
                       focuskey=Makie.Keyboard.comma,
                       blockingkey=Makie.Keyboard.space,
