@@ -1,16 +1,17 @@
 module GridVisualize
 
+using Printf
+using LinearAlgebra
 
-using ExtendableGrids
 using DocStringExtensions
 using ElasticArrays
 using StaticArrays
-
 using Colors
 using ColorSchemes
 using GeometryBasics
-using LinearAlgebra
+using PkgVersion
 
+using ExtendableGrids
 
 include("dispatch.jl")
 include("common.jl")

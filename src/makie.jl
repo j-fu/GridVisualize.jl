@@ -3,9 +3,22 @@ using .FlippableLayout
 
 function initialize!(p::GridVisualizer,::Type{MakieType})
     Makie=p.context[:Plotter]
-    if !isdefined(Makie.AbstractPlotting,:Box)
-        error("Outdated version of AbstractPlotting. Please upgrade to at least 0.15.1")
+
+    # Check for version compatibility
+    version_min=v"0.17.4"
+    version_max=v"0.18"
+    
+    version_installed=PkgVersion.Version(Makie.AbstractPlotting)
+
+    if version_installed<version_min
+        error("Outdated version $(version_installed) of AbstractPlotting. Please upgrade to at least $(version_min)")
     end
+    
+    if version_installed>=version_max
+        @warn("Possibly breaking version $(version_installed) of AbstractPlotting. Consider downgrade to some version before $(version_max)")
+    end
+
+    # Prepare flippable layout
     FlippableLayout.setmakie!(Makie)
     layout=p.context[:layout]
     parent,flayout=flayoutscene(resolution=p.context[:resolution])
@@ -17,6 +30,7 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
         ctx[:flayout]=flayout
     end
     Makie.display(parent)
+    
     parent
 end
 
@@ -55,6 +69,7 @@ end
 
 
 """
+
      scene_interaction(update_scene,view,switchkeys::Vector{Symbol}=[:nothing])   
 
 Control multiple scene elements via keyboard up/down keys. 
@@ -111,7 +126,18 @@ end
 makestatus(grid::ExtendableGrid)="p: $(num_nodes(grid)) t: $(num_cells(grid)) b: $(num_bfaces(grid))"
 
 
+scenekwargs(ctx)=Dict(:xticklabelsize => 0.5*ctx[:fontsize],
+                      :yticklabelsize => 0.5*ctx[:fontsize],
+                      :zticklabelsize => 0.5*ctx[:fontsize],
+                      :xlabelsize => 0.5*ctx[:fontsize],
+                      :ylabelsize => 0.5*ctx[:fontsize],
+                      :zlabelsize => 0.5*ctx[:fontsize],
+                      :xlabeloffset => 20,
+                      :ylabeloffset => 20,
+                      :zlabeloffset => 20,
+                      :titlesize => ctx[:fontsize])
 
+############################################################################################################
 #1D grid
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
     
@@ -168,7 +194,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
 
     
     if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.Axis(ctx[:figure],title=ctx[:title])
+        ctx[:scene]=Makie.Axis(ctx[:figure];title=ctx[:title], scenekwargs(ctx)...)
         ctx[:grid]=Makie.Node(grid)
         cmap=region_cmap(nregions)
         Makie.linesegments!(ctx[:scene],Makie.lift(g->basemesh(g), ctx[:grid]),color=:black)
@@ -221,7 +247,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 
     if !haskey(ctx,:scene)
         ctx[:xtitle]=Makie.Node(ctx[:title])
-        ctx[:scene]=Makie.Axis(ctx[:figure],title=Makie.lift(a->a,ctx[:xtitle]))
+        ctx[:scene]=Makie.Axis(ctx[:figure]; title=Makie.lift(a->a,ctx[:xtitle]),scenekwargs(ctx)...)
         ctx[:rawdata]=lsegs(grid,func,RGB(ctx[:color]))
         ctx[:data]=Makie.Node(ctx[:rawdata])
         coord=grid[Coordinates]
@@ -254,6 +280,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
     reveal(ctx,TP)
 end
 
+#######################################################################################
 # 2D grid
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
     Makie=ctx[:Plotter]
@@ -261,7 +288,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
     nbregions=num_bfaceregions(grid)
 
     if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.Axis(ctx[:figure],title=ctx[:title])
+        ctx[:scene]=Makie.Axis(ctx[:figure];title=ctx[:title],aspect=Makie.DataAspect(),scenekwargs(ctx)...)
         ctx[:grid]=Makie.Node(grid)
         cmap=region_cmap(nregions)
 
@@ -302,7 +329,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
     end
     
     if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.Axis(ctx[:figure],title=ctx[:title],aspect=Makie.DataAspect())
+        ctx[:scene]=Makie.Axis(ctx[:figure];title=ctx[:title],aspect=Makie.DataAspect(),scenekwargs(ctx)...)
         ctx[:data]=Makie.Node((g=grid,f=func,e=ctx[:elevation]))
         flimits=ctx[:flimits]
         if flimits[1]<flimits[2]
@@ -326,7 +353,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
 end
 
 
-
+#######################################################################################
+#######################################################################################
 # 3D Grid
 function xyzminmax(grid::ExtendableGrid)
     coord=grid[Coordinates]
@@ -341,6 +369,46 @@ function xyzminmax(grid::ExtendableGrid)
     xyzmin,xyzmax
 end
 
+"""
+   makeaxis3d(ctx)
+
+Dispatch between LScene and new Axis3. Axis3 does not allow zoom, so we
+support LScene in addition.
+"""
+function makeaxis3d(ctx)
+    if ctx[:scene3d]=="LScene"
+        ctx[:Plotter].LScene(ctx[:figure])
+    else
+        ctx[:Plotter].Axis3(ctx[:figure];
+                            aspect=:data,
+                            viewmode=:fitzoom,
+                            elevation=ctx[:elev]*π/180,
+                            azimuth=ctx[:azim]*π/180,
+                            perspectiveness=ctx[:perspectiveness],
+                            title=ctx[:title],
+                            scenekwargs(ctx)...)
+    end
+end
+
+"""
+   makescene3d(ctx)
+
+Complete scene with title and status line showing interaction state.
+This uses a gridlayout and its  protrusion capabilities.
+"""
+function makescene3d(ctx)
+    Makie=ctx[:Plotter]
+    GL=Makie.GridLayout(parent=ctx[:figure],default_rowgap=0)
+    if ctx[:scene3d]=="LScene"
+        # Put the title into protrusion space on top  of the scene
+        GL[1,1,Makie.Top()   ]=Makie.Label(ctx[:figure]," $(ctx[:title]) ",tellwidth=false,height=30,textsize=ctx[:fontsize])
+    end
+    GL[1,1               ]=ctx[:scene]
+    # Put the status label into protrusion space on the bottom of the scene
+    GL[1,1,Makie.Bottom()]=Makie.Label(ctx[:figure],ctx[:status],tellwidth=false,height=30,textsize=0.5*ctx[:fontsize])
+    GL
+end
+
 const keyboardhelp=
 """
 Keyboard interactions:
@@ -352,6 +420,8 @@ Keyboard interactions:
 pgup/pgdown: coarse control control value
           h: print this message
 """
+
+
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
 
     make_mesh(pts,fcs)=Mesh(meta(pts,normals=normals(pts, fcs)),fcs)
@@ -374,18 +444,11 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
     
 
     if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.LScene(ctx[:figure])
+
+        ctx[:scene]=makeaxis3d(ctx)
+        
         ctx[:data]=Makie.Node((g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane]))
-        ctx[:facedata]=Makie.lift(
-            d->extract_visible_bfaces3D(d.g,
-                                        (d.x,d.y,d.z),
-                                        primepoints=hcat(xyzmin,xyzmax),
-                                        Tp=Point3f0,
-                                        Tf=GLTriangleFace),
-            ctx[:data])
-        
-        ctx[:facemeshes]=Makie.lift(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:facedata])
-        
+        ############# Interior cuts
         if ctx[:interior]
             cmap=region_cmap(nregions)
             ctx[:celldata]=Makie.lift(
@@ -406,31 +469,72 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                 end
             end
         end
-
+        
         bcmap=bregion_cmap(nbregions)
-        for i=1:nbregions
-            Makie.mesh!(ctx[:scene],Makie.lift(d->d[i], ctx[:facemeshes]),
-                        color=bcmap[i],
-                        backlight=1f0
-                        )
-            if ctx[:edges]
-                Makie.wireframe!(ctx[:scene],Makie.lift(d->d[i], ctx[:facemeshes]),strokecolor=:black)
+        ############# Visible boundary faces
+        if true 
+            ctx[:facedata]=Makie.lift(
+                d->extract_visible_bfaces3D(d.g,
+                                            (d.x,d.y,d.z),
+                                            primepoints=hcat(xyzmin,xyzmax),
+                                            Tp=Point3f0,
+                                            Tf=GLTriangleFace),
+                ctx[:data])
+            ctx[:facemeshes]=Makie.lift(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:facedata])
+            
+            for i=1:nbregions
+                Makie.mesh!(ctx[:scene],Makie.lift(d->d[i], ctx[:facemeshes]),
+                            color=bcmap[i],
+                            backlight=1f0
+                            )
+                if ctx[:edges]
+                    Makie.wireframe!(ctx[:scene],Makie.lift(d->d[i], ctx[:facemeshes]),strokecolor=:black)
+                end
+            end
+        end
+        
+        ############# Transparent outline
+        if ctx[:outline]
+            
+            ctx[:outlinedata]=Makie.lift(d->extract_visible_bfaces3D(d.g,
+                                                                     xyzmax,
+                                                                     primepoints=hcat(xyzmin,xyzmax),
+                                                                     Tp=Point3f0,
+                                                                     Tf=GLTriangleFace),
+                                         ctx[:data])
+            ctx[:outlinemeshes]=Makie.lift(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
+            for i=1:nbregions
+                Makie.mesh!(ctx[:scene],Makie.lift(d->d[i], ctx[:outlinemeshes]),
+                            color=(bcmap[i],ctx[:alpha]),
+                            transparency=true,
+                            backlight=1f0
+                            )
             end
         end
         
         
-        scene_interaction(ctx[:scene].scene,Makie,[:z,:y,:x]) do delta,key
+        
+        
+        ##### Interaction
+        scene_interaction(ctx[:scene].scene,Makie,[:z,:y,:x,:q]) do delta,key
             if key==:x
                 ctx[:xplane]+=delta*xyzstep[1]
+                ctx[:status][]=@sprintf("x=%.3g",ctx[:xplane])
             elseif key==:y
                 ctx[:yplane]+=delta*xyzstep[2]
+                ctx[:status][]=@sprintf("y=%.3g",ctx[:yplane])
             elseif key==:z
                 ctx[:zplane]+=delta*xyzstep[3]
+                ctx[:status][]=@sprintf("z=%.3g",ctx[:zplane])
+            elseif key==:q
+                ctx[:status][]=" "
             end
             adjust_planes()
             ctx[:data][]=(g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane])
         end
-        add_scene!(ctx,ctx[:scene])
+
+        ctx[:status]=Makie.Node(" ")
+        add_scene!(ctx,makescene3d(ctx))
         Makie.display(ctx[:figure])
     else
         ctx[:data][]=(g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane])
@@ -438,6 +542,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
     reveal(ctx,TP)
 end
 
+# 3d function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     
     make_mesh(pts,fcs)=Mesh(pts,fcs)
@@ -483,29 +588,29 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
                        [0,0,1,-z]]
     
     if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.LScene(ctx[:figure])
+        ctx[:scene]=makeaxis3d(ctx)
         ctx[:data]=Makie.Node((g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel]))
-                                  
+
+        #### Transparent outlne
         if ctx[:outline]
-
-
-            ctx[:facedata]=Makie.lift(d->extract_visible_bfaces3D(d.g,
-                                                                  xyzmax,
-                                                                  primepoints=hcat(xyzmin,xyzmax),
-                                                                  Tp=Point3f0,
-                                                                  Tf=GLTriangleFace),
-                                      ctx[:data])
-            ctx[:facemeshes]=Makie.lift(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:facedata])
+            ctx[:outlinedata]=Makie.lift(d->extract_visible_bfaces3D(d.g,
+                                                                     xyzmax,
+                                                                     primepoints=hcat(xyzmin,xyzmax),
+                                                                     Tp=Point3f0,
+                                                                     Tf=GLTriangleFace),
+                                         ctx[:data])
+            ctx[:facemeshes]=Makie.lift(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
             bcmap=bregion_cmap(nbregions)
             for i=1:nbregions
                 Makie.mesh!(ctx[:scene],Makie.lift(d->d[i], ctx[:facemeshes]),
-                color=(bcmap[i],ctx[:alpha]),
-                transparency=true,
-                backlight=1f0
-                )
+                            color=(bcmap[i],ctx[:alpha]),
+                            transparency=true,
+                            backlight=1f0
+                            )
             end
         end
-        
+
+        #### Plane sections and isosurfaces
         Makie.mesh!(ctx[:scene],
                     Makie.lift(d->make_mesh(marching_tetrahedra(d.g,
                                                                 d.f,
@@ -517,22 +622,31 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
                                                                 Tf=GLTriangleFace,
                                                                 Tv=Float32)...),ctx[:data]),
                     backlight=1f0)
-        add_scene!(ctx,ctx[:scene])
-        Makie.display(ctx[:figure])
-        
-        scene_interaction(ctx[:scene].scene,Makie,[:z,:y,:x,:l]) do delta,key
+
+        #### Interactions
+        scene_interaction(ctx[:scene].scene,Makie,[:z,:y,:x,:l,:q]) do delta,key
             if key==:x
                 ctx[:xplane]+=delta*xyzstep[1]
+                ctx[:status][]=@sprintf("x=%.3g",ctx[:xplane])
             elseif key==:y
                 ctx[:yplane]+=delta*xyzstep[2]
+                ctx[:status][]=@sprintf("y=%.3g",ctx[:yplane])
             elseif key==:z
                 ctx[:zplane]+=delta*xyzstep[3]
+                ctx[:status][]=@sprintf("z=%.3g",ctx[:zplane])
             elseif key==:l
                 ctx[:flevel]+=delta*fstep
+                ctx[:status][]=@sprintf("l=%.3g",ctx[:flevel])
+            elseif key==:q
+                ctx[:status][]=" "
             end
             adjust_planes()
             ctx[:data][]=(g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel])
         end
+        
+        ctx[:status]=Makie.Node(" ")
+        add_scene!(ctx,makescene3d(ctx))
+        Makie.display(ctx[:figure])
     else
         ctx[:data][]=(g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel])
     end

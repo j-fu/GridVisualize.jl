@@ -32,6 +32,7 @@ function grid3d(;n=15)
     X=collect(0:1/n:1)
     g=simplexgrid(X,X,X)
 end
+
 #
 # Now, we can use the plot command of GridVisualize to plot grids
 # Note the kwargs `xplane`, `yplane` and `zplane` which allow to control
@@ -39,8 +40,8 @@ end
 # explore the inner triangulation.
 #
 # For Makie and VTKView, the cutplane values can be controlled interactively.
-function plotting_grid3d(;Plotter=nothing)
-    gridplot(grid3d(), Plotter=Plotter, zplane=0.49)
+function plotting_grid3d(;Plotter=nothing, kwargs...)
+    gridplot(grid3d(); Plotter=Plotter, kwargs...)
 end
 # ![](plotting_grid3d.svg)
 
@@ -70,9 +71,9 @@ end
 # to control an isolevel.
 #
 # For Makie and VTKView, the cutplane values and the flevel can be controlled interactively.
-function plotting_func3d(;Plotter=nothing)
+function plotting_func3d(;Plotter=nothing, kwargs...)
     g,f=func3d()
-    scalarplot(g,f, Plotter=Plotter, zplane=0.49,xplane=0.49,flevel=0.25)
+    scalarplot(g,f; Plotter=Plotter, zplane=0.49,xplane=0.49,flevel=0.25, kwargs...)
 end
 # ![](plotting_func3d.svg)
 
@@ -86,13 +87,12 @@ end
 function plotting_multiscene(;Plotter=nothing)
     p=GridVisualizer(;Plotter=Plotter,layout=(2,3),clear=true,resolution=(800,500))
 
-    # 3D must come first for Makie, see https://github.com/JuliaPlots/Makie.jl/issues/805
-    gridplot!(p[1,3],grid3d(),zplane=0.49,title="3D grid")
-    scalarplot!(p[2,3],func3d()...,zplane=0.49,flevel=0.5,colormap=:bamako, title="3D grid function")
     gridplot!(p[1,1],grid1d(), title="1D grid")
     scalarplot!(p[2,1],func1d()..., title="1D grid function")
     gridplot!(p[1,2],grid2d(),title="2D grid")
     scalarplot!(p[2,2],func2d()...,colormap=:bamako,title="2D grid function")
+    gridplot!(p[1,3],grid3d(),zplane=0.49,title="3D grid")
+    scalarplot!(p[2,3],func3d()...,zplane=0.49,flevel=0.5,colormap=:bamako, title="3D grid function")
     reveal(p)
 end
 # ![](plotting_multiscene.svg)

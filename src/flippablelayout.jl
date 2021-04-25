@@ -36,7 +36,7 @@ function Base.setindex!(flayout::FLayout,layoutable,i,j)
         flayout.offscreen[1, 1] = flayout.layoutables[(i,j)]
 #        delete!(flayout.visible,flayout.layoutables[(i,j)])#may be this does not work anymore
         delete!(flayout.layoutables,(i,j)) 
-    elseif !isa(layoutable,Makie.MakieLayout.Layoutable)
+    elseif !isa(layoutable,Union{Makie.MakieLayout.Layoutable,Makie.GridLayout})
         error("can only set layoutables")
     else
         flayout.layoutables[(i,j)]=layoutable
@@ -56,15 +56,25 @@ function _showall(flayout::FLayout)
     Makie.trim!(flayout.visible)
 end
 
+
+
 #
 # Check if mouse position is  within pixel area of scene
 #
-function _inscene(scene,pos)
-    area=scene.px_area[]
+function _inarea(area,pos)
     pos[1]>area.origin[1] &&
         pos[1] < area.origin[1]+area.widths[1] &&
         pos[2]>area.origin[2] &&
         pos[2] < area.origin[2]+area.widths[2]
+end
+
+
+function _inscene(l,pos)
+    if isa(l,Makie.MakieLayout.Layoutable)
+        _inarea(l.scene.px_area[],pos)
+    elseif isa(l,Makie.GridLayout)
+        _inarea(l.layoutobservables.computedbbox[],pos)
+    end
 end
 
 
@@ -87,12 +97,21 @@ The idea is that this can work in some cases as a drop-in replacement
 of `layoutscene`.     
 """
 
+
+
+
 function flayoutscene(;blocked=false,
                       focuskey=Makie.Keyboard.comma,
                       blockingkey=Makie.Keyboard.space,
                       kwargs...)
-    
-    (parent, layout) = Makie.layoutscene(;kwargs...)
+
+    parent = Makie.Scene(; camera = Makie.campixel!, kwargs...)
+    layout = Makie.GridLayout(parent,alignmode = Makie.Outside(5))
+
+#    (parent, layout) = Makie.layoutscene(; kwargs...)
+
+    Makie.rowgap!(layout,Makie.Relative(0.0))
+    Makie.colgap!(layout,Makie.Relative(0.0))
     
     flayout=FLayout(layout,blocked=blocked)
 
@@ -114,13 +133,13 @@ function flayoutscene(;blocked=false,
         end
         Makie.trim!(flayout.visible)
     end
-    
+
 
     # Figure out to which subscene the mouse position
     # corresponds
     function _subscene(mouseposition)
         for (key,layoutable) in flayout.layoutables
-            if _inscene(layoutable.scene,mouseposition)
+            if _inscene(layoutable,mouseposition)
                 return key
             end
         end
