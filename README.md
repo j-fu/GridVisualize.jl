@@ -9,7 +9,7 @@ Plotting companion module for [ExtendableGrids.jl](https://github.com/j-fu/Exten
 Provides grid and scalar piecewise linear function plotting for various plotting backends
 on simplicial grids in one, two or three space dimensions.
 
-General usage:
+## General usage:
 
 ````
 gridplot(grid, Plotter=PyPlot)
@@ -18,9 +18,10 @@ scalarplot(grid, function,Plotter=PyPlot)
 
 For multiple plots in one plotting window, see the documentation.
 
-Available plotting backends and functionality. 'i' means some
-level of interactive control. '(y)' means avaliability only
-on rectangular resp. cuboid grids.
+## Available plotting backends and functionality.
+
+- 'i' means some level of interactive control
+- '(y)' means avaiability only on rectangular resp. cuboid grids.
 
 |            | PyPlot | *Makie | Plots | VTKView |
 |-----------:|--------|--------|-------|---------|
@@ -31,4 +32,17 @@ on rectangular resp. cuboid grids.
 | scalar, 3D | y      | y,i    | no    | y,i     |
 | grid, 3D   | y      | y,i    | no    | y,i     |
 
-![pyplot](assets/multiscene_pyplot.png?raw=true)
+
+
+## [PyPlot](https://github.com/JuliaPy/PyPlot.jl):
+![pyplot](docs/src/assets/multiscene_pyplot.png?raw=true)
+
+## [Plots/gr](https://github.com/JuliaPlots/Plots.jl):
+![plots](docs/src/assets/multiscene_plots.png?raw=true)
+
+## [GLMakie](https://github.com/JuliaPlots/GLMakie.jl):
+![glmakie](docs/src/assets/multiscene_glmakie.png?raw=true)
+
+## [VTKView](https://github.com/j-fu/VTKView.jl):
+![vtkview](docs/src/assets/multiscene_vtkview.png?raw=true)
+
