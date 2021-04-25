@@ -265,6 +265,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
             ymin=ylimits[1]
             ymax=ylimits[2]
         end
+
         Makie.scatter!(ctx[:scene],[Point2f0(xmin,ymin),Point2f0(xmax,ymax)],color=:white,markersize=0.0,strokewidth=0)
         Makie.linesegments!(ctx[:scene],Makie.lift(a->a.p,ctx[:data]),color=Makie.lift(a->a.c,ctx[:data]),linewidth=2)
         add_scene!(ctx,ctx[:scene])
@@ -275,6 +276,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
         else
             ctx[:rawdata]=lsegs(grid,func,RGB(ctx[:color]),prev=ctx[:rawdata])
         end
+        ctx[:xtitle][]=ctx[:title]
         yieldwait(ctx[:flayout])
     end
     reveal(ctx,TP)
@@ -329,8 +331,11 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
     end
     
     if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.Axis(ctx[:figure];title=ctx[:title],aspect=Makie.DataAspect(),scenekwargs(ctx)...)
-        ctx[:data]=Makie.Node((g=grid,f=func,e=ctx[:elevation]))
+        ctx[:data]=Makie.Node((g=grid,f=func,e=ctx[:elevation],t=ctx[:title]))
+        ctx[:scene]=Makie.Axis(ctx[:figure];
+                               title=Makie.lift(data->data.t,ctx[:data]),
+                               aspect=Makie.DataAspect(),
+                               scenekwargs(ctx)...)
         flimits=ctx[:flimits]
         if flimits[1]<flimits[2]
             crange=flimits
@@ -347,7 +352,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
         add_scene!(ctx,ctx[:scene])
         Makie.display(ctx[:figure])
     else
-        ctx[:data][]=(g=grid,f=func,e=ctx[:elevation])
+        ctx[:data][]=(g=grid,f=func,e=ctx[:elevation],t=ctx[:title])
     end
     reveal(ctx,TP)
 end
@@ -376,16 +381,17 @@ Dispatch between LScene and new Axis3. Axis3 does not allow zoom, so we
 support LScene in addition.
 """
 function makeaxis3d(ctx)
+    Makie=ctx[:Plotter]
     if ctx[:scene3d]=="LScene"
-        ctx[:Plotter].LScene(ctx[:figure])
+        Makie.LScene(ctx[:figure])
     else
-        ctx[:Plotter].Axis3(ctx[:figure];
+        Makie.Axis3(ctx[:figure];
                             aspect=:data,
                             viewmode=:fitzoom,
                             elevation=ctx[:elev]*π/180,
                             azimuth=ctx[:azim]*π/180,
                             perspectiveness=ctx[:perspectiveness],
-                            title=ctx[:title],
+                            title=Makie.lift(data->data.t,ctx[:data]),
                             scenekwargs(ctx)...)
     end
 end
@@ -401,7 +407,7 @@ function makescene3d(ctx)
     GL=Makie.GridLayout(parent=ctx[:figure],default_rowgap=0)
     if ctx[:scene3d]=="LScene"
         # Put the title into protrusion space on top  of the scene
-        GL[1,1,Makie.Top()   ]=Makie.Label(ctx[:figure]," $(ctx[:title]) ",tellwidth=false,height=30,textsize=ctx[:fontsize])
+        GL[1,1,Makie.Top()   ]=Makie.Label(ctx[:figure]," $(Makie.lift(data->data.t,ctx[:data])) ",tellwidth=false,height=30,textsize=ctx[:fontsize])
     end
     GL[1,1               ]=ctx[:scene]
     # Put the status label into protrusion space on the bottom of the scene
@@ -445,9 +451,9 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
 
     if !haskey(ctx,:scene)
 
+        ctx[:data]=Makie.Node((g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],t=ctx[:title]))
         ctx[:scene]=makeaxis3d(ctx)
         
-        ctx[:data]=Makie.Node((g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane]))
         ############# Interior cuts
         if ctx[:interior]
             cmap=region_cmap(nregions)
@@ -530,14 +536,14 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                 ctx[:status][]=" "
             end
             adjust_planes()
-            ctx[:data][]=(g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane])
+            ctx[:data][]=(g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],t=ctx[:title])
         end
 
         ctx[:status]=Makie.Node(" ")
         add_scene!(ctx,makescene3d(ctx))
         Makie.display(ctx[:figure])
     else
-        ctx[:data][]=(g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane])
+        ctx[:data][]=(g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],t=ctx[:title])
     end
     reveal(ctx,TP)
 end
@@ -588,8 +594,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
                        [0,0,1,-z]]
     
     if !haskey(ctx,:scene)
+        ctx[:data]=Makie.Node((g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel],t=ctx[:title]))
         ctx[:scene]=makeaxis3d(ctx)
-        ctx[:data]=Makie.Node((g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel]))
 
         #### Transparent outlne
         if ctx[:outline]
@@ -641,14 +647,14 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
                 ctx[:status][]=" "
             end
             adjust_planes()
-            ctx[:data][]=(g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel])
+            ctx[:data][]=(g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel],t=ctx[:title])
         end
         
         ctx[:status]=Makie.Node(" ")
         add_scene!(ctx,makescene3d(ctx))
         Makie.display(ctx[:figure])
     else
-        ctx[:data][]=(g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel])
+        ctx[:data][]=(g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel],t=ctx[:title])
     end
     reveal(ctx,TP)
 end
