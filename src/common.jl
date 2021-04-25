@@ -1,7 +1,7 @@
 """
 $(SIGNATURES)
 
-Create custumized distinguishable colormap for interior regions
+Create customized distinguishable colormap for interior regions
 """
 region_cmap(n)=distinguishable_colors(max(5,n),
                                       [RGB(0.85,0.6,0.6), RGB(0.6,0.85,0.6),RGB(0.6,0.6,0.85)],
@@ -252,8 +252,6 @@ end
 
 
 """
-   $(SIGNATURES)
-
  We should be able to parametrize this
  with a pushdata function which will remove one copy
  step for GeometryBasics.mesh creation - perhaps a meshcollector struct we
@@ -275,7 +273,12 @@ end
  end
  tm.colors=AbstractPlotting.interpolated_getindex.((cmap,), mcoll.vals, (fminmax,))
  mesh!(collect(mcoll),backlight=1f0) 
- 
+""" 
+
+"""
+   $(SIGNATURES)
+
+
 """
 function marching_tetrahedra(grid::ExtendableGrid,func,planes,flevels;tol=0.0,
                              primepoints=zeros(0,0), primevalues=zeros(0), Tv=Float32,
@@ -345,7 +348,69 @@ function marching_tetrahedra(grid::ExtendableGrid,func,planes,flevels;tol=0.0,
     all_ixcoord, all_ixfaces, all_ixvalues
 end
 
+########################################################################################
+"""
+    $(SIGNATURES)
 
+    Collect isoline snippets on triangles ready for linesegments!(=
+
+"""
+function marching_triangles(grid::ExtendableGrid,func,levels)
+
+    coord::Matrix{Float64}=grid[Coordinates]
+    cellnodes::Matrix{Int32}=grid[CellNodes]
+    points=Vector{Point2f0}(undef,0)
+
+    function isect(nodes)
+        (i1,i2,i3)=(1,2,3)
+
+        f=(func[nodes[1]],func[nodes[2]],func[nodes[3]])
+
+        f[1]  <= f[2]  ?  (i1,i2) = (1,2)   : (i1,i2) = (2,1)
+        f[i2] <= f[3]  ?  i3=3              : (i2,i3) = (3,i2)
+        f[i1] >  f[i2] ?  (i1,i2) = (i2,i1) : nothing
+
+        (n1,n2,n3)=(nodes[i1],nodes[i2],nodes[i3])
+        
+        dx31=coord[1,n3]-coord[1,n1]
+        dx21=coord[1,n2]-coord[1,n1]
+        dx32=coord[1,n3]-coord[1,n2]
+        
+        dy31=coord[2,n3]-coord[2,n1]
+        dy21=coord[2,n2]-coord[2,n1]
+        dy32=coord[2,n3]-coord[2,n2]
+
+        df31 = f[i3]!=f[i1] ? 1/(f[i3]-f[i1]) : 0.0
+        df21 = f[i2]!=f[i1] ? 1/(f[i2]-f[i1]) : 0.0
+        df32 = f[i3]!=f[i2] ? 1/(f[i3]-f[i2]) : 0.0
+
+        for level ∈ levels
+            if  (f[i1]<=level) && (level<f[i3]) 
+	        α=(level-f[i1])*df31
+	        x1=coord[1,n1]+α*dx31
+	        y1=coord[2,n1]+α*dy31
+                
+	        if (level<f[i2])
+	            α=(level-f[i1])*df21
+	            x2=coord[1,n1]+α*dx21
+		    y2=coord[2,n1]+α*dy21
+                else
+	            α=(level-f[i2])*df32
+	            x2=coord[1,n2]+α*dx32
+	            y2=coord[2,n2]+α*dy32
+                end
+                push!(points,Point2f0(x1,y1))
+                push!(points,Point2f0(x2,y2))
+            end
+        end
+    end
+    
+    for itri=1:size(cellnodes,2)
+        @views isect(cellnodes[:,itri])
+    end
+
+    points
+end    
 
 ##############################################
 # Create meshes from grid data

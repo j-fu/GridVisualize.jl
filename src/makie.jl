@@ -289,6 +289,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
     nregions=num_cellregions(grid)
     nbregions=num_bfaceregions(grid)
 
+
     if !haskey(ctx,:scene)
         ctx[:scene]=Makie.Axis(ctx[:figure];title=ctx[:title],aspect=Makie.DataAspect(),scenekwargs(ctx)...)
         ctx[:grid]=Makie.Node(grid)
@@ -329,9 +330,19 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
         faces=[TriangleFace(cellnodes[1,i],cellnodes[2,i],cellnodes[3,i]) for i=1:size(cellnodes,2)]
         Mesh(points,faces)
     end
+
+    function isolevels(ctx,func)
+        flimits=ctx[:flimits]
+        if flimits[1]<flimits[2]
+            collect(LinRange(flimits[1],flimits[2],ctx[:isolines]))
+        else
+            limits=extrema(func)
+            collect(LinRange(limits[1],limits[2],ctx[:isolines]))
+        end
+    end
     
     if !haskey(ctx,:scene)
-        ctx[:data]=Makie.Node((g=grid,f=func,e=ctx[:elevation],t=ctx[:title]))
+        ctx[:data]=Makie.Node((g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=isolevels(ctx,func)))
         ctx[:scene]=Makie.Axis(ctx[:figure];
                                title=Makie.lift(data->data.t,ctx[:data]),
                                aspect=Makie.DataAspect(),
@@ -345,14 +356,20 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
 
 
         Makie.poly!(ctx[:scene],
-                    Makie.lift(data->make_mesh(data.g,data.f,data.e), ctx[:data]),
+                    Makie.lift(data->make_mesh(data.g,data.f,data.e),ctx[:data]),
                     color=Makie.lift(data->data.f,ctx[:data]),
                     colorrange=crange,
                     colormap=ctx[:colormap])
+        
+        Makie.linesegments!(ctx[:scene],
+                            Makie.lift(data->marching_triangles(data.g,data.f,data.l),ctx[:data]),
+                            color=:black,
+                            linewidth=1)
+        
         add_scene!(ctx,ctx[:scene])
         Makie.display(ctx[:figure])
     else
-        ctx[:data][]=(g=grid,f=func,e=ctx[:elevation],t=ctx[:title])
+        ctx[:data][]=(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=isolevels(ctx,func))
     end
     reveal(ctx,TP)
 end
