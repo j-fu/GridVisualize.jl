@@ -6,7 +6,7 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
 
     # Check for version compatibility
     version_min=v"0.17.4"
-    version_max=v"0.18"
+    version_max=v"0.19"
     
     version_installed=PkgVersion.Version(Makie.AbstractPlotting)
 
