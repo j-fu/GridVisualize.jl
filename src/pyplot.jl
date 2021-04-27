@@ -293,6 +293,11 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
         end
     else
         ax.plot(coord[1,:],func,color=ctx[:color],label=ctx[:label])
+        points=[Point2f0(coord[1,i],func[i]) for i=1:length(func)]
+        mpoints=markerpoints(points,ctx[:markers],Diagonal([1,1]))
+        ampoints=reshape(reinterpret(Float32,mpoints),(2,length(mpoints)))
+        ax.scatter(ampoints[1,:], ampoints[2,:],color=ctx[:color],label="")
+       
     end
     
     if ctx[:legend]
