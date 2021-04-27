@@ -15,7 +15,7 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
     end
     
     if version_installed>=version_max
-        @warn("Possibly breaking version $(version_installed) of AbstractPlotting. Consider downgrade to some version before $(version_max)")
+        @warn("Possibly breaking version $(version_installed) of AbstractPlotting.")
     end
 
     # Prepare flippable layout
@@ -139,6 +139,7 @@ scenekwargs(ctx)=Dict(:xticklabelsize => 0.5*ctx[:fontsize],
 
 ############################################################################################################
 #1D grid
+
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
     
     Makie=ctx[:Plotter]
@@ -222,6 +223,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
         ctx[:title]=" "
     end
 
+    # ... keep this for the case we are unsorted
     function lsegs(grid,func,color;prev=nothing)
         if prev==nothing
             points=Vector{Point2f0}(undef,0)
@@ -244,37 +246,75 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
         end
         (p=points,c=colors)
     end
+    
+    function  xlines(ctx,grid,func,dx,dy;prev=nothing)
+
+        coord=grid[Coordinates]
+        points=[Point2f0(coord[1,i],func[i]) for i=1:length(func)]
+        colors=fill(RGB(ctx[:color]),length(points))
+
+        mpoints=markerpoints(points,ctx[:markers],Diagonal([1/dx, 1/dy]))
+        mcolors=fill(RGB(ctx[:color]),length(mpoints))
+        
+        if isnothing(prev)
+            allpoints=points
+            allcolors=colors
+            allmpoints=mpoints
+            allmcolors=mcolors
+        else
+            push!(prev.p,Point2f0(NaN,NaN))
+            push!(prev.c,RGB(ctx[:color]))
+            
+            allpoints=vcat(prev.p,points)
+            allcolors=vcat(prev.c,colors)
+            allmpoints=vcat(prev.mp,mpoints)
+            allmcolors=vcat(prev.mc,mcolors)
+        end
+        (p=allpoints,c=allcolors,mp=allmpoints,mc=allmcolors)
+    end
+    
+    coord=grid[Coordinates]
+    xlimits=ctx[:xlimits]
+    ylimits=ctx[:flimits]
+    xmin=coord[1,1]
+    xmax=coord[1,end]
+    if xlimits[1]<xlimits[2]
+        xmin=xlimits[1]
+        xmax=xlimits[2]
+    end
+    ext=extrema(func)
+    ymin=ext[1]
+    ymax=ext[2]
+    if ylimits[1]<ylimits[2]
+        ymin=ylimits[1]
+        ymax=ylimits[2]
+    end
+    
 
     if !haskey(ctx,:scene)
         ctx[:xtitle]=Makie.Node(ctx[:title])
         ctx[:scene]=Makie.Axis(ctx[:figure]; title=Makie.lift(a->a,ctx[:xtitle]),scenekwargs(ctx)...)
-        ctx[:rawdata]=lsegs(grid,func,RGB(ctx[:color]))
-        ctx[:data]=Makie.Node(ctx[:rawdata])
         coord=grid[Coordinates]
-        xmin=coord[1,1]
-        xmax=coord[1,end]
-        ymin=func[1]
-        ymax=func[end]
-        xlimits=ctx[:xlimits]
-        ylimits=ctx[:flimits]
-        if xlimits[1]<xlimits[2]
-            xmin=xlimits[1]
-            xmax=xlimits[2]
-        end
-        if ylimits[1]<ylimits[2]
-            ymin=ylimits[1]
-            ymax=ylimits[2]
-        end
+        ctx[:rawdata]=xlines(ctx,grid,func,xmax-xmin,ymax-ymin)
+        ctx[:data]=Makie.Node(ctx[:rawdata])
 
         Makie.scatter!(ctx[:scene],[Point2f0(xmin,ymin),Point2f0(xmax,ymax)],color=:white,markersize=0.0,strokewidth=0)
-        Makie.linesegments!(ctx[:scene],Makie.lift(a->a.p,ctx[:data]),color=Makie.lift(a->a.c,ctx[:data]),linewidth=2)
+        Makie.lines!(ctx[:scene],Makie.lift(a->a.p,ctx[:data]),color=Makie.lift(a->a.c,ctx[:data]),
+                     linewidth=2)
+        
+        Makie.scatter!(ctx[:scene],
+                       Makie.lift(a->a.mp,ctx[:data]),
+                       color=Makie.lift(a->a.mc,ctx[:data]),
+                       marker=ctx[:markertype],
+                       markersize=ctx[:markersize])
+
         add_scene!(ctx,ctx[:scene])
         Makie.display(ctx[:figure])
     else
         if ctx[:clear]
-            ctx[:rawdata]=lsegs(grid,func,RGB(ctx[:color]))
+            ctx[:rawdata]=xlines(ctx,grid,func,xmax-xmin,ymax-ymin)
         else
-            ctx[:rawdata]=lsegs(grid,func,RGB(ctx[:color]),prev=ctx[:rawdata])
+            ctx[:rawdata]=xlines(ctx,grid,func,xmax-xmin,ymax-ymin;prev=ctx[:rawdata])
         end
         ctx[:xtitle][]=ctx[:title]
         yieldwait(ctx[:flayout])
