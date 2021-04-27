@@ -352,6 +352,19 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
     reveal(ctx,TP)
 end
 
+"""
+   makescene2d(ctx)
+
+Complete scene with title and status line showing interaction state.
+This uses a gridlayout and its  protrusion capabilities.
+"""
+function makescene2d(ctx)
+    Makie=ctx[:Plotter]
+    GL=Makie.GridLayout(parent=ctx[:figure])
+    GL[1,1]=ctx[:scene]
+    GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:poly],width=10, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+    GL
+end
 
 
 # 2D function
@@ -391,22 +404,23 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
         if flimits[1]<flimits[2]
             crange=flimits
         else
-            crange=Makie.AbstractPlotting.Automatic()
+            crange=extrema(func)
         end
 
 
-        Makie.poly!(ctx[:scene],
-                    Makie.lift(data->make_mesh(data.g,data.f,data.e),ctx[:data]),
-                    color=Makie.lift(data->data.f,ctx[:data]),
-                    colorrange=crange,
-                    colormap=ctx[:colormap])
+
+        ctx[:poly]=Makie.poly!(ctx[:scene],
+                               Makie.lift(data->make_mesh(data.g,data.f,data.e),ctx[:data]),
+                               color=Makie.lift(data->data.f,ctx[:data]),
+                               colorrange=crange,
+                               colormap=ctx[:colormap])
         
         Makie.linesegments!(ctx[:scene],
                             Makie.lift(data->marching_triangles(data.g,data.f,data.l),ctx[:data]),
                             color=:black,
                             linewidth=1)
         
-        add_scene!(ctx,ctx[:scene])
+        add_scene!(ctx,makescene2d(ctx))
         Makie.display(ctx[:figure])
     else
         ctx[:data][]=(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=isolevels(ctx,func))
@@ -467,6 +481,9 @@ function makescene3d(ctx)
         GL[1,1,Makie.Top()   ]=Makie.Label(ctx[:figure]," $(Makie.lift(data->data.t,ctx[:data])) ",tellwidth=false,height=30,textsize=ctx[:fontsize])
     end
     GL[1,1               ]=ctx[:scene]
+    if haskey(ctx,:mesh)
+        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:mesh],textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+    end
     # Put the status label into protrusion space on the bottom of the scene
     GL[1,1,Makie.Bottom()]=Makie.Label(ctx[:figure],ctx[:status],tellwidth=false,height=30,textsize=0.5*ctx[:fontsize])
     GL
