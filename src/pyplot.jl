@@ -251,6 +251,33 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid)
     reveal(ctx,TP)
 end
 
+#translate Julia attribute symbols to pyplot-speak
+const mshapes=Dict(
+    :dtriangle => "v",
+    :utriangle => "^",
+    :rtriangle => ">",
+    :ltriangle => "^",
+    :circle => "o",
+    :square => "s",
+    :cross => "+",
+    :xcross => "x",
+    :diamond => "D",
+    :star5 => "*",
+    :pentagon => "p",
+    :hexagon => "h",
+)
+
+const lstyles=Dict(
+    :solid => "-",
+    :dot => "dotted",
+    :dash => "--",
+    :dashdot => "-.",
+    :dashdotdot => (0, (3, 1, 1, 1))
+)
+
+
+
+
 ### 1D Function
 function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
     PyPlot=ctx[:Plotter]
@@ -292,11 +319,42 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
             end                
         end
     else
-        ax.plot(coord[1,:],func,color=ctx[:color],label=ctx[:label])
-        points=[Point2f0(coord[1,i],func[i]) for i=1:length(func)]
-        mpoints=markerpoints(points,ctx[:markers],Diagonal([1,1]))
-        ampoints=reshape(reinterpret(Float32,mpoints),(2,length(mpoints)))
-        ax.scatter(ampoints[1,:], ampoints[2,:],color=ctx[:color],label="")
+        if ctx[:markershape]==:none
+            if ctx[:label]!==""
+                ax.plot(coord[1,:],func,
+                        linestyle=lstyles[ctx[:linestyle]],
+                        color=ctx[:color],
+                        label=ctx[:label])
+            else
+                ax.plot(coord[1,:],func,
+                        linestyle=lstyles[ctx[:linestyle]],
+                        color=ctx[:color])
+            end
+        else
+            if ctx[:label]!==""
+                ax.plot(coord[1,:],func,
+                        linestyle=lstyles[ctx[:linestyle]],
+                        color=ctx[:color],
+                        label=ctx[:label],
+                        marker=mshapes[ctx[:markershape]],
+                        markevery=ctx[:markevery],
+                        markersize=ctx[:markersize]
+                        )
+            else
+                ax.plot(coord[1,:],func,
+                        linestyle=lstyles[ctx[:linestyle]],
+                        color=ctx[:color],
+                        marker=mshapes[ctx[:markershape]],
+                        markevery=ctx[:markevery],
+                        markersize=ctx[:markersize]
+                        )
+            end                
+        end
+        # points=[Point2f0(coord[1,i],func[i]) for i=1:length(func)]
+        # Hard to get this robust, as we need to get axislimits
+        # mpoints=markerpoints(points,ctx[:markers],Diagonal([1,1]))
+        # ampoints=reshape(reinterpret(Float32,mpoints),(2,length(mpoints)))
+        # ax.scatter(ampoints[1,:], ampoints[2,:],color=ctx[:color],label="")
        
     end
     

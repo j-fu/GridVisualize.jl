@@ -215,6 +215,8 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
     reveal(ctx,TP)
 end
 
+
+########################################################################
 # 1D function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
     Makie=ctx[:Plotter]
@@ -224,14 +226,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
     end
 
     # ... keep this for the case we are unsorted
-    function lsegs(grid,func,color;prev=nothing)
-        if prev==nothing
-            points=Vector{Point2f0}(undef,0)
-            colors=Vector{typeof(color)}(undef,0)
-        else
-            points=prev.p
-            colors=prev.c
-        end
+    function polysegs(grid,func)
+        points=Vector{Point2f0}(undef,0)
         cellnodes=grid[CellNodes]
         coord=grid[Coordinates]
         for icell=1:num_cells(grid)
@@ -241,36 +237,13 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
             x2=coord[1,i2]
             push!(points,Point2f0(x1,func[i1]))
             push!(points,Point2f0(x2,func[i2]))
-            push!(colors,color)
-            push!(colors,color)
         end
-        (p=points,c=colors)
+        points
     end
-    
-    function  xlines(ctx,grid,func,dx,dy;prev=nothing)
 
+    function polyline(grid,func)
         coord=grid[Coordinates]
         points=[Point2f0(coord[1,i],func[i]) for i=1:length(func)]
-        colors=fill(RGB(ctx[:color]),length(points))
-
-        mpoints=markerpoints(points,ctx[:markers],Diagonal([1/dx, 1/dy]))
-        mcolors=fill(RGB(ctx[:color]),length(mpoints))
-        
-        if isnothing(prev)
-            allpoints=points
-            allcolors=colors
-            allmpoints=mpoints
-            allmcolors=mcolors
-        else
-            push!(prev.p,Point2f0(NaN,NaN))
-            push!(prev.c,RGB(ctx[:color]))
-            
-            allpoints=vcat(prev.p,points)
-            allcolors=vcat(prev.c,colors)
-            allmpoints=vcat(prev.mp,mpoints)
-            allmcolors=vcat(prev.mc,mcolors)
-        end
-        (p=allpoints,c=allcolors,mp=allmpoints,mc=allmcolors)
     end
     
     coord=grid[Coordinates]
@@ -290,32 +263,97 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
         ymax=ylimits[2]
     end
     
-
+    
     if !haskey(ctx,:scene)
         ctx[:xtitle]=Makie.Node(ctx[:title])
         ctx[:scene]=Makie.Axis(ctx[:figure]; title=Makie.lift(a->a,ctx[:xtitle]),scenekwargs(ctx)...)
-        coord=grid[Coordinates]
-        ctx[:rawdata]=xlines(ctx,grid,func,xmax-xmin,ymax-ymin)
-        ctx[:data]=Makie.Node(ctx[:rawdata])
-
         Makie.scatter!(ctx[:scene],[Point2f0(xmin,ymin),Point2f0(xmax,ymax)],color=:white,markersize=0.0,strokewidth=0)
-        Makie.lines!(ctx[:scene],Makie.lift(a->a.p,ctx[:data]),color=Makie.lift(a->a.c,ctx[:data]),
-                     linewidth=2)
+        coord=grid[Coordinates]
+        p=polyline(grid,func)
+        ctx[:lines]=[Makie.Node(p)]
+        if ctx[:markershape]==:none
+            Makie.lines!(ctx[:scene],
+                         Makie.lift(a->a, ctx[:lines][1]),
+                         linestyle=ctx[:linestyle],
+                         linewidth=ctx[:linewidth],
+                         color=RGB(ctx[:color]),
+                         label=ctx[:label])
+        else
+            Makie.lines!(ctx[:scene],
+                         Makie.lift(a->a, ctx[:lines][1]),
+                         linestyle=ctx[:linestyle],
+                         linewidth=ctx[:linewidth],
+                         color=RGB(ctx[:color]))
+            
+            Makie.scatter!(ctx[:scene],
+                           Makie.lift(a->a[1:ctx[:markevery]:end],ctx[:lines][1]),
+                           color=RGB(ctx[:color]),
+                           marker=ctx[:markershape],
+                           markersize=ctx[:markersize])
+            if ctx[:label]!=""
+                Makie.scatterlines!(ctx[:scene],
+                                    Makie.lift(a->a[1:1], ctx[:lines][1]),
+                                    linestyle=ctx[:linestyle],
+                                    linewidth=ctx[:linewidth],
+                                    marker=ctx[:markershape],
+                                    markersize=ctx[:markersize],
+                                    markercolor=RGB(ctx[:color]),
+                                    color=RGB(ctx[:color]),
+                                    label=ctx[:label])
+            end
+        end
+        if ctx[:label]!=""
+            Makie.axislegend(ctx[:scene],labelsize=0.5*ctx[:fontsize],backgroundcolor=:transparent)
+        end
         
-        Makie.scatter!(ctx[:scene],
-                       Makie.lift(a->a.mp,ctx[:data]),
-                       color=Makie.lift(a->a.mc,ctx[:data]),
-                       marker=ctx[:markertype],
-                       markersize=ctx[:markersize])
-
+        Makie.reset_limits!(ctx[:scene])
+        ctx[:nlines]=1
+        
         add_scene!(ctx,ctx[:scene])
         Makie.display(ctx[:figure])
     else
+        p=polyline(grid,func)
         if ctx[:clear]
-            ctx[:rawdata]=xlines(ctx,grid,func,xmax-xmin,ymax-ymin)
+            ctx[:nlines]=1
         else
-            ctx[:rawdata]=xlines(ctx,grid,func,xmax-xmin,ymax-ymin;prev=ctx[:rawdata])
+            ctx[:nlines]+=1
         end
+        if ctx[:nlines]<=length(ctx[:lines])
+            ctx[:lines][ctx[:nlines]][]=p
+        else
+            push!(ctx[:lines],Makie.Node(p))
+
+            if ctx[:markershape]==:none
+                Makie.lines!(ctx[:scene],Makie.lift(a->a, ctx[:lines][end]),
+                             linestyle=ctx[:linestyle],
+                             linewidth=ctx[:linewidth],
+                             label=ctx[:label])
+            else
+                Makie.lines!(ctx[:scene],Makie.lift(a->a, ctx[:lines][end]),
+                             linestyle=ctx[:linestyle],
+                             linewidth=ctx[:linewidth])
+                Makie.scatter!(ctx[:scene],
+                               Makie.lift(a->a[1:ctx[:markevery]:end],ctx[:lines][end]),
+                               color=RGB(ctx[:color]),
+                               marker=ctx[:markershape],
+                               markersize=ctx[:markersize])
+                
+                if ctx[:label]!=""
+                    Makie.scatterlines!(ctx[:scene],
+                                        Makie.lift(a->a[1:1], ctx[:lines][end]),
+                                        linestyle=ctx[:linestyle],
+                                        linewidth=ctx[:linewidth],
+                                        marker=ctx[:markershape],
+                                        markersize=ctx[:markersize],
+                                        markercolor=RGB(ctx[:color]),
+                                        color=RGB(ctx[:color]),label=ctx[:label])
+                end
+            end 
+            if ctx[:label]!=""
+                Makie.axislegend(ctx[:scene],labelsize=0.5*ctx[:fontsize],backgroundcolor=:transparent)
+            end
+        end
+        Makie.reset_limits!(ctx[:scene])
         ctx[:xtitle][]=ctx[:title]
         yieldwait(ctx[:flayout])
     end
@@ -393,26 +431,25 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
             collect(LinRange(limits[1],limits[2],ctx[:isolines]))
         end
     end
+
+    flimits=ctx[:flimits]
+    if flimits[1]<flimits[2]
+        crange=flimits
+    else
+        crange=extrema(func)
+    end
     
     if !haskey(ctx,:scene)
-        ctx[:data]=Makie.Node((g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=isolevels(ctx,func)))
+        ctx[:data]=Makie.Node((g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=isolevels(ctx,func),c=crange))
         ctx[:scene]=Makie.Axis(ctx[:figure];
                                title=Makie.lift(data->data.t,ctx[:data]),
                                aspect=Makie.DataAspect(),
                                scenekwargs(ctx)...)
-        flimits=ctx[:flimits]
-        if flimits[1]<flimits[2]
-            crange=flimits
-        else
-            crange=extrema(func)
-        end
-
-
 
         ctx[:poly]=Makie.poly!(ctx[:scene],
                                Makie.lift(data->make_mesh(data.g,data.f,data.e),ctx[:data]),
                                color=Makie.lift(data->data.f,ctx[:data]),
-                               colorrange=crange,
+                               colorrange=Makie.lift(data->data.c,ctx[:data]),
                                colormap=ctx[:colormap])
         
         Makie.linesegments!(ctx[:scene],
@@ -423,7 +460,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
         add_scene!(ctx,makescene2d(ctx))
         Makie.display(ctx[:figure])
     else
-        ctx[:data][]=(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=isolevels(ctx,func))
+        ctx[:data][]=(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=isolevels(ctx,func),c=crange)
     end
     reveal(ctx,TP)
 end

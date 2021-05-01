@@ -471,14 +471,13 @@ the assumption that the points are transformed via the transformation
 matrix M vor visualization.
 """
 function markerpoints(points,nmarkers,transform)
-
     dist(p1,p2)=norm(transform*(p1-p2))
     
-    llen=0
+    llen=0.0
     for i=2:length(points)
        llen+=dist(points[i],points[i-1])
     end
-    
+
     mdist=llen/(nmarkers-1)
     
     mpoints=[points[1]]

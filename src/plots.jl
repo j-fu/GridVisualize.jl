@@ -163,8 +163,37 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
             end                
         end
     else
+        markevery=ctx[:markevery]
+        markershape=ctx[:markershape]
         X=vec(grid[Coordinates])
-        Plots.plot!(p,X,func,linecolor=Plots.RGB(color),label=ctx[:label],linewidth=2)
+        if markershape==:none
+            Plots.plot!(p,X,func,
+                        linecolor=Plots.RGB(color),
+                        linewidth=ctx[:linewidth],
+                        linestyle=ctx[:linestyle],
+                        label=ctx[:label])
+        else
+            Plots.plot!(p,X,func,
+                        linecolor = Plots.RGB(color),
+                        linewidth=ctx[:linewidth],
+                        linestyle=ctx[:linestyle],
+                        label="")
+            Plots.plot!(p,[X[1]], [func[1]],
+                        markershape = markershape,
+                        label = ctx[:label],
+                        markersize = ctx[:markersize] ,
+                        linecolor = Plots.RGB(color),
+                        linewidth=ctx[:linewidth],
+                        linestyle=ctx[:linestyle],
+                        markercolor = Plots.RGB(color))
+            @views Plots.plot!(p,X[1:markevery:end],func[1:markevery:end],
+                               markercolor=Plots.RGB(color),
+                               label="",
+                               linecolor = :white,
+                               markershape = markershape ,
+                               markersize = ctx[:markersize] ,
+                               lines=false)
+        end
     end
     reveal(ctx,TP)
 end
@@ -172,7 +201,7 @@ end
 
 
 """
-$(TYPEDSIGNATURES)
+$(SIGNATURES)
 Return rectangular grid data + function to be splatted into Plots calls
 """
 function rectdata(grid,U)

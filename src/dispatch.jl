@@ -150,9 +150,11 @@ plottertype(p::GridVisualizer)=plottertype(p.Plotter)
 default_plot_kwargs()=Dict{Symbol,Pair{Any,String}}(
     :colorlevels => Pair(51,"Number of color levels for contour plot"),
     :isolines => Pair(11,"Number of isolines in contour plot"),
-    :markers => Pair(11,"Number of markers on line plot"),
-    :markersize => Pair(10,"Marker size"),
-    :markertype => Pair(:circle,"Marker type"),
+    :linewidth => Pair(2,"Linewidth of 1D Plot"),
+    :linestyle => Pair(:solid,"Linestyle 1D plot: one of [:solid, :dash, :dot, :dashdot, :dashdotdot]"),
+    :markevery => Pair(5,"Marker distance in 1D Plot"),
+    :markersize => Pair(5,"Marker size"),
+    :markershape => Pair(:none,"Marker shape: one of [:none, :circle, :star5, :diamond, :hexagon, :cross, :xcross, :utriangle, :dtriangle, :rtriangle, :ltriangle, :pentagon, :+, :x]"),
     :colorbar => Pair(true,"Show colorbar in plots"),
     :aspect => Pair(1.0,"Aspect ratio modification"),
     :show => Pair(false,"Show plot immediately"),
@@ -171,7 +173,7 @@ default_plot_kwargs()=Dict{Symbol,Pair{Any,String}}(
     :flimits => Pair((1,-1),"function limits"),
     :layout => Pair((1,1),"Layout of plots"),
     :subplot => Pair((1,1),"Actual subplot"),
-    :color => Pair((0,0,0),"Color of lines on plot"),
+    :color => Pair((0.0,0.0,0.0),"Color of lines on plot"),
     :edges => Pair(true,"Plot grid edges when plotting grid"),
     :alpha => Pair(0.1,"Surface alpha value"),
     :interior => Pair(true,"Plot interior of grid"),
@@ -334,9 +336,10 @@ scalarplot!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...) = scalarplo
 gridplot!(p::GridVisualizer,grid::ExtendableGrid, kwargs...) = gridplot!(p[1,1],grid; kwargs...)
 
 
-scalarplot(X::Vector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
-scalarplot!(ctx::SubVis,X::Vector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
-scalarplot!(ctx::GridVisualizer,X::Vector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
+scalarplot!(ctx::SubVis,grid::ExtendableGrid,func::Function; kwargs...)=scalarplot!(ctx,grid,map(func,grid);kwargs...)
+scalarplot(X::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
+scalarplot!(ctx::SubVis,X::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
+scalarplot!(ctx::GridVisualizer,X::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
 
 """
 $(SIGNATURES)
