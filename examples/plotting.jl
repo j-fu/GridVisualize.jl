@@ -88,7 +88,7 @@ function plotting_multiscene(;Plotter=nothing)
     p=GridVisualizer(;Plotter=Plotter,layout=(2,3),clear=true,resolution=(800,500))
 
     gridplot!(p[1,1],grid1d(), title="1D grid")
-    scalarplot!(p[2,1],grid1d(), sin, title="1D grid function", label="sin",markershape=:diamond,color=:red)
+    scalarplot!(p[2,1],grid1d(), sin, title="1D grid function", label="sin",markershape=:diamond,color=:red,legend=:rb)
     scalarplot!(p[2,1],grid1d(), cos, title="1D grid function", label="cos",linestyle=:dash,markershape=:none,color=:green,clear=false)
     gridplot!(p[1,2],grid2d(),title="2D grid")
     scalarplot!(p[2,2],func2d()...,colormap=:bamako,title="2D grid function")
