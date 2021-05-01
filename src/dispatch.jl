@@ -241,7 +241,7 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :colorlevels => Pair(51,"2D/3D contour plot: number of color levels"),
     :colormap => Pair(:viridis,"2D/3D contour plot color map (any from [ColorSchemes.jl](https://juliagraphics.github.io/ColorSchemes.jl/stable/basics/#Pre-defined-schemes))"),
     :colorbar => Pair(true,"2D/3D plot colorbar"),
-    :alpha => Pair(0.1,"3D surface alpha value"),
+    :alpha => Pair(0.1,"3D outline surface alpha value"),
     :interior => Pair(true,"3D plot interior of grid"),
     :outline => Pair(true,"3D plot outline of domain"),
     :xplane => Pair(prevfloat(Inf),"3D x plane position"),
@@ -314,15 +314,17 @@ gridplot(grid::ExtendableGrid; Plotter=nothing, kwargs...)=gridplot!(GridVisuali
 scalarplot!(visualizer[i,j], grid, vector; kwargs...)
 scalarplot!(visualizer, grid, vector; kwargs...)
 scalarplot!(visualizer[i,j], grid, function; kwargs...)
-scalarplot!(visualizer[i,j], coord_vector, vector; kwargs...)
-scalarplot!(visualizer[i,j], coord_vector, function; kwargs...)
+scalarplot!(visualizer[i,j], X, vector; kwargs...)
+scalarplot!(visualizer[i,j], X, function; kwargs...)
+scalarplot!(visualizer[i,j], X, Y, function; kwargs...)
+scalarplot!(visualizer[i,j], X, Y, Z, function; kwargs...)
 ````
 
 Plot node vector on grid as P1 FEM function on the triangulation into subplot in the visualizer. If `[i,j]` is omitted, `[1,1]` is assumed.
 
 If instead of the node vector,  a function is given, it will be evaluated on the grid.
 
-If instead of the grid, a vector of 1D-coordinates is given, a 1D grid is created.
+If instead of the grid, coordinate vectors are given, a temporary grid is created.
 
 Keyword arguments: see [`available_kwargs`](@ref)
 """
@@ -336,26 +338,33 @@ scalarplot!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...) = scalarplo
 scalarplot!(ctx::SubVisualizer,grid::ExtendableGrid,func::Function; kwargs...)=scalarplot!(ctx,grid,map(func,grid);kwargs...)
 scalarplot!(ctx::SubVisualizer,X::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
 scalarplot!(ctx::GridVisualizer,X::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
+scalarplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X,Y),func;kwargs...)
+scalarplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func; kwargs...)=scalarplot!(ctx,simplexgrid(X,Y,Z),func;kwargs...)
 
 
 """
 ````
-scalarplot(grid,vector)
-scalarplot(grid,function)
-scalarplot(coord_vector,vector)
-scalarplot(coord_vector,function)
+scalarplot(grid,vector; Plotter=nothing)
+scalarplot(grid,function; Plotter=nothing)
+scalarplot(X,vector; Plotter=nothing)
+scalarplot(X,function; Plotter=nothing)
+scalarplot(X,Y,function; Plotter=nothing)
+scalarplot(X,Y,Z,function; Plotter=nothing)
+
 ````
 
 Plot node vector on grid as P1 FEM function on the triangulation.
 
 If instead of the node vector,  a function is given, it will be evaluated on the grid.
 
-If instead of the grid, a vector of 1D-coordinates is given, a 1D grid is created.
+If instead of the grid, a vectors for coordinates are given, a grid is created automatically.
 
 Keyword arguments: see [`available_kwargs`](@ref)
 """
 scalarplot(grid::ExtendableGrid,func ;Plotter=nothing,kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter;kwargs...),grid,func,show=true)
 scalarplot(X::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
+scalarplot(X::AbstractVector,Y::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X,Y),func;kwargs...)
+scalarplot(X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func ;kwargs...)=scalarplot(simplexgrid(X,Y,Z),func;kwargs...)
 
 """
 $(SIGNATURES)
