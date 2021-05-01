@@ -48,7 +48,7 @@ function reveal(p::GridVisualizer,::Type{MakieType})
     p.context[:figure]
 end
 
-function reveal(ctx::SubVis,TP::Type{MakieType})
+function reveal(ctx::SubVisualizer,TP::Type{MakieType})
     yieldwait(ctx[:flayout])
     if ctx[:show]||ctx[:reveal]
         reveal(ctx[:GridVisualizer],TP)

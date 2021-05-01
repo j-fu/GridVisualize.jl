@@ -32,7 +32,8 @@ function reveal(p::GridVisualizer,::Type{PyPlotType})
     end
     p.context[:figure]
 end
-function reveal(ctx::SubVis,TP::Type{PyPlotType})
+
+function reveal(ctx::SubVisualizer,TP::Type{PyPlotType})
     yield()
     if ctx[:show]||ctx[:reveal]
         reveal(ctx[:GridVisualizer],TP)

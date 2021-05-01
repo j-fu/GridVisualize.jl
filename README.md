@@ -7,16 +7,38 @@ GridVisualize
 
 Plotting companion module for [ExtendableGrids.jl](https://github.com/j-fu/ExtendableGrids.jl)
 Provides grid and scalar piecewise linear function plotting for various plotting backends
-on simplicial grids in one, two or three space dimensions.
+on simplicial grids in one, two or three space dimensions. The main supported backends
+are PyPlot and GLMakie.
 
-## General usage:
+## Sample usage:
 
+### Plotting a grid or a function:
 ````
 gridplot(grid, Plotter=PyPlot)
 scalarplot(grid, function,Plotter=PyPlot)
 ````
 
-For multiple plots in one plotting window, see the documentation.
+### Multiple plots in one plotting window:
+````
+vis=GridVisualizer(Plotter=GLMakie, layout=(1,2))
+gridplot!(vis[1,1],grid)
+scalarplot!(vis[1,2],grid,function)
+reveal(vis)
+````
+
+### Transient plots (using fast updating via observables for Makie)
+````
+vis=GridVisualizer(Plotter=GLMakie)
+for i=1:N
+   function=calculate(i)
+   scalarplot!(vis,grid,function)
+   reveal(vis)
+end
+````
+
+### Switching off plotting
+Just pass `Plotter=nothing`  in the respective places, and all
+plotting functions will do nothing.
 
 ## Available plotting backends and functionality.
 
@@ -31,7 +53,6 @@ For multiple plots in one plotting window, see the documentation.
 | grid, 2D   | y      | y,i    | (y)   | y,i     |
 | scalar, 3D | y      | y,i    | no    | y,i     |
 | grid, 3D   | y      | y,i    | no    | y,i     |
-
 
 
 ### [PyPlot](https://github.com/JuliaPy/PyPlot.jl):
@@ -51,3 +72,7 @@ For multiple plots in one plotting window, see the documentation.
 <img src="docs/src/assets/multiscene_vtkview.png?raw=true" width=300/> 
 
 
+## Notebooks
+Plotting within Pluto notebooks for PyPlot, Plots, GLMakie is working.
+
+I have no resources to support Jupyter notebooks.

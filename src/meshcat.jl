@@ -18,7 +18,7 @@ function reveal(p::GridVisualizer,::Type{MeshCatType})
     MeshCat.IJuliaCell(p.context[:scene])
 end
 
-function reveal(ctx::SubVis,TP::Type{MeshCatType})
+function reveal(ctx::SubVisualizer,TP::Type{MeshCatType})
     if ctx[:show]||ctx[:reveal]
         reveal(ctx[:GridVisualizer],TP)
     end

@@ -1,18 +1,21 @@
 
 """
 $(SIGNATURES)
+
 Heuristically check if Plotter is VTKView
 """
 isvtkview(Plotter)= (typeof(Plotter)==Module)&&isdefined(Plotter,:StaticFrame)
 
 """
 $(SIGNATURES)
+
 Heuristically check if Plotter is PyPlot
 """
 ispyplot(Plotter)= (typeof(Plotter)==Module)&&isdefined(Plotter,:Gcf)
 
 """
 $(SIGNATURES)
+
 Heuristically check if  Plotter is Plots
 """
 isplots(Plotter)= (typeof(Plotter)==Module) && isdefined(Plotter,:gr)
@@ -20,12 +23,14 @@ isplots(Plotter)= (typeof(Plotter)==Module) && isdefined(Plotter,:gr)
 
 """
 $(SIGNATURES)
+
 Heuristically check if Plotter is Makie/WGLMakie
 """
 ismakie(Plotter)= (typeof(Plotter)==Module)&&isdefined(Plotter,:AbstractPlotting)
 
 """
 $(SIGNATURES)
+
 Heuristically check if Plotter is MeshCat
 """
 ismeshcat(Plotter)= (typeof(Plotter)==Module)&&isdefined(Plotter,:Visualizer)
@@ -67,9 +72,8 @@ abstract type MeshCatType end
 
 """
 $(SIGNATURES)
-
-Heuristically detect type of plotter, returns the corresponding 
-abstract type fro plotting.
+    
+Heuristically detect type of plotter, returns the corresponding abstract type fro plotting.
 """
 function plottertype(Plotter::Union{Module,Nothing})
     if ismakie(Plotter)
@@ -90,35 +94,98 @@ end
 """
 $(TYPEDEF)
 
-A SubVis is just a dictionary which contains plotting information,
+A SubVisualizer is just a dictionary which contains plotting information,
 including type of the plotter and its position in the plot.
 """
-const SubVis=Union{Dict{Symbol,Any},Nothing}
+const SubVisualizer=Union{Dict{Symbol,Any},Nothing}
 
 #
 # Update subplot context from dict
 #
-function _update_context!(ctx::SubVis,kwargs)
+function _update_context!(ctx::SubVisualizer,kwargs)
     for (k,v) in kwargs
         ctx[Symbol(k)]=v
     end
     ctx
 end
 
-
-
 """
 $(TYPEDEF)
 
-Context type for plots.
+GridVisualizer struct
 """
 struct GridVisualizer
     Plotter::Union{Module,Nothing}
-    subplots::Array{SubVis,2}
-    context::SubVis
-    GridVisualizer(Plotter::Union{Module,Nothing}, layout::Tuple, default::SubVis)=new(Plotter,
+    subplots::Array{SubVisualizer,2}
+    context::SubVisualizer
+    GridVisualizer(Plotter::Union{Module,Nothing}, layout::Tuple, default::SubVisualizer)=new(Plotter,
                                                                                             [copy(default) for I in CartesianIndices(layout)],
-                                                                                            copy(default))
+                                                                                              copy(default))
+end
+
+"""
+````
+    GridVisualizer(; Plotter=nothing , kwargs...)
+````
+
+Create a  grid visualizer
+
+Plotter: defaults to `nothing` and can be `PyPlot`, `Plots`, `VTKView`, `Makie`.
+This pattern to pass the backend as a module to a plot function allows to circumvent
+to create heavy default package dependencies.
+
+
+Depending on the `layout` keyword argument, a 2D grid of subplots is created.
+Further `...plot!` commands then plot into one of these subplots:
+
+```julia
+vis=GridVisualizer(Plotter=PyPlot, layout=(2,2)
+...plot!(vis[1,2], ...)
+```
+
+A `...plot`  command just implicitely creates a plot context:
+
+```julia
+gridplot(grid, Plotter=PyPlot) 
+```
+
+is equivalent to
+
+```julia
+vis=GridVisualizer(Plotter=PyPlot, layout=(1,1))
+gridplot!(vis,grid) 
+```
+
+Please note that the return values of all plot commands are specific to the Plotter.
+
+Depending on the backend, interactive mode switch between "gallery view" showing all plots at
+onece and "focused view" showing only one plot is possible.
+
+
+Keyword arguments: see [`available_kwargs`](@ref)
+
+"""
+function GridVisualizer(;Plotter::Union{Module,Nothing}=nothing, kwargs...)
+    default_ctx=Dict{Symbol,Any}( k => v[1] for (k,v) in default_plot_kwargs())
+    _update_context!(default_ctx,kwargs)
+    layout=default_ctx[:layout]
+    if isnothing(Plotter)
+        default_ctx=nothing
+    end
+    p=GridVisualizer(Plotter,layout,default_ctx)
+    if !isnothing(Plotter)
+        p.context[:Plotter]=Plotter
+        for I in CartesianIndices(layout)
+            ctx=p.subplots[I]
+            i=Tuple(I)
+            ctx[:subplot]=i
+            ctx[:iplot]=layout[2]*(i[1]-1)+i[2]
+            ctx[:Plotter]=Plotter
+            ctx[:GridVisualizer]=p
+        end
+        initialize!(p,plottertype(Plotter))
+    end
+    p
 end
 
 
@@ -132,7 +199,7 @@ Base.size(p::GridVisualizer)=size(p.subplots)
 """
 $(SIGNATURES)
 
-Return a SubVis
+Return a SubVisualizer
 """
 Base.getindex(p::GridVisualizer,i,j)=p.subplots[i,j]
 
@@ -147,7 +214,7 @@ plottertype(p::GridVisualizer)=plottertype(p.Plotter)
 #
 # Default context information with help info.
 #
-default_plot_kwargs()=Dict{Symbol,Pair{Any,String}}(
+default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :colorlevels => Pair(51,"Number of color levels for contour plot"),
     :isolines => Pair(11,"Number of isolines in contour plot"),
     :linewidth => Pair(2,"1D plot or isoline linewidth"),
@@ -193,10 +260,10 @@ default_plot_kwargs()=Dict{Symbol,Pair{Any,String}}(
 #
 # Print default dict for interpolation into docstrings
 #
-function _myprint(dict::Dict{Symbol,Pair{Any,String}})
+function _myprint(dict)
     lines_out=IOBuffer()
     for (k,v) in dict
-        println(lines_out,"  - $(k): $(v[2]). Default: $(v[1])\n")
+        println(lines_out,"  - `$(k)`: $(v[2]). Default: `$(v[1])`\n")
     end
     String(take!(lines_out))
 end
@@ -204,154 +271,112 @@ end
 """
 $(SIGNATURES)
 
-Create a plot context.
+Available kwargs for all methods of this package.
 
-Plotter: defaults to `nothing` and can be `PyPlot`, `Plots`, `VTKView`, `Makie`.
-This pattern to pass the backend as a module to a plot function allows to circumvent
-to create heavy default package dependencies.
+$(_myprint(default_plot_kwargs()))
+"""
+available_kwargs()=println(_myprint(default_plot_kwargs()))
 
 
-Depending on the `layout` keyword argument, a 2D grid of subplots is created.
-Further `...plot!` commands then plot into one of these subplots:
 
-```julia
-p=GridVisualizer(Plotter=PyPlot, layout=(2,2)
-...plot!(p[1,2], ...)
+"""
+````
+gridplot!(visualizer[i,j], grid, kwargs...)
+gridplot!(visualizer, grid, kwargs...)
 ````
 
-A `...plot`  command just implicitely creates a plot context:
-```julia
-...plot(..., Plotter=PyPlot) 
-```
-is equivalent to
-```julia
-p=GridVisualizer(Plotter=PyPlot, layout=(1,1)
-...plot!(p,...) 
-```
+Plot grid into subplot in the visualizer. If `[i,j]` is omitted, `[1,1]` is assumed.
 
-Please note that the return values of all plot commands are specific to the Plotter.
-
-Depending on the backend, interactive mode switch between "gallery view" showing all plots at
-onece and "focused view" showing only one plot is possible.
-
-
-Keyword arguments:
-
-$(_myprint(default_plot_kwargs()))
+Keyword arguments: see [`available_kwargs`](@ref)
 """
-function GridVisualizer(;Plotter::Union{Module,Nothing}=nothing, kwargs...)
-    default_ctx=Dict{Symbol,Any}( k => v[1] for (k,v) in default_plot_kwargs())
-    _update_context!(default_ctx,kwargs)
-    layout=default_ctx[:layout]
-    if isnothing(Plotter)
-        default_ctx=nothing
-    end
-    p=GridVisualizer(Plotter,layout,default_ctx)
-    if !isnothing(Plotter)
-        p.context[:Plotter]=Plotter
-        for I in CartesianIndices(layout)
-            ctx=p.subplots[I]
-            i=Tuple(I)
-            ctx[:subplot]=i
-            ctx[:iplot]=layout[2]*(i[1]-1)+i[2]
-            ctx[:Plotter]=Plotter
-            ctx[:GridVisualizer]=p
-        end
-        initialize!(p,plottertype(Plotter))
-    end
-    p
-end
-
-
-"""
-$(SIGNATURES)
-
-Plot grid.
-
-Keyword arguments:
-
-$(_myprint(default_plot_kwargs()))
-"""
-function gridplot!(ctx::SubVis,grid::ExtendableGrid; kwargs...)
+function gridplot!(ctx::SubVisualizer,grid::ExtendableGrid; kwargs...)
     _update_context!(ctx,kwargs)
     gridplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid)
 end
 
-"""
-$(SIGNATURES)
-
-Plot grid.
-
-Keyword arguments:
-
-$(_myprint(default_plot_kwargs()))
-"""
-gridplot!(p::GridVisualizer,grid::ExtendableGrid; kwargs...)=gridplot!(p[1,1],grid,kwargs...)
+gridplot!(p::GridVisualizer,grid::ExtendableGrid, kwargs...)= gridplot!(p[1,1],grid; kwargs...)
 
 
 """
-$(SIGNATURES)
+````
+gridplot(grid; Plotter=nothing; kwargs...)
+````
 
-Plot grid without predefined context.
+Create grid visualizer and plot grid
 
-Keyword arguments:
-
-$(_myprint(default_plot_kwargs()))
+Keyword arguments: see [`available_kwargs`](@ref)
 """
 gridplot(grid::ExtendableGrid; Plotter=nothing, kwargs...)=gridplot!(GridVisualizer(Plotter=Plotter; show=true, kwargs...),grid)
 
 
 """
-$(SIGNATURES)
+````
+scalarplot!(visualizer[i,j], grid, vector; kwargs...)
+scalarplot!(visualizer, grid, vector; kwargs...)
+scalarplot!(visualizer[i,j], grid, function; kwargs...)
+scalarplot!(visualizer[i,j], coord_vector, vector; kwargs...)
+scalarplot!(visualizer[i,j], coord_vector, function; kwargs...)
+````
 
-Plot scalar function on grid as P1 FEM function.
+Plot node vector on grid as P1 FEM function on the triangulation into subplot in the visualizer. If `[i,j]` is omitted, `[1,1]` is assumed.
 
-Keyword arguments
+If instead of the node vector,  a function is given, it will be evaluated on the grid.
 
-$(_myprint(default_plot_kwargs()))
+If instead of the grid, a vector of 1D-coordinates is given, a 1D grid is created.
+
+Keyword arguments: see [`available_kwargs`](@ref)
 """
-function scalarplot!(ctx::SubVis,grid::ExtendableGrid,func; kwargs...)
+function scalarplot!(ctx::SubVisualizer,grid::ExtendableGrid,func; kwargs...)
     _update_context!(ctx,Dict(:clear=>true,:show=>false,:reveal=>false))
     _update_context!(ctx,kwargs)
     scalarplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid,func)
 end
 
-
-"""
-$(SIGNATURES)
-
-Plot vector on grid without predefined context as P1 FEM function.
-
-Keyword arguments:
-
-$(_myprint(default_plot_kwargs()))
-"""
-scalarplot(grid::ExtendableGrid,func ;Plotter=nothing,kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter;kwargs...),grid,func,show=true)
-
 scalarplot!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...) = scalarplot!(p[1,1],grid,func; kwargs...)
-gridplot!(p::GridVisualizer,grid::ExtendableGrid, kwargs...) = gridplot!(p[1,1],grid; kwargs...)
-
-
-scalarplot!(ctx::SubVis,grid::ExtendableGrid,func::Function; kwargs...)=scalarplot!(ctx,grid,map(func,grid);kwargs...)
-scalarplot(X::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
-scalarplot!(ctx::SubVis,X::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
+scalarplot!(ctx::SubVisualizer,grid::ExtendableGrid,func::Function; kwargs...)=scalarplot!(ctx,grid,map(func,grid);kwargs...)
+scalarplot!(ctx::SubVisualizer,X::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
 scalarplot!(ctx::GridVisualizer,X::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
 
+
+"""
+````
+scalarplot(grid,vector)
+scalarplot(grid,function)
+scalarplot(coord_vector,vector)
+scalarplot(coord_vector,function)
+````
+
+Plot node vector on grid as P1 FEM function on the triangulation.
+
+If instead of the node vector,  a function is given, it will be evaluated on the grid.
+
+If instead of the grid, a vector of 1D-coordinates is given, a 1D grid is created.
+
+Keyword arguments: see [`available_kwargs`](@ref)
+"""
+scalarplot(grid::ExtendableGrid,func ;Plotter=nothing,kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter;kwargs...),grid,func,show=true)
+scalarplot(X::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
+
 """
 $(SIGNATURES)
 
-Finish and show plot. Same as setting `:reveal=true` or `:show=true` in last scalarplot statment
+Finish and show plot. Same as setting `:reveal=true` or `:show=true` in last plot statment
 for a context.
 """
-reveal(p::GridVisualizer)=reveal(p, plottertype(p.Plotter))
+reveal(visualizer::GridVisualizer)=reveal(visualizer, plottertype(visualizer.Plotter))
 
 """
 $(SIGNATURES)
 
-Save figure to disk
+Save last plotted figure from visualizer to disk.
 """
-save(fname,p::GridVisualizer)=save(fname,p, plottertype(p.Plotter))
+save(fname,visualizer::GridVisualizer)=save(fname,p, plottertype(p.Plotter))
 
+"""
+$(SIGNATURES)
+
+Save scene returned from [`reveal`](@ref), [`scalarplot`](@ref) or [`gridplot`](@ref)  to disk.
+"""
 save(fname,scene;Plotter::Union{Module,Nothing}=nothing)=save(fname,scene, Plotter, plottertype(Plotter))
 
 
@@ -361,19 +386,18 @@ save(fname,scene;Plotter::Union{Module,Nothing}=nothing)=save(fname,scene, Plott
 #
 _update_context!(::Nothing,kwargs)=nothing
 Base.copy(::Nothing)=nothing
-gridplot!(ctx::Nothing,grid::ExtendableGrid;kwargs...)=nothing
-scalarplot!(ctx::Nothing,grid::ExtendableGrid,func;kwargs...)=nothing
 
+gridplot!(ctx::Nothing,grid::ExtendableGrid;kwargs...)=nothing
 gridplot!(ctx, ::Type{Nothing}, ::Type{Val{1}}, grid)=nothing
 gridplot!(ctx, ::Type{Nothing}, ::Type{Val{2}}, grid)=nothing
 gridplot!(ctx, ::Type{Nothing}, ::Type{Val{3}}, grid)=nothing
 
+scalarplot!(ctx::Nothing,grid::ExtendableGrid,func;kwargs...)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{1}},grid,func)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid,func)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid,func)=nothing
+
 save(fname,scene,Plotter,::Type{Nothing})=nothing
-
-
 displayable(ctx,Any)=nothing
 reveal(p,::Type{Nothing})=nothing
 

@@ -4,6 +4,7 @@ using Printf
 using LinearAlgebra
 
 using DocStringExtensions
+using OrderedCollections
 using ElasticArrays
 using StaticArrays
 using Colors
@@ -26,8 +27,8 @@ export scalarplot,scalarplot!
 export gridplot,gridplot!
 export save,reveal
 export isplots,isvtkview,ispyplot,ismakie
-export GridVisualizer, SubVis
-export plottertype
+export GridVisualizer, SubVisualizer
+export plottertype, available_kwargs
 export PyPlotType,MakieType,PlotsType,VTKViewType 
 
 end

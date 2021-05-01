@@ -44,7 +44,7 @@ end
 
 
 
-function reveal(ctx::SubVis,TP::Type{VTKViewType})
+function reveal(ctx::SubVisualizer,TP::Type{VTKViewType})
     if ctx[:show]||ctx[:reveal]
         reveal(ctx[:GridVisualizer],TP)
     end

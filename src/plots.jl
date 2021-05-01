@@ -30,7 +30,7 @@ function reveal(p::GridVisualizer,::Type{PlotsType})
     p
 end
 
-function reveal(ctx::SubVis,TP::Type{PlotsType})
+function reveal(ctx::SubVisualizer,TP::Type{PlotsType})
     if ctx[:show]||ctx[:reveal]
         reveal(ctx[:GridVisualizer],TP)
     end
