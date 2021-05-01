@@ -40,10 +40,48 @@ function reveal(ctx::SubVis,TP::Type{PyPlotType})
 end
 
 
+#translate Julia attribute symbols to pyplot-speak
+const mshapes=Dict(
+    :dtriangle => "v",
+    :utriangle => "^",
+    :rtriangle => ">",
+    :ltriangle => "^",
+    :circle => "o",
+    :square => "s",
+    :cross => "+",
+    :xcross => "x",
+    :diamond => "D",
+    :star5 => "*",
+    :pentagon => "p",
+    :hexagon => "h",
+)
+
+const lstyles=Dict(
+    :solid => "-",
+    :dot => "dotted",
+    :dash => "--",
+    :dashdot => "-.",
+    :dashdotdot => (0, (3, 1, 1, 1))
+)
+
+const leglocs=Dict(
+    :none => "",
+    :best => "best",
+    :lt => "upper left",
+    :ct => "upper center",
+    :rt => "upper right",
+    :lc => "center left",
+    :rc => "center right",
+    :lb => "lower left",
+    :cb => "lower center",
+    :rb => "lower right"
+)
+
+
 
 
 """
-$(TYPEDSIGNATURES)
+$(SIGNATURES)
 Return tridata to be splatted to PyPlot calls
 """
 function tridata(grid)
@@ -112,8 +150,8 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grid)
             ax.plot([x1,x1],[-2*h,2*h],linewidth=3.0,color=rgbtuple(cmap[ireg]),label=label)
         end
     end
-    if ctx[:legend]
-        ax.legend()
+    if ctx[:legend]!=:none
+        ax.legend(loc=leglocs[ctx[:legend]])
     end
     reveal(ctx,TP)
 end
@@ -149,9 +187,7 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid)
     cmap=region_cmap(ncellregions)
     cdata=ax.tripcolor(tridat...,facecolors=grid[CellRegions],cmap=PyPlot.ColorMap(cmap,length(cmap)))
     cbar=fig.colorbar(cdata,ax=ax,ticks=collect(1:ncellregions))
-    if ctx[:edges]
-        ax.triplot(tridat...,color="k",linewidth=0.5)
-    end
+    ax.triplot(tridat...,color="k",linewidth=ctx[:linewidth])
 
 
     if nbfaceregions>0 
@@ -162,11 +198,11 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid)
         rgb=[rgbtuple(cmap[bfaceregions[i]]) for i=1:length(bfaceregions)]
         ax.add_collection(PyPlot.matplotlib.collections.LineCollection(collect(zip(xc,yc)),colors=rgb,linewidth=3))
         for i=1:nbfaceregions
-            ax.plot(coord[:,1], coord[:,1],label="b_$(i)", color=rgbtuple(cmap[i]))
+            ax.plot(coord[:,1], coord[:,1],label="$(i)", color=rgbtuple(cmap[i]))
         end
     end
-    if ctx[:legend]
-        ax.legend(loc=ctx[:legend_location])
+    if ctx[:legend]!=:none
+        ax.legend(loc=leglocs[ctx[:legend]])
     end
     reveal(ctx,TP)
 end
@@ -247,35 +283,11 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid)
 
 
     
-    if ctx[:legend]
-        ax.legend(loc=ctx[:legend_location])
+    if ctx[:legend]!=:none
+        ax.legend(loc=leglocs[ctx[:legend]])
     end
     reveal(ctx,TP)
 end
-
-#translate Julia attribute symbols to pyplot-speak
-const mshapes=Dict(
-    :dtriangle => "v",
-    :utriangle => "^",
-    :rtriangle => ">",
-    :ltriangle => "^",
-    :circle => "o",
-    :square => "s",
-    :cross => "+",
-    :xcross => "x",
-    :diamond => "D",
-    :star5 => "*",
-    :pentagon => "p",
-    :hexagon => "h",
-)
-
-const lstyles=Dict(
-    :solid => "-",
-    :dot => "dotted",
-    :dash => "--",
-    :dashdot => "-.",
-    :dashdotdot => (0, (3, 1, 1, 1))
-)
 
 
 
@@ -298,9 +310,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
         if ylimits[1]<ylimits[2]
             ax.set_ylim(ylimits...)
         end
-        if ctx[:axisgrid]
-            ax.grid()
-        end
+        ax.grid()
         ax.set_title(ctx[:title])
     end
     ax=ctx[:ax]
@@ -360,8 +370,8 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
        
     end
     
-    if ctx[:legend]
-        ax.legend(loc=ctx[:legend_location])
+    if ctx[:legend]!=:none
+        ax.legend(loc=leglocs[ctx[:legend]])
     end
     
     reveal(ctx,TP)
@@ -473,8 +483,8 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid,func)
     ax.view_init(ctx[:elev],ctx[:azim])
     
     
-    if ctx[:legend]
-        ax.legend(loc=ctx[:legend_location])
+    if ctx[:legend]!=:none
+        ax.legend(loc=leglocs[ctx[:legend]])
     end
     reveal(ctx,TP)
 end

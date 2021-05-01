@@ -123,7 +123,22 @@ function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid)
     reveal(ctx,TP)
 end
 
+
 function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
+
+    legpos=Dict(
+    :none => :none,
+    :best => :best,
+    :lt => :topleft,
+    :ct => :topcenter,
+    :rt => :toprigjt,
+    :lc => :centerleft,
+    :rc => :centerright,
+    :lb => :bottomleft,
+    :cb => :bottomcenter,
+    :rb => :bottomright
+)
+    
     Plots=ctx[:Plotter]
     if !haskey(ctx,:ax)
         ctx[:ax]=Plots.plot(title=ctx[:title])
@@ -175,8 +190,10 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
                         linecolor=Plots.RGB(color),
                         linewidth=ctx[:linewidth],
                         linestyle=ctx[:linestyle],
+                        legend=legpos[ctx[:legend]],
                         label=ctx[:label])
         else
+            #Trick plots to use markers
             Plots.plot!(p,X,func,
                         linecolor = Plots.RGB(color),
                         linewidth=ctx[:linewidth],
@@ -188,6 +205,7 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
                         markersize = ctx[:markersize] ,
                         linecolor = Plots.RGB(color),
                         linewidth=ctx[:linewidth],
+                        legend=legpos[ctx[:legend]],
                         linestyle=ctx[:linestyle],
                         markercolor = Plots.RGB(color))
             @views Plots.plot!(p,X[1:markevery:end],func[1:markevery:end],

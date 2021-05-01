@@ -306,8 +306,9 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
                                     label=ctx[:label])
             end
         end
-        if ctx[:label]!=""
-            Makie.axislegend(ctx[:scene],labelsize=0.5*ctx[:fontsize],backgroundcolor=:transparent)
+        if ctx[:legend]!=:none
+            pos=ctx[:legend]==:best ? :rt : ctx[:legend]
+            Makie.axislegend(ctx[:scene],position=pos,labelsize=0.5*ctx[:fontsize],backgroundcolor=:transparent)
         end
         
         Makie.reset_limits!(ctx[:scene])
@@ -354,7 +355,10 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
                 end
             end 
             if ctx[:label]!=""
-                Makie.axislegend(ctx[:scene],labelsize=0.5*ctx[:fontsize],backgroundcolor=:transparent)
+                if ctx[:legend]!=:none
+                    pos=ctx[:legend]==:best ? :rt : ctx[:legend]
+                    Makie.axislegend(ctx[:scene],position=pos,labelsize=0.5*ctx[:fontsize],backgroundcolor=:transparent)
+                end
             end
         end
         Makie.reset_limits!(ctx[:scene])
@@ -366,33 +370,6 @@ end
 
 #######################################################################################
 # 2D grid
-function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
-    Makie=ctx[:Plotter]
-    nregions=num_cellregions(grid)
-    nbregions=num_bfaceregions(grid)
-
-
-    if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.Axis(ctx[:figure];title=ctx[:title],aspect=Makie.DataAspect(),scenekwargs(ctx)...)
-        ctx[:grid]=Makie.Node(grid)
-        cmap=region_cmap(nregions)
-
-        
-        for i=1:nregions
-            Makie.poly!(ctx[:scene],Makie.lift(g->regionmesh(g,i), ctx[:grid]) , color=cmap[i], strokecolor=:black)
-        end
-
-        bcmap=bregion_cmap(nbregions)
-        for i=1:nbregions
-            Makie.linesegments!(ctx[:scene],Makie.lift(g->bfacesegments(g,i),ctx[:grid]) , color=bcmap[i], linewidth=4)
-        end
-        add_scene!(ctx,ctx[:scene])
-        Makie.display(ctx[:figure])
-    else
-        ctx[:grid][]=grid
-    end
-    reveal(ctx,TP)
-end
 
 """
    makescene2d(ctx)
@@ -404,8 +381,54 @@ function makescene2d(ctx)
     Makie=ctx[:Plotter]
     GL=Makie.GridLayout(parent=ctx[:figure])
     GL[1,1]=ctx[:scene]
-    GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:poly],width=10, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+    GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:poly],width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
     GL
+end
+
+function makescene2d_grid(ctx)
+    Makie=ctx[:Plotter]
+    GL=Makie.GridLayout(parent=ctx[:figure])
+    GL[1,1]=ctx[:scene]
+    ncol=length(ctx[:cmap])
+    GL[1,2]=Makie.Colorbar(ctx[:figure],
+                           colormap=Makie.cgrad(ctx[:cmap],categorical=true),
+                           limits=(1,ncol),
+                           width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+    GL
+end
+
+
+
+function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
+    Makie=ctx[:Plotter]
+    nregions=num_cellregions(grid)
+    nbregions=num_bfaceregions(grid)
+
+
+    if !haskey(ctx,:scene)
+        ctx[:scene]=Makie.Axis(ctx[:figure];title=ctx[:title],aspect=Makie.DataAspect(),scenekwargs(ctx)...)
+        ctx[:grid]=Makie.Node(grid)
+        cmap=region_cmap(nregions)
+        ctx[:cmap]=cmap
+        for i=1:nregions
+            Makie.poly!(ctx[:scene],Makie.lift(g->regionmesh(g,i), ctx[:grid]) ,
+                        color=cmap[i], strokecolor=:black,strokewidth=ctx[:linewidth])
+        end
+
+        bcmap=bregion_cmap(nbregions)
+        for i=1:nbregions
+            Makie.linesegments!(ctx[:scene],Makie.lift(g->bfacesegments(g,i),ctx[:grid]) ,label="$(i)", color=bcmap[i], linewidth=4)
+        end
+        if ctx[:legend]!=:none
+            pos=ctx[:legend]==:best ? :rt : ctx[:legend]
+            Makie.axislegend(ctx[:scene],position=pos,labelsize=0.5*ctx[:fontsize],backgroundcolor=:transparent)
+        end       
+        add_scene!(ctx, makescene2d_grid(ctx))
+        Makie.display(ctx[:figure])
+    else
+        ctx[:grid][]=grid
+    end
+    reveal(ctx,TP)
 end
 
 
@@ -459,7 +482,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
         Makie.linesegments!(ctx[:scene],
                             Makie.lift(data->marching_triangles(data.g,data.f,data.l),ctx[:data]),
                             color=:black,
-                            linewidth=1)
+                            linewidth=ctx[:linewidth])
         
         add_scene!(ctx,makescene2d(ctx))
         Makie.display(ctx[:figure])
@@ -523,7 +546,7 @@ function makescene3d(ctx)
     end
     GL[1,1               ]=ctx[:scene]
     if haskey(ctx,:mesh)
-        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:mesh],textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:mesh],width=15,textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
     end
     # Put the status label into protrusion space on the bottom of the scene
     GL[1,1,Makie.Bottom()]=Makie.Label(ctx[:figure],ctx[:status],tellwidth=false,height=30,textsize=0.5*ctx[:fontsize])
@@ -585,8 +608,12 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                             color=cmap[i],
                             backlight=1f0
                             )
-                if ctx[:edges]
-                    Makie.wireframe!(ctx[:scene],Makie.lift(d->d[i], ctx[:cellmeshes]),strokecolor=:black)
+                if ctx[:linewidth]>0
+                    Makie.wireframe!(ctx[:scene],Makie.lift(d->d[i], ctx[:cellmeshes]),
+                                     strokecolor=:black,
+                                     strokewidth=ctx[:linewidth],
+                                     linewidth=ctx[:linewidth],
+                                     )
                 end
             end
         end
@@ -608,8 +635,10 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                             color=bcmap[i],
                             backlight=1f0
                             )
-                if ctx[:edges]
-                    Makie.wireframe!(ctx[:scene],Makie.lift(d->d[i], ctx[:facemeshes]),strokecolor=:black)
+                if ctx[:linewidth]>0
+                    Makie.wireframe!(ctx[:scene],Makie.lift(d->d[i], ctx[:facemeshes]),
+                                     strokecolor=:black,
+                                     linewidth=ctx[:linewidth])
                 end
             end
         end
