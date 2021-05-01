@@ -18,7 +18,9 @@ function save(fname,p,::Type{PyPlotType})
     p.context[:figure].savefig(fname)
 end
 
-
+function save(fname,scene,PyPlot,::Type{PyPlotType})
+    scene.savefig(fname)
+end
 
 function reveal(p::GridVisualizer,::Type{PyPlotType})
     p.context[:revealed]=true

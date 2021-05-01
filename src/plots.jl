@@ -36,6 +36,10 @@ function reveal(ctx::SubVis,TP::Type{PlotsType})
     end
 end
 
+function save(fname,scene,Plots,::Type{PlotsType})
+   Plots.savefig(scene,fname)
+end
+
 
 function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid)
     Plots=ctx[:Plotter]

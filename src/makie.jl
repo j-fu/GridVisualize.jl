@@ -56,11 +56,15 @@ function reveal(ctx::SubVis,TP::Type{MakieType})
 end
 
 
-function save(fname,p,::Type{MakieType})
+function save(fname,p::GridVisualizer,::Type{MakieType})
     Makie=p.context[:Plotter]
     Makie.save(fname, p.context[:figure])
 end
 
+
+function save(fname,scene,Makie,::Type{MakieType})
+    Makie.save(fname, scene)
+end
 
 
 

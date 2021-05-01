@@ -27,11 +27,19 @@ function save(fname,p,::Type{VTKViewType})
     VTKView.writepng(p.context[:frame],fname)
 end
 
+function save(fname,scene,VTKView,::Type{VTKViewType})
+    base,ext=splitext(fname)
+    if ext!=".png"
+        error("VTKView can only save png files")
+    end
+    VTKView.writepng(scene,fname)
+end
 
 
 function reveal(p::GridVisualizer,::Type{VTKViewType})
     VTKView=p.Plotter
     VTKView.display(p.context[:frame])
+    p.context[:frame]
 end
 
 

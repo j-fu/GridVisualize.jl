@@ -356,6 +356,9 @@ Save figure to disk
 """
 save(fname,p::GridVisualizer)=save(fname,p, plottertype(p.Plotter))
 
+save(fname,scene;Plotter::Union{Module,Nothing}=nothing)=save(fname,scene, Plotter, plottertype(Plotter))
+
+
 
 #
 # Dummy methods to allow Plotter=nothing
@@ -372,6 +375,7 @@ gridplot!(ctx, ::Type{Nothing}, ::Type{Val{3}}, grid)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{1}},grid,func)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid,func)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid,func)=nothing
+save(fname,scene,Plotter,::Type{Nothing})=nothing
 
 
 displayable(ctx,Any)=nothing
