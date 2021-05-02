@@ -40,7 +40,7 @@ end
 # explore the inner triangulation.
 #
 # For Makie and VTKView, the cutplane values can be controlled interactively.
-function plotting_grid3d(;Plotter=nothing, kwargs...)
+function plotting_grid3d(;Plotter=default_plotter(), kwargs...)
     gridplot(grid3d(); Plotter=Plotter, kwargs...)
 end
 # ![](plotting_grid3d.svg)
@@ -71,7 +71,7 @@ end
 # to control an isolevel.
 #
 # For Makie and VTKView, the cutplane values and the flevel can be controlled interactively.
-function plotting_func3d(;Plotter=nothing, kwargs...)
+function plotting_func3d(;Plotter=default_plotter(), kwargs...)
     g,f=func3d()
     scalarplot(g,f; Plotter=Plotter, zplane=0.49,xplane=0.49,flevel=0.25, kwargs...)
 end
@@ -84,9 +84,9 @@ end
 # The ',' key for GLMakie and the '*' key for VTKView allow to
 # switch between gallery view (default) and focused view of only
 # one subscene.
-function plotting_multiscene(;Plotter=nothing)
-    p=GridVisualizer(;Plotter=Plotter,layout=(2,3),clear=true,resolution=(800,500))
+function plotting_multiscene(;Plotter=default_plotter())
 
+    p=GridVisualizer(;Plotter=Plotter,layout=(2,3),clear=true,resolution=(800,500))
     gridplot!(p[1,1],grid1d(), title="1D grid")
     scalarplot!(p[2,1],grid1d(), sin, title="1D grid function", label="sin",markershape=:diamond,color=:red,legend=:rb)
     scalarplot!(p[2,1],grid1d(), cos, title="1D grid function", label="cos",linestyle=:dash,markershape=:none,color=:green,clear=false)

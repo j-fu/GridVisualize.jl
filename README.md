@@ -1,6 +1,5 @@
 [![Build status](https://github.com/j-fu/GridVisualize.jl/workflows/linux-macos-windows/badge.svg)](https://github.com/j-fu/GridVisualize.jl/actions)
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://j-fu.github.io/GridVisualize.jl/stable)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://j-fu.github.io/GridVisualize.jl/dev)
 
 GridVisualize
 =============
@@ -17,6 +16,10 @@ are PyPlot and GLMakie.
 gridplot(grid, Plotter=PyPlot)
 scalarplot(grid, function,Plotter=PyPlot)
 ````
+
+This works for  1/2/3D grids and either a function  represented by its
+values on  the nodes of the  grid, or a scalar  function of 1, 2  or 3
+variables, respectively.
 
 ### Multiple plots in one plotting window:
 ````
@@ -36,11 +39,32 @@ for i=1:N
 end
 ````
 
+### Setting a default plotter
+
+Instead  of  specifying  a  `Plotter` in  calls  to  `GridVisualizer`,
+`gridplot` or `scalarplot`, a default plotter can be set:
+
+```
+default_plotter!(PyPlot)
+gridplot(grid)
+scalarplot(grid, function)
+```
+
+or 
+```
+default_plotter!(GLMakie)
+vis=GridVisualizer(layout=(1,2))
+gridplot!(vis[1,1],grid)
+scalarplot!(vis[1,2],grid,function)
+```
+
 ### Switching off plotting
-Just pass `Plotter=nothing`  in the respective places, and all
-plotting functions will do nothing.
+Just pass `Plotter=nothing`  in the respective places, or set `default_plotter!(nothing)`
+and all plotting functions will do nothing. This also is the default.
 
 ## Available plotting backends and functionality.
+
+The main supported backends are GLMakie and PyPlot.
 
 - 'i' means some level of interactive control
 - '(y)' means avaiability only on rectangular resp. cuboid grids.
@@ -53,6 +77,8 @@ plotting functions will do nothing.
 | grid, 2D   | y      | y,i    | (y)   | y,i     |
 | scalar, 3D | y      | y,i    | no    | y,i     |
 | grid, 3D   | y      | y,i    | no    | y,i     |
+
+
 
 
 ### [PyPlot](https://github.com/JuliaPy/PyPlot.jl):
@@ -75,4 +101,3 @@ plotting functions will do nothing.
 ## Notebooks
 Plotting within Pluto notebooks for PyPlot, Plots, GLMakie is working.
 
-I have no resources to support Jupyter notebooks.

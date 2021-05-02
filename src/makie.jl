@@ -1,5 +1,5 @@
 include("flippablelayout.jl")
-using .FlippableLayout
+
 
 function initialize!(p::GridVisualizer,::Type{MakieType})
     Makie=p.context[:Plotter]
@@ -21,7 +21,7 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
     # Prepare flippable layout
     FlippableLayout.setmakie!(Makie)
     layout=p.context[:layout]
-    parent,flayout=flayoutscene(resolution=p.context[:resolution])
+    parent,flayout=FlippableLayout.flayoutscene(resolution=p.context[:resolution])
     p.context[:figure]=parent
     p.context[:flayout]=flayout
     for I in CartesianIndices(layout)
@@ -49,7 +49,7 @@ function reveal(p::GridVisualizer,::Type{MakieType})
 end
 
 function reveal(ctx::SubVisualizer,TP::Type{MakieType})
-    yieldwait(ctx[:flayout])
+    FlippableLayout.yieldwait(ctx[:flayout])
     if ctx[:show]||ctx[:reveal]
         reveal(ctx[:GridVisualizer],TP)
     end
@@ -363,7 +363,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
         end
         Makie.reset_limits!(ctx[:scene])
         ctx[:xtitle][]=ctx[:title]
-        yieldwait(ctx[:flayout])
+        FlippableLayout.yieldwait(ctx[:flayout])
     end
     reveal(ctx,TP)
 end

@@ -131,7 +131,7 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
     :best => :best,
     :lt => :topleft,
     :ct => :topcenter,
-    :rt => :toprigjt,
+    :rt => :topright,
     :lc => :centerleft,
     :rc => :centerright,
     :lb => :bottomleft,

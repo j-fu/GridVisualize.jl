@@ -1,3 +1,28 @@
+"""
+`nothing` as initial default plotter
+"""
+default_backend=nothing
+
+"""
+$(SIGNATURES)
+
+Return default plotter backend
+"""
+function default_plotter()
+    global default_backend
+    default_backend
+end
+
+"""
+````
+   plotter!(Plotter)
+````
+
+Set plotter module as the default plotter backend.
+"""
+function default_plotter!(Plotter)
+    global default_backend=Plotter
+end
 
 """
 $(SIGNATURES)
@@ -125,12 +150,12 @@ end
 
 """
 ````
-    GridVisualizer(; Plotter=nothing , kwargs...)
+    GridVisualizer(; Plotter=default_plotter() , kwargs...)
 ````
 
 Create a  grid visualizer
 
-Plotter: defaults to `nothing` and can be `PyPlot`, `Plots`, `VTKView`, `Makie`.
+Plotter: defaults to `default_plotter()` and can be `PyPlot`, `Plots`, `VTKView`, `Makie`.
 This pattern to pass the backend as a module to a plot function allows to circumvent
 to create heavy default package dependencies.
 
@@ -154,18 +179,19 @@ is equivalent to
 ```julia
 vis=GridVisualizer(Plotter=PyPlot, layout=(1,1))
 gridplot!(vis,grid) 
+reveal(vis)
 ```
 
 Please note that the return values of all plot commands are specific to the Plotter.
 
-Depending on the backend, interactive mode switch between "gallery view" showing all plots at
-onece and "focused view" showing only one plot is possible.
+An interactive mode switch key   for GLMakie (`,`)  and  VTKView (`*`) allows to
+toggle between "gallery view" showing all plots at once and "focused view" showing only one plot.
 
 
 Keyword arguments: see [`available_kwargs`](@ref)
 
 """
-function GridVisualizer(;Plotter::Union{Module,Nothing}=nothing, kwargs...)
+function GridVisualizer(;Plotter::Union{Module,Nothing}=default_plotter(), kwargs...)
     default_ctx=Dict{Symbol,Any}( k => v[1] for (k,v) in default_plot_kwargs())
     _update_context!(default_ctx,kwargs)
     layout=default_ctx[:layout]
@@ -299,14 +325,14 @@ gridplot!(p::GridVisualizer,grid::ExtendableGrid, kwargs...)= gridplot!(p[1,1],g
 
 """
 ````
-gridplot(grid; Plotter=nothing; kwargs...)
+gridplot(grid; Plotter=default_plotter(); kwargs...)
 ````
 
 Create grid visualizer and plot grid
 
 Keyword arguments: see [`available_kwargs`](@ref)
 """
-gridplot(grid::ExtendableGrid; Plotter=nothing, kwargs...)=gridplot!(GridVisualizer(Plotter=Plotter; show=true, kwargs...),grid)
+gridplot(grid::ExtendableGrid; Plotter=default_plotter(), kwargs...)=gridplot!(GridVisualizer(Plotter=Plotter; show=true, kwargs...),grid)
 
 
 """
@@ -344,12 +370,12 @@ scalarplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,Z::AbstractV
 
 """
 ````
-scalarplot(grid,vector; Plotter=nothing)
-scalarplot(grid,function; Plotter=nothing)
-scalarplot(X,vector; Plotter=nothing)
-scalarplot(X,function; Plotter=nothing)
-scalarplot(X,Y,function; Plotter=nothing)
-scalarplot(X,Y,Z,function; Plotter=nothing)
+scalarplot(grid,vector; Plotter=default_plotter())
+scalarplot(grid,function; Plotter=default_plotter())
+scalarplot(X,vector; Plotter=default_plotter())
+scalarplot(X,function; Plotter=default_plotter())
+scalarplot(X,Y,function; Plotter=default_plotter())
+scalarplot(X,Y,Z,function; Plotter=default_plotter())
 
 ````
 
@@ -357,11 +383,11 @@ Plot node vector on grid as P1 FEM function on the triangulation.
 
 If instead of the node vector,  a function is given, it will be evaluated on the grid.
 
-If instead of the grid, a vectors for coordinates are given, a grid is created automatically.
+If instead of the grid,  vectors for coordinates are given, a grid is created automatically.
 
 Keyword arguments: see [`available_kwargs`](@ref)
 """
-scalarplot(grid::ExtendableGrid,func ;Plotter=nothing,kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter;kwargs...),grid,func,show=true)
+scalarplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter;kwargs...),grid,func,show=true)
 scalarplot(X::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
 scalarplot(X::AbstractVector,Y::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X,Y),func;kwargs...)
 scalarplot(X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func ;kwargs...)=scalarplot(simplexgrid(X,Y,Z),func;kwargs...)
@@ -379,14 +405,14 @@ $(SIGNATURES)
 
 Save last plotted figure from visualizer to disk.
 """
-save(fname,visualizer::GridVisualizer)=save(fname,p, plottertype(p.Plotter))
+save(fname::String,visualizer::GridVisualizer)=save(fname,p, plottertype(p.Plotter))
 
 """
 $(SIGNATURES)
 
 Save scene returned from [`reveal`](@ref), [`scalarplot`](@ref) or [`gridplot`](@ref)  to disk.
 """
-save(fname,scene;Plotter::Union{Module,Nothing}=nothing)=save(fname,scene, Plotter, plottertype(Plotter))
+save(fname::String,scene;Plotter::Union{Module,Nothing}=default_plotter())=save(fname,scene, Plotter, plottertype(Plotter))
 
 
 
@@ -402,6 +428,7 @@ gridplot!(ctx, ::Type{Nothing}, ::Type{Val{2}}, grid)=nothing
 gridplot!(ctx, ::Type{Nothing}, ::Type{Val{3}}, grid)=nothing
 
 scalarplot!(ctx::Nothing,grid::ExtendableGrid,func;kwargs...)=nothing
+scalarplot!(ctx::Nothing,grid::ExtendableGrid,func::Function;kwargs...)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{1}},grid,func)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid,func)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid,func)=nothing

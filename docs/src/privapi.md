@@ -17,9 +17,9 @@ Pages = ["pyplot.jl"]
 
 ## Makie
 ```@autodocs
-Modules = [GridVisualize]
+Modules = [GridVisualize,FlippableLayout]
 Private = true
-Pages = ["makie.jl"]
+Pages = ["makie.jl", "flippablelayout.jl"]
 ```
 
 ## Plots

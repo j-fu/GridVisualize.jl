@@ -25,10 +25,11 @@ include("plots.jl")
 
 export scalarplot,scalarplot!
 export gridplot,gridplot!
-export save,reveal
+export save,reveal,backend!
 export isplots,isvtkview,ispyplot,ismakie
 export GridVisualizer, SubVisualizer
 export plottertype, available_kwargs
+export default_plotter!, default_plotter
 export PyPlotType,MakieType,PlotsType,VTKViewType 
 
 end

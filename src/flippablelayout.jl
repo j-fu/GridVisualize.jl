@@ -1,27 +1,57 @@
+"""
+This module is a submodule of `GridVisualize`.
+
+It manages a layoutscene with interactive layout and blocking functionality.
+
+Thanks to Julius Krumbiegel for providing  a basic implementation of focus switching.
+
+
+`GridVisualize` avoids creating dependencies on plotting backends.
+So we provide a way to emulate "import Makie" by allowing
+to set it as a global variable in the [`setmakie!`](@ref). 
+As a consequence, we can't use Makie types at compile time.
+"""
 module FlippableLayout
+using DocStringExtensions
 
-# Thanks to Julius Krummbiegel for providing  a basic implementation to focus switching
 
-
-# Currently this module sits within GridVisualize.jl
-# which avoids creating dependencies on plotting backends.
-# So we provide a way to emulate "import Makie" by allowing
-# to set it as a global variable. This Makie can be GLMakie,WGLMakie,CairoMakie
-# As a consequence, we can't use Makie types at compile time.
 Makie=nothing
 
 """
-   FLayout
+$(TYPEDEF)
 
-Struct describing flippable layout data
 
+Struct describing flippable layout data.
+We don't type annotate with Makie types as they are
+unknown at start time.
+
+$(FIELDS)
 """
 mutable struct FLayout
+    """
+    Visible GridLayout
+    """
     visible #::GridLayout
+    """
+    Hidden GridLayot
+    """
     offscreen #::GridLayout
+
+    """
+    Has the layout been blocked by the block key ?
+    """
     blocked::Bool
+
+    """
+    Layoutables attached to layout
+    """
     layoutables::Dict{Tuple{Int64,Int64},Any} # Union{Makie.MakieLayout.Layoutable,Makie.GridLayout}
+
+    """
+    Condition variable working together with the blocked field.
+    """
     condition::Condition
+
     FLayout(visible;blocked=false)=new(visible,
                                        Makie.GridLayout(bbox = Makie.BBox(-500, -400, -500, -400)),
                                        blocked,
@@ -75,9 +105,12 @@ end
 
 
 """
-   flayoutscene(;blocked=false, kwargs...)
+    flayoutscene(;blocked=false, kwargs...)
 
-Layoutscene with interactive layout and blocking functionality
+Layoutscene with interactive layout and blocking functionality.
+
+
+
 
 The `,` key switches between focused view showing only one subscene
 and "gallery view" showing all layoutables at once.
@@ -183,12 +216,10 @@ end
     setmakie!(MyMakie)
 
 Set the Makie module.
+This Makie can be GLMakie,WGLMakie,CairoMakie
 """
 setmakie!(MyMakie) = global Makie=MyMakie
 
 
-export flayoutscene
-export yieldwait
-export setmakie!
 
 end
