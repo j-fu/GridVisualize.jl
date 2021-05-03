@@ -144,6 +144,23 @@ scenekwargs(ctx)=Dict(:xticklabelsize => 0.5*ctx[:fontsize],
 ############################################################################################################
 #1D grid
 
+function makescene1d_grid(ctx)
+    Makie=ctx[:Plotter]
+    GL=Makie.GridLayout(parent=ctx[:figure])
+    GL[1,1]=ctx[:scene]
+    ncol=length(ctx[:cmap])
+    if ctx[:colorbar]!=:none
+        GL[2,1]=Makie.Colorbar(ctx[:figure],
+                               colormap=Makie.cgrad(ctx[:cmap],categorical=true),
+                               limits=(1,ncol),
+                               height=15,
+                               textsize=0.5*ctx[:fontsize],
+                               ticklabelsize=0.5*ctx[:fontsize],
+                               vertical=false)
+    end        
+    GL
+end
+
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
     
     Makie=ctx[:Plotter]
@@ -199,19 +216,37 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
 
     
     if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.Axis(ctx[:figure];title=ctx[:title], scenekwargs(ctx)...)
+        ctx[:scene]=Makie.Axis(ctx[:figure];yticklabelsvisible=false,yticksvisible=false,title=ctx[:title], scenekwargs(ctx)...)
         ctx[:grid]=Makie.Node(grid)
         cmap=region_cmap(nregions)
+        ctx[:cmap]=cmap
         Makie.linesegments!(ctx[:scene],Makie.lift(g->basemesh(g), ctx[:grid]),color=:black)
+
+        coord=vec(grid[Coordinates])
+        xmin=minimum(coord)
+        xmax=maximum(coord)
+        h=(xmax-xmin)/40.0
+        Makie.scatter!(ctx[:scene],[Point2f0(xmin,-5*h),Point2f0(xmax,5*h)],color=:white,markersize=0.0,strokewidth=0)
+
+
         for i=1:nregions
-            Makie.linesegments!(ctx[:scene],Makie.lift(g->regionmesh(g,i), ctx[:grid]) , color=cmap[i], strokecolor=:black,linewidth=4)
+            Makie.linesegments!(ctx[:scene],Makie.lift(g->regionmesh(g,i), ctx[:grid]) ,
+                                color=cmap[i], strokecolor=:black,linewidth=4, label="c $(i)")
         end
         
         bcmap=bregion_cmap(nbregions)
         for i=1:nbregions
-            Makie.linesegments!(ctx[:scene],Makie.lift(g->bmesh(g,i),ctx[:grid]), color=bcmap[i], linewidth=4)
+            Makie.linesegments!(ctx[:scene],Makie.lift(g->bmesh(g,i),ctx[:grid]),
+                                color=bcmap[i], linewidth=4, label="b$(i)")
         end
-        add_scene!(ctx,ctx[:scene])
+
+        if ctx[:legend]!=:none
+            pos=ctx[:legend]==:best ? :rt : ctx[:legend]
+            Makie.axislegend(ctx[:scene],position=pos,labelsize=0.5*ctx[:fontsize],
+                             nbanks=5)
+        end       
+
+        add_scene!(ctx, ctx[:scene])
         Makie.display(ctx[:figure])
     else
         ctx[:grid][]=grid
@@ -222,6 +257,7 @@ end
 
 ########################################################################
 # 1D function
+
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
     Makie=ctx[:Plotter]
 
@@ -332,15 +368,19 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
                 Makie.lines!(ctx[:scene],Makie.lift(a->a, ctx[:lines][end]),
                              linestyle=ctx[:linestyle],
                              linewidth=ctx[:linewidth],
+                             color=RGB(ctx[:color]),
                              label=ctx[:label])
             else
                 Makie.lines!(ctx[:scene],Makie.lift(a->a, ctx[:lines][end]),
                              linestyle=ctx[:linestyle],
+                             color=RGB(ctx[:color]),
                              linewidth=ctx[:linewidth])
+
                 Makie.scatter!(ctx[:scene],
                                Makie.lift(a->a[1:ctx[:markevery]:end],ctx[:lines][end]),
                                color=RGB(ctx[:color]),
                                marker=ctx[:markershape],
+                               markercolor=RGB(ctx[:color]),
                                markersize=ctx[:markersize])
                 
                 if ctx[:label]!=""
@@ -351,7 +391,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
                                         marker=ctx[:markershape],
                                         markersize=ctx[:markersize],
                                         markercolor=RGB(ctx[:color]),
-                                        color=RGB(ctx[:color]),label=ctx[:label])
+                                        color=RGB(ctx[:color]),
+                                        label=ctx[:label])
                 end
             end 
             if ctx[:label]!=""
@@ -381,7 +422,11 @@ function makescene2d(ctx)
     Makie=ctx[:Plotter]
     GL=Makie.GridLayout(parent=ctx[:figure])
     GL[1,1]=ctx[:scene]
-    GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:poly],width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+    if ctx[:colorbar]==:vertical
+        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:poly],width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+    elseif ctx[:colorbar]==:horizontal
+        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[:poly],height=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],vertical=false)
+    end
     GL
 end
 
@@ -390,10 +435,18 @@ function makescene2d_grid(ctx)
     GL=Makie.GridLayout(parent=ctx[:figure])
     GL[1,1]=ctx[:scene]
     ncol=length(ctx[:cmap])
-    GL[1,2]=Makie.Colorbar(ctx[:figure],
-                           colormap=Makie.cgrad(ctx[:cmap],categorical=true),
-                           limits=(1,ncol),
-                           width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+    if ctx[:colorbar]==:vertical
+        GL[1,2]=Makie.Colorbar(ctx[:figure],
+                               colormap=Makie.cgrad(ctx[:cmap],categorical=true),
+                               limits=(1,ncol),
+                               width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+    elseif ctx[:colorbar]==:horizontal
+        GL[2,1]=Makie.Colorbar(ctx[:figure],
+                               colormap=Makie.cgrad(ctx[:cmap],categorical=true),
+                               limits=(1,ncol),
+                               heigth=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],
+                               vertical=false)
+    end        
     GL
 end
 
@@ -546,7 +599,12 @@ function makescene3d(ctx)
     end
     GL[1,1               ]=ctx[:scene]
     if haskey(ctx,:mesh)
-        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:mesh],width=15,textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+        if ctx[:colorbar]==:vertical
+            GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:mesh],width=15,textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+        elseif ctx[:colorbar]==:horizontal
+            GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[:mesh],height=15,textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],
+                                   vertical=false)
+        end
     end
     # Put the status label into protrusion space on the bottom of the scene
     GL[1,1,Makie.Bottom()]=Makie.Label(ctx[:figure],ctx[:status],tellwidth=false,height=30,textsize=0.5*ctx[:fontsize])

@@ -3,6 +3,10 @@ function initialize!(p, ::Type{PyPlotType})
     PyPlot.PyObject(PyPlot.axes3D)# see https://github.com/JuliaPy/PyPlot.jl/issues/351
     if !haskey(p.context,:figure)
         res=p.context[:resolution]
+        p.context[:figure]=PyPlot.figure(p.context[:fignumber])
+        if isdefined(Main, :PlutoRunner) # allow to reset figure size for Pluto
+            PyPlot.close(p.context[:figure]) 
+        end
         p.context[:figure]=PyPlot.figure(p.context[:fignumber],figsize=(res[1]/100,res[2]/100),dpi=100)
         for ctx in p.subplots
             ctx[:figure]=p.context[:figure]
@@ -123,36 +127,36 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grid)
         
     xmin=minimum(coord)
     xmax=maximum(coord)
-    h=(xmax-xmin)/40.0
-    ax.set_aspect(ctx[:aspect])
+    h=(xmax-xmin)/20.0
+#    ax.set_aspect(ctx[:aspect])
     ax.get_yaxis().set_ticks([])
     ax.set_ylim(-5*h,xmax-xmin)
     cmap=region_cmap(ncellregions)
 
     for icell=1:num_cells(grid)
         ireg=cellregions[icell]
-        label = crflag[ireg] ? "cellregion $(ireg)" : ""
+        label = crflag[ireg] ? "c$(ireg)" : ""
         crflag[ireg]=false
         
         x1=coord[1,cellnodes[1,icell]]
         x2=coord[1,cellnodes[2,icell]]
-        ax.plot([x1,x1],[-h,h],linewidth=0.5,color="k",label="")
-        ax.plot([x2,x2],[-h,h],linewidth=0.5,color="k",label="")
         ax.plot([x1,x2],[0,0],linewidth=3.0,color=rgbtuple(cmap[cellregions[icell]]),label=label)
+        ax.plot([x1,x1],[-h,h],linewidth=ctx[:linewidth],color="k",label="")
+        ax.plot([x2,x2],[-h,h],linewidth=ctx[:linewidth],color="k",label="")
     end
     
     cmap=bregion_cmap(ncellregions)
     for ibface=1:num_bfaces(grid)
         ireg=bfaceregions[ibface]
         if ireg >0
-            label = brflag[ireg] ? "boundary $(ireg)" : ""
+            label = brflag[ireg] ? "b$(ireg)" : ""
             brflag[ireg]=false
             x1=coord[1,bfacenodes[1,ibface]]
             ax.plot([x1,x1],[-2*h,2*h],linewidth=3.0,color=rgbtuple(cmap[ireg]),label=label)
         end
     end
     if ctx[:legend]!=:none
-        ax.legend(loc=leglocs[ctx[:legend]])
+        ax.legend(loc=leglocs[ctx[:legend]],ncol=5)
     end
     reveal(ctx,TP)
 end
@@ -187,7 +191,15 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid)
     tridat=tridata(grid)
     cmap=region_cmap(ncellregions)
     cdata=ax.tripcolor(tridat...,facecolors=grid[CellRegions],cmap=PyPlot.ColorMap(cmap,length(cmap)))
-    cbar=fig.colorbar(cdata,ax=ax,ticks=collect(1:ncellregions))
+
+    if ctx[:colorbar]==:horizontal
+        cbar=fig.colorbar(cdata,ax=ax,ticks=collect(1:ncellregions),orientation="horizontal")
+    end
+
+    if ctx[:colorbar]==:vertical
+        cbar=fig.colorbar(cdata,ax=ax,ticks=collect(1:ncellregions),orientation="vertical")
+    end
+    
     ax.triplot(tridat...,color="k",linewidth=ctx[:linewidth])
 
 
@@ -370,7 +382,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
         # ax.scatter(ampoints[1,:], ampoints[2,:],color=ctx[:color],label="")
        
     end
-    
+    ax.grid()
     if ctx[:legend]!=:none
         ax.legend(loc=leglocs[ctx[:legend]])
     end
@@ -414,10 +426,17 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
         c.set_edgecolor("face")
     end
     ax.tricontour(ctx[:tridata]...,func,colors="k",levels=isolines)
+
+
     
-    if ctx[:colorbar]
-        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=isolines,boundaries=colorlevels)
+    if ctx[:colorbar]==:horizontal
+        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=isolines,boundaries=colorlevels, orientation="horizontal")
     end
+
+    if ctx[:colorbar]==:vertical
+        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=isolines,boundaries=colorlevels, orientation="vertical")
+    end
+    
     reveal(ctx,TP)
 end
 
