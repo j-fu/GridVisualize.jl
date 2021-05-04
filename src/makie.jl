@@ -6,7 +6,7 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
 
     # Check for version compatibility
     version_min=v"0.17.4"
-    version_max=v"0.19"
+    version_max=v"0.18.99"
     
     version_installed=PkgVersion.Version(Makie.AbstractPlotting)
 
@@ -14,7 +14,7 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
         error("Outdated version $(version_installed) of AbstractPlotting. Please upgrade to at least $(version_min)")
     end
     
-    if version_installed>=version_max
+    if version_installed>version_max
         @warn("Possibly breaking version $(version_installed) of AbstractPlotting.")
     end
 
@@ -29,8 +29,11 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
         ctx[:figure]=parent
         ctx[:flayout]=flayout
     end
-    Makie.display(parent)
     
+    if !isdefined(Main, :PlutoRunner) 
+        Makie.display(parent)
+    end
+        
     parent
 end
 

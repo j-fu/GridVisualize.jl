@@ -4,7 +4,7 @@ function initialize!(p, ::Type{PyPlotType})
     if !haskey(p.context,:figure)
         res=p.context[:resolution]
         p.context[:figure]=PyPlot.figure(p.context[:fignumber])
-        if isdefined(Main, :PlutoRunner) # allow to reset figure size for Pluto
+        if isdefined(Main, :PlutoRunner) # Reset figure for Pluto
             PyPlot.close(p.context[:figure]) 
         end
         p.context[:figure]=PyPlot.figure(p.context[:fignumber],figsize=(res[1]/100,res[2]/100),dpi=100)
