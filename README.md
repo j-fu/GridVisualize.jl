@@ -70,7 +70,7 @@ The main supported backends are GLMakie and PyPlot.
 - '(y)' means avaiability only on rectangular resp. cuboid grids.
 
 |            | PyPlot | GLMakie | Plots | VTKView |
-|------------+--------+---------+-------+---------|
+|------------|--------|---------|-------|---------|
 | scalar, 1D | y      | y       | y     | y       |
 | grid, 1D   | y      | y       | y     | n       |
 | scalar, 2D | y      | y,i     | (y)   | y,i     |
