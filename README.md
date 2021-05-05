@@ -69,17 +69,17 @@ The main supported backends are GLMakie and PyPlot.
 - 'i' means some level of interactive control
 - '(y)' means avaiability only on rectangular resp. cuboid grids.
 
-|            | PyPlot | *Makie | Plots | VTKView |
-|-----------:|--------|--------|-------|---------|
-| scalar, 1D | y      | y      | y     | y       |
-| grid, 1D   | y      | y      | y     | n       |
-| scalar, 2D | y      | y,i    | (y)   | y,i     |
-| grid, 2D   | y      | y,i    | (y)   | y,i     |
-| scalar, 3D | y      | y,i    | no    | y,i     |
-| grid, 3D   | y      | y,i    | no    | y,i     |
+|            | PyPlot | GLMakie | Plots | VTKView |
+|------------+--------+---------+-------+---------|
+| scalar, 1D | y      | y       | y     | y       |
+| grid, 1D   | y      | y       | y     | n       |
+| scalar, 2D | y      | y,i     | (y)   | y,i     |
+| grid, 2D   | y      | y,i     | (y)   | y,i     |
+| scalar, 3D | y      | y,i     | no    | y,i     |
+| grid, 3D   | y      | y,i     | no    | y,i     |
 
 
-
+For 2D plots, CairoMakie works as well.
 
 ### [PyPlot](https://github.com/JuliaPy/PyPlot.jl):
 <img src="docs/src/assets/multiscene_pyplot.png?raw=true" width=300/> 
