@@ -35,5 +35,7 @@ end
 
 mkdocs()
 
-deploydocs(repo = "github.com/j-fu/GridVisualize.jl.git")
+deploydocs(repo = "github.com/j-fu/GridVisualize.jl.git",devbranch = "main")
+
+
 
