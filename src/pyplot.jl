@@ -3,11 +3,8 @@ function initialize!(p, ::Type{PyPlotType})
     PyPlot.PyObject(PyPlot.axes3D)# see https://github.com/JuliaPy/PyPlot.jl/issues/351
     if !haskey(p.context,:figure)
         res=p.context[:resolution]
-        p.context[:figure]=PyPlot.figure(p.context[:fignumber])
-        if isdefined(Main, :PlutoRunner) # Reset figure for Pluto
-            PyPlot.close(p.context[:figure]) 
-        end
-        p.context[:figure]=PyPlot.figure(p.context[:fignumber],figsize=(res[1]/100,res[2]/100),dpi=100)
+        p.context[:figure]=PyPlot.figure(p.context[:fignumber],dpi=100)
+        p.context[:figure].set_size_inches(res[1]/100,res[2]/100,forward=true)
         for ctx in p.subplots
             ctx[:figure]=p.context[:figure]
         end
