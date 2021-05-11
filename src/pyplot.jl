@@ -193,7 +193,6 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid)
                        vmin=1.0,
                        vmax=length(cmap)
                        )
-    @show length(cmap)
     if ctx[:colorbar]==:horizontal
         cbar=fig.colorbar(cdata,ax=ax,ticks=collect(1:length(cmap)),orientation="horizontal")
     end
