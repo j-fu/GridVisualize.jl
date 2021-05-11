@@ -142,7 +142,7 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grid)
         ax.plot([x2,x2],[-h,h],linewidth=ctx[:linewidth],color="k",label="")
     end
     
-    cmap=bregion_cmap(ncellregions)
+    cmap=bregion_cmap(nbfaceregions)
     for ibface=1:num_bfaces(grid)
         ireg=bfaceregions[ibface]
         if ireg >0
@@ -187,14 +187,19 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid)
     ax.set_aspect(ctx[:aspect])
     tridat=tridata(grid)
     cmap=region_cmap(ncellregions)
-    cdata=ax.tripcolor(tridat...,facecolors=grid[CellRegions],cmap=PyPlot.ColorMap(cmap,length(cmap)))
-
+    cdata=ax.tripcolor(tridat...,
+                       facecolors=grid[CellRegions],
+                       cmap=PyPlot.ColorMap(cmap,length(cmap)),
+                       vmin=1.0,
+                       vmax=length(cmap)
+                       )
+    @show length(cmap)
     if ctx[:colorbar]==:horizontal
-        cbar=fig.colorbar(cdata,ax=ax,ticks=collect(1:ncellregions),orientation="horizontal")
+        cbar=fig.colorbar(cdata,ax=ax,ticks=collect(1:length(cmap)),orientation="horizontal")
     end
 
     if ctx[:colorbar]==:vertical
-        cbar=fig.colorbar(cdata,ax=ax,ticks=collect(1:ncellregions),orientation="vertical")
+        cbar=fig.colorbar(cdata,ax=ax,ticks=collect(1:length(cmap)),orientation="vertical")
     end
     
     ax.triplot(tridat...,color="k",linewidth=ctx[:linewidth])
