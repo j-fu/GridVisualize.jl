@@ -51,7 +51,7 @@ $(SIGNATURES)
 
 Heuristically check if Plotter is Makie/WGLMakie
 """
-ismakie(Plotter)= (typeof(Plotter)==Module)&&isdefined(Plotter,:AbstractPlotting)
+ismakie(Plotter)= (typeof(Plotter)==Module)&&isdefined(Plotter,:Makie)
 
 """
 $(SIGNATURES)

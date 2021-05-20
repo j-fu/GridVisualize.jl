@@ -5,17 +5,17 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
     Makie=p.context[:Plotter]
     
     # Check for version compatibility
-    version_min=v"0.17.4"
-    version_max=v"0.18.99"
+    version_min=v"0.13"
+    version_max=v"0.13.99"
     
-    version_installed=PkgVersion.Version(Makie.AbstractPlotting)
+    version_installed=PkgVersion.Version(Makie.Makie)
     
     if version_installed<version_min
-        error("Outdated version $(version_installed) of AbstractPlotting. Please upgrade to at least $(version_min)")
+        error("Outdated version $(version_installed) of Makie. Please upgrade to at least $(version_min)")
     end
     
     if version_installed>version_max
-        @warn("Possibly breaking version $(version_installed) of AbstractPlotting.")
+        @warn("Possibly breaking version $(version_installed) of Makie.")
     end
 
     # Prepare flippable layout
@@ -92,31 +92,41 @@ function scene_interaction(update_scene,scene,Makie,switchkeys::Vector{Symbol}=[
     # Handle mouse position within scene
     mouseposition=Makie.Node((0,0))
 
-    Makie.on(m->mouseposition[]=m, scene.events.mouseposition)
+
+    Makie.on(scene.events.mouseposition) do m
+        mouseposition[]=m
+        false
+    end
+
 
     # Set keyboard event callback
-    Makie.on(scene.events.keyboardbuttons) do buttons
+    Makie.on(scene.events.keyboardbutton) do buttons
         if _inscene(scene,mouseposition[])
             # On pressing a switch key, pass control
             for i=1:length(switchkeys)
                 if switchkeys[i]!=:nothing && Makie.ispressed(scene,getproperty(Makie.Keyboard,switchkeys[i]))
                     activeswitch[]=switchkeys[i]
                     update_scene(0,switchkeys[i])
-                    return
+                    return true
                 end
             end
             
             # Handle change values via up/down control
             if Makie.ispressed(scene, Makie.Keyboard.up)
                 update_scene(1,activeswitch[])
+                return true
             elseif Makie.ispressed(scene, Makie.Keyboard.down)
                 update_scene(-1,activeswitch[])
+                return true
             elseif Makie.ispressed(scene, Makie.Keyboard.page_up)
                 update_scene(10,activeswitch[])
+                return true
             elseif Makie.ispressed(scene, Makie.Keyboard.page_down)
                 update_scene(-10,activeswitch[])
+                return true
             end
         end
+        return false
     end
 end
 
@@ -811,7 +821,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     make_mesh(pts,fcs)=Mesh(pts,fcs)
     
     function make_mesh(pts,fcs,vals)
-        colors = Makie.AbstractPlotting.interpolated_getindex.((cmap,), vals, (fminmax,))
+        colors = Makie.Makie.interpolated_getindex.((cmap,), vals, (fminmax,))
         GeometryBasics.Mesh(meta(pts, color=colors,normals=normals(pts, fcs)), fcs)
     end
     

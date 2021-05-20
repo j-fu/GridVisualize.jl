@@ -143,7 +143,10 @@ function flayoutscene(;blocked=false,
     # Watch mouse position
     mouseposition=Makie.Node((0,0))
 
-    Makie.on(m->mouseposition[]=m, parent.events.mouseposition)
+    Makie.on(parent.events.mouseposition) do m
+        mouseposition[]=m
+        false
+    end
 
     # Switch focus to subscene  at pos
     function _focus(focus)
@@ -180,7 +183,7 @@ function flayoutscene(;blocked=false,
     
     # Handle global key events for `,` (focus/gallery view)
     # and space (toggle blocking)
-    Makie.on(parent.events.keyboardbuttons) do buttons
+    Makie.on(parent.events.keyboardbutton) do buttons
         if Makie.ispressed(parent, focuskey)
             if gallery_view[]
                 pos=_subscene(mouseposition[])
@@ -192,10 +195,13 @@ function flayoutscene(;blocked=false,
                 _showall(flayout)
                 gallery_view[]=true
             end
+            return true
         end
         if Makie.ispressed(parent, blockingkey)
             _toggle_block(flayout)
+            return true
         end
+        return false
     end
     parent,flayout
 end
