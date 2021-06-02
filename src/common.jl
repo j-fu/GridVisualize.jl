@@ -280,18 +280,31 @@ end
 
 
 """
-function marching_tetrahedra(grid::ExtendableGrid,func,planes,flevels;tol=0.0,
-                             primepoints=zeros(0,0), primevalues=zeros(0), Tv=Float32,
-                             Tp=SVector{3,Float32},Tf=SVector{3,Int32})
+function marching_tetrahedra(grid::ExtendableGrid,func,planes,flevels; kwargs...)
+    coord=grid[Coordinates]
+    cellnodes=grid[CellNodes]
+    marching_tetrahedra(coord,cellnodes,func,planes,flevels;kwargs...)
+end
 
+"""
+   $(SIGNATURES)
+
+
+"""
+function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
+                             tol=0.0,
+                             primepoints=zeros(0,0),
+                             primevalues=zeros(0),
+                             Tv=Float32,
+                             Tp=SVector{3,Float32},
+                             Tf=SVector{3,Int32})
     # We could rewrite this for Meshing.jl
     # CellNodes::Vector{Ttet}, Coord::Vector{Tpt}
+
 
     nplanes=length(planes)
     nlevels=length(flevels)
     
-    coord=grid[Coordinates]
-    cellnodes=grid[CellNodes]
 
     all_ixfaces=Vector{Tf}(undef,0)
     all_ixcoord=Vector{Tp}(undef,0)
@@ -352,15 +365,19 @@ end
 """
     $(SIGNATURES)
 
-    Collect isoline snippets on triangles ready for linesegments!(=
+    Collect isoline snippets on triangles ready for linesegments!
 
 """
-function marching_triangles(grid::ExtendableGrid,func,levels)
 
+
+function marching_triangles(grid::ExtendableGrid,func,levels)
     coord::Matrix{Float64}=grid[Coordinates]
     cellnodes::Matrix{Int32}=grid[CellNodes]
-    points=Vector{Point2f0}(undef,0)
+    marching_triangles(coord,cellnodes,func,levels)
+end
 
+function marching_triangles(coord,cellnodes,func,levels)
+    points=Vector{Point2f0}(undef,0)
     function isect(nodes)
         (i1,i2,i3)=(1,2,3)
 
