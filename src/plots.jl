@@ -21,7 +21,9 @@ function reveal(p::GridVisualizer,::Type{PlotsType})
             ctx=p.subplots[i,j]
             if haskey(ctx,:ax)
                 push!(subplots,ctx[:ax])
-            delete!(ctx,:ax)
+                delete!(ctx,:ax)
+            else
+                push!(subplots,Plots.plot(legend=false,grid=false,border=:none))
             end
         end
     end
