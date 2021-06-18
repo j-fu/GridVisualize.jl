@@ -75,6 +75,7 @@ const leglocs=Dict(
     :ct => "upper center",
     :rt => "upper right",
     :lc => "center left",
+    :cc => "center center",
     :rc => "center right",
     :lb => "lower left",
     :cb => "lower center",
@@ -352,10 +353,12 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
                 ax.plot(coord[1,:],func,
                         linestyle=lstyles[ctx[:linestyle]],
                         color=ctx[:color],
+                        linewidth=ctx[:linewidth],
                         label=ctx[:label])
             else
                 ax.plot(coord[1,:],func,
                         linestyle=lstyles[ctx[:linestyle]],
+                        linewidth=ctx[:linewidth],
                         color=ctx[:color])
             end
         else
@@ -366,7 +369,8 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
                         label=ctx[:label],
                         marker=mshapes[ctx[:markershape]],
                         markevery=ctx[:markevery],
-                        markersize=ctx[:markersize]
+                        markersize=ctx[:markersize],
+                        linewidth=ctx[:linewidth]
                         )
             else
                 ax.plot(coord[1,:],func,
@@ -374,7 +378,8 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
                         color=ctx[:color],
                         marker=mshapes[ctx[:markershape]],
                         markevery=ctx[:markevery],
-                        markersize=ctx[:markersize]
+                        markersize=ctx[:markersize],
+                        linewidth=ctx[:linewidth]
                         )
             end                
         end
@@ -383,9 +388,11 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
         # mpoints=markerpoints(points,ctx[:markers],Diagonal([1,1]))
         # ampoints=reshape(reinterpret(Float32,mpoints),(2,length(mpoints)))
         # ax.scatter(ampoints[1,:], ampoints[2,:],color=ctx[:color],label="")
-       
+        
     end
     ax.grid()
+    ax.set_xlabel(ctx[:xlabel])
+    ax.set_ylabel(ctx[:ylabel])
     if ctx[:legend]!=:none
         ax.legend(loc=leglocs[ctx[:legend]])
     end
