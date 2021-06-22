@@ -36,13 +36,34 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid,func)
                      ylabel=ctx[:ylabel],
                      label=ctx[:label],
                      linewidth=ctx[:linewidth],
-                     legend=ctx[:legend]
+                     legend=ctx[:legend],
+                     xlimits=ctx[:xlimits],
+                     ylimits=ctx[:flimits],
+                     clear=ctx[:clear]
                      )
     reveal(ctx,TP)
 end
 
 gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid)=nothing
-scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)=nothing
+function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)
+    PlutoVista=ctx[:Plotter]
+    pts=grid[Coordinates]
+    tris=grid[CellNodes]
+
+    isolines=ctx[:isolines]
+    fmin,fmax=ctx[:flimits]
+
+    if fmin<fmax
+        isolines=collect(range(fmin,fmax,length=isolines))
+    end
+    PlutoVista.tricontour!(ctx[:figure],pts,tris,func,
+                           colormap=ctx[:colormap],
+                           backend=ctx[:backend],
+                           isolines=isolines
+                           )
+    reveal(ctx,TP)
+
+end
 
 gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)=nothing
 scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid,func)=nothing

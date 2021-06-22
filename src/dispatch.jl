@@ -300,6 +300,7 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :fignumber => Pair(1,"Figure number (PyPlot)"),
     :framepos => Pair(1,"Subplot position in frame (VTKView)"),
     :subplot => Pair((1,1),"Private: Actual subplot"),
+    :backend => Pair(:default,"Backend for PlutoVista plot"),
 )
 
 #
