@@ -21,15 +21,16 @@ include("makie.jl")
 include("vtkview.jl")
 include("meshcat.jl")
 include("plots.jl")
+include("plutovista.jl")
 
 
 export scalarplot,scalarplot!
 export gridplot,gridplot!
 export save,reveal,backend!
-export isplots,isvtkview,ispyplot,ismakie
+export isplots,isvtkview,ispyplot,ismakie,isplutovista
 export GridVisualizer, SubVisualizer
 export plottertype, available_kwargs
 export default_plotter!, default_plotter
-export PyPlotType,MakieType,PlotsType,VTKViewType 
+export PyPlotType,MakieType,PlotsType,VTKViewType, PlutoVistaType
 
 end

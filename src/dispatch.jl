@@ -61,6 +61,13 @@ Heuristically check if Plotter is MeshCat
 ismeshcat(Plotter)= (typeof(Plotter)==Module)&&isdefined(Plotter,:Visualizer)
 
 """
+$(SIGNATURES)
+
+Heuristically check if Plotter is MeshCat
+"""
+isplutovista(Plotter)= (typeof(Plotter)==Module)&&isdefined(Plotter,:PlutoVistaPlot)
+
+"""
 $(TYPEDEF)
 
 Abstract type for dispatching on plotter
@@ -96,6 +103,13 @@ Abstract type for dispatching on plotter
 abstract type MeshCatType end
 
 """
+$(TYPEDEF)
+
+Abstract type for dispatching on plotter
+"""
+abstract type PlutoVistaType end
+
+"""
 $(SIGNATURES)
     
 Heuristically detect type of plotter, returns the corresponding abstract type fro plotting.
@@ -111,6 +125,8 @@ function plottertype(Plotter::Union{Module,Nothing})
         return VTKViewType
     elseif ismeshcat(Plotter)
         return MeshCatType
+    elseif isplutovista(Plotter)
+        return PlutoVistaType
     end
     Nothing
 end
@@ -248,6 +264,9 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :resolution => Pair((500,500),"Plot window resolution"),
     :legend => Pair(:none,"Legend (position): one of [:none, :best, :lt, :ct, :rt, :lc, :rc, :lb, :cb, :rb]"),    
     :title => Pair("","Plot title"),
+    :xlabel => Pair("","x axis label"),
+    :ylabel => Pair("","y axis label"),
+    :zlabel => Pair("","z axis label"),
     :xlimits => Pair((1,-1),"x limits"),
     :ylimits => Pair((1,-1),"y limits"),
     :zlimits => Pair((1,-1),"z limits"),
@@ -281,6 +300,7 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :fignumber => Pair(1,"Figure number (PyPlot)"),
     :framepos => Pair(1,"Subplot position in frame (VTKView)"),
     :subplot => Pair((1,1),"Private: Actual subplot"),
+    :backend => Pair(:default,"Backend for PlutoVista plot"),
 )
 
 #
