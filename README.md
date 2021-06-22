@@ -70,14 +70,14 @@ The main supported backends are GLMakie and PyPlot.
 - 'i' means some level of interactive control
 - '(y)' means avaiability only on rectangular resp. cuboid grids.
 
-|            | PyPlot | GLMakie | Plots | VTKView |
-|------------|--------|---------|-------|---------|
-| scalar, 1D | y      | y       | y     | y       |
-| grid, 1D   | y      | y       | y     | n       |
-| scalar, 2D | y      | y,i     | (y)   | y,i     |
-| grid, 2D   | y      | y,i     | (y)   | y,i     |
-| scalar, 3D | y      | y,i     | no    | y,i     |
-| grid, 3D   | y      | y,i     | no    | y,i     |
+|            | PyPlot | GLMakie | Plots | VTKView | PlutoVista |
+|------------|--------|---------|-------|---------|------------|
+| scalar, 1D | y      | y       | y     | y       | y,i        |
+| grid, 1D   | y      | y       | y     | n       | n          |
+| scalar, 2D | y      | y,i     | (y)   | y,i     | y          |
+| grid, 2D   | y      | y,i     | (y)   | y,i     | n          |
+| scalar, 3D | y      | y,i     | no    | y,i     | n          |
+| grid, 3D   | y      | y,i     | no    | y,i     | n          |
 
 
 For 2D plots, CairoMakie works as well.
@@ -101,4 +101,8 @@ For 2D plots, CairoMakie works as well.
 
 ## Notebooks
 Plotting within Pluto notebooks for PyPlot, Plots, GLMakie is working.
+
+Plotting in Pluto notebooks using [PlutoVista.jl](https://github.com/j-fu/PlutoVista.jl) is under
+development - see the example notebook: [pluto](https://raw.githubusercontent.com/j-fu/GridVisualize.jl/main/examples/plutovista.jl),
+[html](https://j-fu.github.io/GridVisualize.jl/dev/plutovista.html)
 
