@@ -77,6 +77,32 @@ testplot2(PlutoVista)
 # ╔═╡ 4de6b5c9-4d2d-4bcb-bc88-c6f50a23f9b6
 testplot2(PlutoVista,t=t2)
 
+# ╔═╡ 2061e7fd-c740-4d4b-af5b-7a3a9444aafd
+md"""
+### Changeable data (experimental)
+"""
+
+# ╔═╡ f84beb4f-4136-4e5a-ba43-279b703fc75f
+begin
+	X2=0:0.01:10
+	grid2=simplexgrid(collect(X2))
+	f2(t)=map( (x)->sin(x^2-t),grid2)
+end
+
+# ╔═╡ 9bb243cc-c69a-405b-bb35-6cddfde8fd30
+begin
+	vis2=GridVisualizer(resolution=(300,300),Plotter=PlutoVista)
+	scalarplot!(vis2[1,1],grid2,f2(0),show=true)
+end
+
+# ╔═╡ f4c78c61-19b1-4889-aa20-c6a3b157d435
+md"""
+t3: $(@bind t3 Slider(-10:0.1:10, default=0, show_value=true))
+"""
+
+# ╔═╡ be369a01-a0c2-4a6b-831b-f716cc807240
+scalarplot!(vis2[1,1],grid2,f2(t3),show=true)
+
 # ╔═╡ ae1fe1ab-4a0e-4c80-bd6f-912201fb4bb4
 md"""
 ## 2D Scalar plot
@@ -109,10 +135,10 @@ begin
 end
 
 # ╔═╡ 412c905f-050c-4b78-a66f-0d03978e7edf
-vis=GridVisualizer(resolution=(300,300),Plotter=PlutoVista)
-
-# ╔═╡ 5608a6a1-bba5-4d20-85d6-66151c9ec4b3
-scalarplot!(vis[1,1],grid,f(0),resolution=(300,300),flimits=(-π/2,π/2),show=true)
+begin
+	vis=GridVisualizer(resolution=(300,300),Plotter=PlutoVista)
+	scalarplot!(vis[1,1],grid,f(0),show=true)
+end
 
 # ╔═╡ 6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
 md"""
@@ -120,7 +146,7 @@ t= $(@bind t Slider(-10:0.1:10, default=0, show_value=true))
 """
 
 # ╔═╡ 461481ef-f88b-4e4e-b57d-ce003abbfdf1
-scalarplot!(vis[1,1],grid,f(t),resolution=(300,300),flimits=(-π/2,π/2),show=true)
+scalarplot!(vis[1,1],grid,f(t),resolution=(300,300),flimits=(-π/2,π/2),show=true,colormap=:hot)
 
 # ╔═╡ Cell order:
 # ╠═6df3beed-24a7-4b26-a315-0520f4863190
@@ -136,6 +162,11 @@ scalarplot!(vis[1,1],grid,f(t),resolution=(300,300),flimits=(-π/2,π/2),show=tr
 # ╠═84192945-d4b6-4949-8f06-d94e04a7a56d
 # ╠═63fe3259-7d79-40ec-98be-e0592e40ee6b
 # ╠═4de6b5c9-4d2d-4bcb-bc88-c6f50a23f9b6
+# ╟─2061e7fd-c740-4d4b-af5b-7a3a9444aafd
+# ╠═f84beb4f-4136-4e5a-ba43-279b703fc75f
+# ╠═9bb243cc-c69a-405b-bb35-6cddfde8fd30
+# ╠═be369a01-a0c2-4a6b-831b-f716cc807240
+# ╟─f4c78c61-19b1-4889-aa20-c6a3b157d435
 # ╟─ae1fe1ab-4a0e-4c80-bd6f-912201fb4bb4
 # ╠═d5258595-60e4-406f-a71e-69111cdad8b9
 # ╠═c98a90bf-1a3e-4681-a3b0-663c6844df6b
@@ -143,6 +174,5 @@ scalarplot!(vis[1,1],grid,f(t),resolution=(300,300),flimits=(-π/2,π/2),show=tr
 # ╟─cefb38c1-159e-42db-8088-294573fcece2
 # ╠═a9f4f98f-ec2f-42d6-88da-4a8a6f727e93
 # ╠═412c905f-050c-4b78-a66f-0d03978e7edf
-# ╠═5608a6a1-bba5-4d20-85d6-66151c9ec4b3
 # ╠═461481ef-f88b-4e4e-b57d-ce003abbfdf1
 # ╟─6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
