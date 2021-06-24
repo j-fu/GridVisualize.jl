@@ -47,7 +47,7 @@ md"""
 # ╔═╡ a20d74c9-16da-408a-b247-0c17321888f9
 function testplot1(Plotter)
 	grid=simplexgrid(0:0.01:10)	
-	scalarplot(grid,map(sin,grid),Plotter=Plotter,resolution=(600,300),markershape=:star5,markevery=20, xlabel="x",ylabel="z")
+	scalarplot(grid,map(sin,grid),Plotter=Plotter,resolution=(600,300),markershape=:star5,markevery=20, xlabel="x",ylabel="z",legend=:rt,label="sin")
 end
 
 # ╔═╡ cc17187f-404c-4c31-8625-fa067eea7273
@@ -60,7 +60,7 @@ testplot1(PlutoVista)
 function testplot2(Plotter;t=0)
 	p=GridVisualizer(Plotter=Plotter, resolution=(500,300),legend=:rt,xlabel="x")
 	grid=simplexgrid(0:0.01:10)	
-	scalarplot!(p,grid,map(x->sin(x-t),grid),Plotter=Plotter,color=:red,label="sin",linestyle=:dash)
+	scalarplot!(p,grid,map(x->sin(x-t),grid),Plotter=Plotter,color=:red,label="sin(x-$(t))",linestyle=:dash)
 	scalarplot!(p,grid,map(cos,grid),Plotter=Plotter,color=:green,clear=false,label="cos",linestyle=:dashdot,linewidth=3)
 	reveal(p)
 end
@@ -80,6 +80,8 @@ testplot2(PlutoVista,t=t2)
 # ╔═╡ 2061e7fd-c740-4d4b-af5b-7a3a9444aafd
 md"""
 ### Changeable data (experimental)
+
+This just updates the data. In the 1D case the difference seems to be not critical.
 """
 
 # ╔═╡ f84beb4f-4136-4e5a-ba43-279b703fc75f
@@ -92,7 +94,8 @@ end
 # ╔═╡ 9bb243cc-c69a-405b-bb35-6cddfde8fd30
 begin
 	vis2=GridVisualizer(resolution=(300,300),Plotter=PlutoVista)
-	scalarplot!(vis2[1,1],grid2,f2(0),show=true)
+	myplot(t)=scalarplot!(vis2,grid2,f2(t),show=true)
+	myplot(0)
 end
 
 # ╔═╡ f4c78c61-19b1-4889-aa20-c6a3b157d435
@@ -101,7 +104,26 @@ t3: $(@bind t3 Slider(-10:0.1:10, default=0, show_value=true))
 """
 
 # ╔═╡ be369a01-a0c2-4a6b-831b-f716cc807240
-scalarplot!(vis2[1,1],grid2,f2(t3),show=true)
+myplot(t3)
+
+# ╔═╡ ed9b80e5-9678-4ba6-bb36-c2e0674ed9ba
+md"""
+## 1D grid plot 
+"""
+
+# ╔═╡ 9ce4f63d-cd96-48d7-a637-07cb84fa88ab
+function testgridplot(Plotter)
+	grid=simplexgrid(0:1:10)
+	cellmask!(grid,[0.0],[5],2)
+	bfacemask!(grid,[5],[5],3)
+	gridplot(grid, Plotter=Plotter,resolution=(600,200),legend=:rt)
+end
+
+# ╔═╡ 77eeefc7-e416-426b-8f87-1bc8439dae6d
+testgridplot(PyPlot)
+
+# ╔═╡ d503ee1e-1e1f-4235-b286-dc3137a2c96a
+testgridplot(PlutoVista)
 
 # ╔═╡ ae1fe1ab-4a0e-4c80-bd6f-912201fb4bb4
 md"""
@@ -125,6 +147,10 @@ testplot3(PlutoVista)
 # ╔═╡ cefb38c1-159e-42db-8088-294573fcece2
 md"""
 ### Changeable data (experimental)
+
+Here we observe a more profound advantage, and vtk.js also has a rather understandable way how data can be updated.
+
+Generally, with plutovista we need two cells - one with the graph shown, and a second one which triggers the modification.
 """
 
 # ╔═╡ a9f4f98f-ec2f-42d6-88da-4a8a6f727e93
@@ -137,7 +163,8 @@ end
 # ╔═╡ 412c905f-050c-4b78-a66f-0d03978e7edf
 begin
 	vis=GridVisualizer(resolution=(300,300),Plotter=PlutoVista)
-	scalarplot!(vis[1,1],grid,f(0),show=true)
+	myplot2(t)=scalarplot!(vis,grid,f(t),show=true,flimits=(-π/2,π/2))
+	myplot2(0)	
 end
 
 # ╔═╡ 6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
@@ -146,7 +173,7 @@ t= $(@bind t Slider(-10:0.1:10, default=0, show_value=true))
 """
 
 # ╔═╡ 461481ef-f88b-4e4e-b57d-ce003abbfdf1
-scalarplot!(vis[1,1],grid,f(t),resolution=(300,300),flimits=(-π/2,π/2),show=true,colormap=:hot)
+myplot2(t)
 
 # ╔═╡ Cell order:
 # ╠═6df3beed-24a7-4b26-a315-0520f4863190
@@ -167,6 +194,10 @@ scalarplot!(vis[1,1],grid,f(t),resolution=(300,300),flimits=(-π/2,π/2),show=tr
 # ╠═9bb243cc-c69a-405b-bb35-6cddfde8fd30
 # ╠═be369a01-a0c2-4a6b-831b-f716cc807240
 # ╟─f4c78c61-19b1-4889-aa20-c6a3b157d435
+# ╠═ed9b80e5-9678-4ba6-bb36-c2e0674ed9ba
+# ╠═9ce4f63d-cd96-48d7-a637-07cb84fa88ab
+# ╠═77eeefc7-e416-426b-8f87-1bc8439dae6d
+# ╠═d503ee1e-1e1f-4235-b286-dc3137a2c96a
 # ╟─ae1fe1ab-4a0e-4c80-bd6f-912201fb4bb4
 # ╠═d5258595-60e4-406f-a71e-69111cdad8b9
 # ╠═c98a90bf-1a3e-4681-a3b0-663c6844df6b
@@ -174,5 +205,5 @@ scalarplot!(vis[1,1],grid,f(t),resolution=(300,300),flimits=(-π/2,π/2),show=tr
 # ╟─cefb38c1-159e-42db-8088-294573fcece2
 # ╠═a9f4f98f-ec2f-42d6-88da-4a8a6f727e93
 # ╠═412c905f-050c-4b78-a66f-0d03978e7edf
-# ╠═461481ef-f88b-4e4e-b57d-ce003abbfdf1
+# ╟─461481ef-f88b-4e4e-b57d-ce003abbfdf1
 # ╟─6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3

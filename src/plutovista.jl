@@ -23,7 +23,64 @@ function reveal(ctx::SubVisualizer,TP::Type{PlutoVistaType})
 end
 
 
-gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)=nothing
+function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)
+    PlutoVista=ctx[:Plotter]
+
+
+ 
+
+    
+    coord=grid[Coordinates]
+
+    cellregions=grid[CellRegions]
+    cellnodes=grid[CellNodes]
+    coord=grid[Coordinates]
+    ncellregions=grid[NumCellRegions]
+    bfacenodes=grid[BFaceNodes]
+    bfaceregions=grid[BFaceRegions]
+    nbfaceregions=grid[NumBFaceRegions]
+    ncellregions=grid[NumCellRegions]
+    
+    crflag=ones(Bool,ncellregions)
+    brflag=ones(Bool,nbfaceregions)
+        
+    xmin=minimum(coord)
+    xmax=maximum(coord)
+    h=(xmax-xmin)/20.0
+
+    #    ax.set_aspect(ctx[:aspect])
+#    ax.get_yaxis().set_ticks([])
+#    ax.set_ylim(-5*h,xmax-xmin)
+    cmap=region_cmap(ncellregions)
+
+    for icell=1:num_cells(grid)
+        ireg=cellregions[icell]
+        label = crflag[ireg] ? "c$(ireg)" : ""
+        crflag[ireg]=false
+        
+        x1=coord[1,cellnodes[1,icell]]
+        x2=coord[1,cellnodes[2,icell]]
+        
+        PlutoVista.plot!(ctx[:figure],[x1,x2],[0,0],linewidth=3.0,color=rgbtuple(cmap[cellregions[icell]]),label=label)
+        PlutoVista.plot!(ctx[:figure],[x1,x1],[-h,h],linewidth=ctx[:linewidth],color=:black)
+        PlutoVista.plot!(ctx[:figure],[x2,x2],[-h,h],linewidth=ctx[:linewidth],color=:black)
+    end
+    
+    cmap=bregion_cmap(nbfaceregions)
+    for ibface=1:num_bfaces(grid)
+        ireg=bfaceregions[ibface]
+        if ireg >0
+            label = brflag[ireg] ? "b$(ireg)" : ""
+            brflag[ireg]=false
+            x1=coord[1,bfacenodes[1,ibface]]
+            PlutoVista.plot!(ctx[:figure],[x1,x1],[-2*h,2*h],linewidth=3.0,color=rgbtuple(cmap[ireg]),label=label,legend=leglocs[ctx[:legend]])
+        end
+    end
+    reveal(ctx,TP)
+end
+
+
+
 function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid,func)
     PlutoVista=ctx[:Plotter]
     coord=grid[Coordinates]
