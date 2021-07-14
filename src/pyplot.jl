@@ -310,7 +310,7 @@ end
 
 
 ### 1D Function
-function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func)
+function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func::AbstractVector)
     PyPlot=ctx[:Plotter]
     if !haskey(ctx,:ax)
         ctx[:ax]=ctx[:figure].add_subplot(ctx[:layout]...,ctx[:iplot])
@@ -446,6 +446,10 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     if ctx[:colorbar]==:vertical
         ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=isolines,boundaries=colorlevels, orientation="vertical")
     end
+
+    ax.set_xlabel(ctx[:xlabel])
+
+    ax.set_ylabel(ctx[:ylabel])
     
     reveal(ctx,TP)
 end
@@ -512,6 +516,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid,func)
     ax.set_zlim3d(xyzmin[3],xyzmax[3])
     ax.view_init(ctx[:elev],ctx[:azim])
     
+    ax.set_title(ctx[:title])
     
     if ctx[:legend]!=:none
         ax.legend(loc=leglocs[ctx[:legend]])
