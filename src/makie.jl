@@ -5,8 +5,8 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
     Makie=p.context[:Plotter]
     
     # Check for version compatibility
-    version_min=v"0.13"
-    version_max=v"0.13.99"
+    version_min=v"0.15"
+    version_max=v"0.15.99"
     
     version_installed=PkgVersion.Version(Makie.Makie)
     
@@ -432,7 +432,7 @@ This uses a gridlayout and its  protrusion capabilities.
 """
 function makescene2d(ctx)
     Makie=ctx[:Plotter]
-    GL=Makie.GridLayout(parent=ctx[:figure])
+    GL=Makie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
     if ctx[:colorbar]==:vertical
         GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:poly],width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
@@ -444,7 +444,7 @@ end
 
 function makescene2d_grid(ctx)
     Makie=ctx[:Plotter]
-    GL=Makie.GridLayout(parent=ctx[:figure])
+    GL=Makie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
     ncol=length(ctx[:cmap])
     if ctx[:colorbar]==:vertical
@@ -635,7 +635,7 @@ This uses a gridlayout and its  protrusion capabilities.
 
 function makescene3d(ctx)
     Makie=ctx[:Plotter]
-    GL=Makie.GridLayout(parent=ctx[:figure],default_rowgap=0)
+    GL=Makie.GridLayout(ctx[:figure];default_rowgap=0)
     if ctx[:scene3d]=="LScene"
         # LScene has no title, put the title into protrusion space on top  of the scene
         GL[1,1,Makie.Top()]=Makie.Label(ctx[:figure],
