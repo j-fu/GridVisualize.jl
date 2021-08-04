@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.8
+# v0.15.1
 
 using Markdown
 using InteractiveUtils
@@ -22,13 +22,13 @@ begin
    Pkg.activate(mktempdir())
    Pkg.add("Revise")
    using Revise
-   Pkg.add(["PyPlot","ExtendableGrids","PlutoUI"])
+   Pkg.add(["PyPlot","ExtendableGrids","PlutoUI","Plots","GLMakie"])
 	if develop
 	   Pkg.develop(["PlutoVista","GridVisualize"])
 	else
 	   Pkg.add(["PlutoVista","GridVisualize"])
 	end
-   using PyPlot,PlutoVista,GridVisualize,ExtendableGrids,PlutoUI
+   using PyPlot,PlutoVista,GridVisualize,ExtendableGrids,PlutoUI,Plots,GLMakie
 end
 
 # ╔═╡ 68e2c958-b417-4ba1-9577-697304fe140a
@@ -47,18 +47,24 @@ md"""
 # ╔═╡ a20d74c9-16da-408a-b247-0c17321888f9
 function testplot1(Plotter)
 	grid=simplexgrid(0:0.01:10)	
-	scalarplot(grid,map(sin,grid),Plotter=Plotter,resolution=(600,300),markershape=:star5,markevery=20, xlabel="x",ylabel="z",legend=:rt,label="sin")
+	scalarplot(grid,map(sin,grid),Plotter=Plotter,resolution=(600,200),markershape=:star5,markevery=20, xlabel="x",ylabel="z",legend=:rt,label="sin")
 end
 
 # ╔═╡ cc17187f-404c-4c31-8625-fa067eea7273
 testplot1(PyPlot)
+
+# ╔═╡ ad1c4dd6-7c6b-4433-a1ac-b2f817ba5d81
+testplot1(Plots)
+
+# ╔═╡ 86ced62a-27fb-46ec-8867-c4222aeee3e3
+testplot1(GLMakie)
 
 # ╔═╡ 33482af8-3542-4723-ae43-770a789b69b3
 testplot1(PlutoVista)
 
 # ╔═╡ c4eeb06f-932e-4acc-8e5b-f2a7f9242a42
 function testplot2(Plotter;t=0)
-	p=GridVisualizer(Plotter=Plotter, resolution=(500,300),legend=:rt,xlabel="x")
+	p=GridVisualizer(Plotter=Plotter, resolution=(500,200),legend=:rt,xlabel="x")
 	grid=simplexgrid(0:0.01:10)	
 	scalarplot!(p,grid,map(x->sin(x-t),grid),Plotter=Plotter,color=:red,label="sin(x-$(t))",linestyle=:dash)
 	scalarplot!(p,grid,map(cos,grid),Plotter=Plotter,color=:green,clear=false,label="cos",linestyle=:dashdot,linewidth=3)
@@ -67,6 +73,12 @@ end
 
 # ╔═╡ 29ca4775-6ba5-474c-bd2c-8f770b09addd
 testplot2(PyPlot)
+
+# ╔═╡ c0ab77e8-01ea-436d-85f2-34e253944f11
+testplot2(Plots)
+
+# ╔═╡ d01f53ef-eecc-4161-ae9f-f544b427908f
+testplot2(GLMakie)
 
 # ╔═╡ 84192945-d4b6-4949-8f06-d94e04a7a56d
 testplot2(PlutoVista)
@@ -86,16 +98,26 @@ This just updates the data. In the 1D case the difference seems to be not critic
 
 # ╔═╡ f84beb4f-4136-4e5a-ba43-279b703fc75f
 begin
-	X2=0:0.01:10
+	X2=0:0.001:10
 	grid2=simplexgrid(collect(X2))
 	f2(t)=map( (x)->sin(x^2-t),grid2)
 end
 
+# ╔═╡ c1278fb2-3e75-445f-893a-b8b8a7e931d3
+p=PlutoVista.PlutoVistaPlot(resolution=(600,200))
+
+# ╔═╡ 29fa4467-65ee-4dad-a660-5197864ddbdc
+md"""
+t4: $(@bind t4 Slider(-10:0.1:10, default=0, show_value=true))
+"""
+
+# ╔═╡ 661531f7-f740-4dd4-9a59-89ddff06ba5c
+PlutoVista.plot!(p,X2,f2(t4),clear=true)
+
 # ╔═╡ 9bb243cc-c69a-405b-bb35-6cddfde8fd30
 begin
-	vis2=GridVisualizer(resolution=(300,300),Plotter=PlutoVista)
 	myplot(t)=scalarplot!(vis2,grid2,f2(t),show=true)
-	myplot(0)
+	vis2=GridVisualizer(resolution=(600,200),Plotter=PlutoVista,datadim=1)
 end
 
 # ╔═╡ f4c78c61-19b1-4889-aa20-c6a3b157d435
@@ -164,7 +186,6 @@ end
 begin
 	vis=GridVisualizer(resolution=(300,300),Plotter=PlutoVista)
 	myplot2(t)=scalarplot!(vis,grid,f(t),show=true,flimits=(-π/2,π/2))
-	myplot2(0)	
 end
 
 # ╔═╡ 6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
@@ -183,14 +204,21 @@ myplot2(t)
 # ╟─00b04f6b-34a6-4e30-9864-d273305281d4
 # ╠═a20d74c9-16da-408a-b247-0c17321888f9
 # ╠═cc17187f-404c-4c31-8625-fa067eea7273
+# ╠═ad1c4dd6-7c6b-4433-a1ac-b2f817ba5d81
+# ╠═86ced62a-27fb-46ec-8867-c4222aeee3e3
 # ╠═33482af8-3542-4723-ae43-770a789b69b3
 # ╠═c4eeb06f-932e-4acc-8e5b-f2a7f9242a42
 # ╠═29ca4775-6ba5-474c-bd2c-8f770b09addd
+# ╠═c0ab77e8-01ea-436d-85f2-34e253944f11
+# ╠═d01f53ef-eecc-4161-ae9f-f544b427908f
 # ╠═84192945-d4b6-4949-8f06-d94e04a7a56d
 # ╠═63fe3259-7d79-40ec-98be-e0592e40ee6b
 # ╠═4de6b5c9-4d2d-4bcb-bc88-c6f50a23f9b6
 # ╟─2061e7fd-c740-4d4b-af5b-7a3a9444aafd
 # ╠═f84beb4f-4136-4e5a-ba43-279b703fc75f
+# ╠═c1278fb2-3e75-445f-893a-b8b8a7e931d3
+# ╠═661531f7-f740-4dd4-9a59-89ddff06ba5c
+# ╟─29fa4467-65ee-4dad-a660-5197864ddbdc
 # ╠═9bb243cc-c69a-405b-bb35-6cddfde8fd30
 # ╠═be369a01-a0c2-4a6b-831b-f716cc807240
 # ╟─f4c78c61-19b1-4889-aa20-c6a3b157d435
@@ -205,5 +233,5 @@ myplot2(t)
 # ╟─cefb38c1-159e-42db-8088-294573fcece2
 # ╠═a9f4f98f-ec2f-42d6-88da-4a8a6f727e93
 # ╠═412c905f-050c-4b78-a66f-0d03978e7edf
-# ╟─461481ef-f88b-4e4e-b57d-ce003abbfdf1
+# ╠═461481ef-f88b-4e4e-b57d-ce003abbfdf1
 # ╟─6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3

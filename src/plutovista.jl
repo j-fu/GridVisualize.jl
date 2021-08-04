@@ -5,6 +5,7 @@ function initialize!(p::GridVisualizer,::Type{PlutoVistaType})
     layout=p.context[:layout]
     @assert(layout==(1,1))
     p.context[:scene]=PlutoVista.PlutoVistaPlot(resolution=p.context[:resolution])
+    PlutoVista.backend!(p.context[:scene])
     for I in CartesianIndices(layout)
         ctx=p.subplots[I]
         ctx[:figure]=p.context[:scene]
@@ -113,9 +114,9 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)
     if fmin<fmax
         isolines=collect(range(fmin,fmax,length=isolines))
     end
+    PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=2)
     PlutoVista.tricontour!(ctx[:figure],pts,tris,func,
                            colormap=ctx[:colormap],
-                           backend=ctx[:backend],
                            isolines=isolines
                            )
     reveal(ctx,TP)

@@ -301,6 +301,9 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :framepos => Pair(1,"Subplot position in frame (VTKView)"),
     :subplot => Pair((1,1),"Private: Actual subplot"),
     :backend => Pair(:default,"Backend for PlutoVista plot"),
+    :datadim => Pair(1,"Data dimension for PlutoVista plot"),
+    :regions => Pair(:all,"List of regions to plot"),
+    :species => Pair(1,"Number of species to plot or number of species in regions")
 )
 
 #
@@ -407,7 +410,7 @@ If instead of the grid,  vectors for coordinates are given, a grid is created au
 
 Keyword arguments: see [`available_kwargs`](@ref)
 """
-scalarplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter;kwargs...),grid,func,show=true)
+scalarplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter; datadim=dim_space(grid),kwargs...),grid,func,show=true)
 scalarplot(X::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
 scalarplot(X::AbstractVector,Y::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X,Y),func;kwargs...)
 scalarplot(X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func ;kwargs...)=scalarplot(simplexgrid(X,Y,Z),func;kwargs...)
