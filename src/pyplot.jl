@@ -128,7 +128,8 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grid)
     xmin=minimum(coord)
     xmax=maximum(coord)
     h=(xmax-xmin)/20.0
-#    ax.set_aspect(ctx[:aspect])
+    #    ax.set_aspect(ctx[:aspect])
+    ax.grid(true)
     ax.get_yaxis().set_ticks([])
     ax.set_ylim(-5*h,xmax-xmin)
     cmap=region_cmap(ncellregions)
@@ -390,7 +391,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func::Abstr
         # ax.scatter(ampoints[1,:], ampoints[2,:],color=ctx[:color],label="")
         
     end
-    ax.grid()
+    ax.grid(true)
     ax.set_xlabel(ctx[:xlabel])
     ax.set_ylabel(ctx[:ylabel])
     if ctx[:legend]!=:none
