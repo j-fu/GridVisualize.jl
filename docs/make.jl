@@ -1,7 +1,7 @@
 ENV["MPLBACKEND"]="agg"
 using Documenter, ExtendableGrids, Literate, GridVisualize,Pluto
 using GridVisualize.FlippableLayout
-import PyPlot,PlutoVista,Plots,GLMakie
+import PyPlot,PlutoVista,Plots
 
 plotting=joinpath(@__DIR__,"..","examples","plotting.jl")
 include(plotting)
