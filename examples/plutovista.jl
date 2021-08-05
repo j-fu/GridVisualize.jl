@@ -22,13 +22,13 @@ begin
    Pkg.activate(mktempdir())
    Pkg.add("Revise")
    using Revise
-   Pkg.add(["PyPlot","ExtendableGrids","PlutoUI","Plots","GLMakie"])
+   Pkg.add(["PyPlot","ExtendableGrids","PlutoUI","Plots"])
 	if develop
 	   Pkg.develop(["PlutoVista","GridVisualize"])
 	else
 	   Pkg.add(["PlutoVista","GridVisualize"])
 	end
-   using PyPlot,PlutoVista,GridVisualize,ExtendableGrids,PlutoUI,Plots,GLMakie
+   using PyPlot,PlutoVista,GridVisualize,ExtendableGrids,PlutoUI,Plots
 end
 
 # ╔═╡ 68e2c958-b417-4ba1-9577-697304fe140a
@@ -56,9 +56,6 @@ testplot1(PyPlot)
 # ╔═╡ ad1c4dd6-7c6b-4433-a1ac-b2f817ba5d81
 testplot1(Plots)
 
-# ╔═╡ 86ced62a-27fb-46ec-8867-c4222aeee3e3
-testplot1(GLMakie)
-
 # ╔═╡ 33482af8-3542-4723-ae43-770a789b69b3
 testplot1(PlutoVista)
 
@@ -76,9 +73,6 @@ testplot2(PyPlot)
 
 # ╔═╡ c0ab77e8-01ea-436d-85f2-34e253944f11
 testplot2(Plots)
-
-# ╔═╡ d01f53ef-eecc-4161-ae9f-f544b427908f
-testplot2(GLMakie)
 
 # ╔═╡ 84192945-d4b6-4949-8f06-d94e04a7a56d
 testplot2(PlutoVista)
@@ -166,9 +160,6 @@ testplot3(PyPlot)
 # ╔═╡ a0c3067b-3aa5-493e-b132-89746483b5ce
 testplot3(Plots)
 
-# ╔═╡ c89adee2-943f-4a53-8758-95bfaf69ef72
-testplot3(GLMakie)
-
 # ╔═╡ 0998a9a7-d57a-476e-aacd-bee9396e9b8f
 testplot3(PlutoVista)
 
@@ -211,12 +202,10 @@ myplot2(t)
 # ╠═a20d74c9-16da-408a-b247-0c17321888f9
 # ╠═cc17187f-404c-4c31-8625-fa067eea7273
 # ╠═ad1c4dd6-7c6b-4433-a1ac-b2f817ba5d81
-# ╠═86ced62a-27fb-46ec-8867-c4222aeee3e3
 # ╠═33482af8-3542-4723-ae43-770a789b69b3
 # ╠═c4eeb06f-932e-4acc-8e5b-f2a7f9242a42
 # ╠═29ca4775-6ba5-474c-bd2c-8f770b09addd
 # ╠═c0ab77e8-01ea-436d-85f2-34e253944f11
-# ╠═d01f53ef-eecc-4161-ae9f-f544b427908f
 # ╠═84192945-d4b6-4949-8f06-d94e04a7a56d
 # ╠═63fe3259-7d79-40ec-98be-e0592e40ee6b
 # ╠═4de6b5c9-4d2d-4bcb-bc88-c6f50a23f9b6
@@ -236,7 +225,6 @@ myplot2(t)
 # ╠═d5258595-60e4-406f-a71e-69111cdad8b9
 # ╠═c98a90bf-1a3e-4681-a3b0-663c6844df6b
 # ╠═a0c3067b-3aa5-493e-b132-89746483b5ce
-# ╠═c89adee2-943f-4a53-8758-95bfaf69ef72
 # ╠═0998a9a7-d57a-476e-aacd-bee9396e9b8f
 # ╟─cefb38c1-159e-42db-8088-294573fcece2
 # ╠═a9f4f98f-ec2f-42d6-88da-4a8a6f727e93
