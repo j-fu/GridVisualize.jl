@@ -84,7 +84,7 @@ testplot2(GLMakie)
 testplot2(PlutoVista)
 
 # ╔═╡ 63fe3259-7d79-40ec-98be-e0592e40ee6b
-@bind t2 Slider(0:0.1:5,show_value=true)
+@bind t2 PlutoUI.Slider(0:0.1:5,show_value=true)
 
 # ╔═╡ 4de6b5c9-4d2d-4bcb-bc88-c6f50a23f9b6
 testplot2(PlutoVista,t=t2)
@@ -108,11 +108,11 @@ p=PlutoVista.PlutoVistaPlot(resolution=(600,200))
 
 # ╔═╡ 29fa4467-65ee-4dad-a660-5197864ddbdc
 md"""
-t4: $(@bind t4 Slider(-10:0.1:10, default=0, show_value=true))
+t4: $(@bind t4 PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 """
 
 # ╔═╡ 661531f7-f740-4dd4-9a59-89ddff06ba5c
-PlutoVista.plot!(p,X2,f2(t4),clear=true)
+PlutoVista.plot!(p,X2,f2(t4))
 
 # ╔═╡ 9bb243cc-c69a-405b-bb35-6cddfde8fd30
 begin
@@ -122,7 +122,7 @@ end
 
 # ╔═╡ f4c78c61-19b1-4889-aa20-c6a3b157d435
 md"""
-t3: $(@bind t3 Slider(-10:0.1:10, default=0, show_value=true))
+t3: $(@bind t3 PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 """
 
 # ╔═╡ be369a01-a0c2-4a6b-831b-f716cc807240
@@ -157,11 +157,17 @@ function testplot3(Plotter)
 	X=0:0.1:10
 	grid=simplexgrid(X,X)
 	f=map( (x,y)->sin(x)*atan(y),grid)
-	scalarplot(grid,f,Plotter=Plotter,resolution=(300,300),flimits=(-π/2,π/2))
+	scalarplot(grid,f,Plotter=Plotter,resolution=(300,300),flimits=(-π/2,π/2),backend=:vtk)
 end
 
 # ╔═╡ c98a90bf-1a3e-4681-a3b0-663c6844df6b
 testplot3(PyPlot)
+
+# ╔═╡ a0c3067b-3aa5-493e-b132-89746483b5ce
+testplot3(Plots)
+
+# ╔═╡ c89adee2-943f-4a53-8758-95bfaf69ef72
+testplot3(GLMakie)
 
 # ╔═╡ 0998a9a7-d57a-476e-aacd-bee9396e9b8f
 testplot3(PlutoVista)
@@ -179,7 +185,7 @@ Generally, with plutovista we need two cells - one with the graph shown, and a s
 begin
 	X=0:0.1:10
 	grid=simplexgrid(X,X)
-	f(t)=map( (x,y)->sin(x-t)*atan(y),grid)
+	f(t)=map( (x,y)->sin(x-t)*atan(y)*cos((y-t)),grid)
 end
 
 # ╔═╡ 412c905f-050c-4b78-a66f-0d03978e7edf
@@ -190,7 +196,7 @@ end
 
 # ╔═╡ 6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
 md"""
-t= $(@bind t Slider(-10:0.1:10, default=0, show_value=true))
+t= $(@bind t PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 """
 
 # ╔═╡ 461481ef-f88b-4e4e-b57d-ce003abbfdf1
@@ -229,6 +235,8 @@ myplot2(t)
 # ╟─ae1fe1ab-4a0e-4c80-bd6f-912201fb4bb4
 # ╠═d5258595-60e4-406f-a71e-69111cdad8b9
 # ╠═c98a90bf-1a3e-4681-a3b0-663c6844df6b
+# ╠═a0c3067b-3aa5-493e-b132-89746483b5ce
+# ╠═c89adee2-943f-4a53-8758-95bfaf69ef72
 # ╠═0998a9a7-d57a-476e-aacd-bee9396e9b8f
 # ╟─cefb38c1-159e-42db-8088-294573fcece2
 # ╠═a9f4f98f-ec2f-42d6-88da-4a8a6f727e93

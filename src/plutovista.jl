@@ -26,11 +26,6 @@ end
 
 function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)
     PlutoVista=ctx[:Plotter]
-
-
- 
-
-    
     coord=grid[Coordinates]
 
     cellregions=grid[CellRegions]
@@ -62,9 +57,9 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)
         x1=coord[1,cellnodes[1,icell]]
         x2=coord[1,cellnodes[2,icell]]
         
-        PlutoVista.plot!(ctx[:figure],[x1,x2],[0,0],linewidth=3.0,color=rgbtuple(cmap[cellregions[icell]]),label=label)
-        PlutoVista.plot!(ctx[:figure],[x1,x1],[-h,h],linewidth=ctx[:linewidth],color=:black)
-        PlutoVista.plot!(ctx[:figure],[x2,x2],[-h,h],linewidth=ctx[:linewidth],color=:black)
+        PlutoVista.plot!(ctx[:figure],[x1,x2],[0,0],clear=false,linewidth=3.0,color=rgbtuple(cmap[cellregions[icell]]),label=label)
+        PlutoVista.plot!(ctx[:figure],[x1,x1],[-h,h],clear=false,linewidth=ctx[:linewidth],color=:black)
+        PlutoVista.plot!(ctx[:figure],[x2,x2],[-h,h],clear=false,linewidth=ctx[:linewidth],color=:black)
     end
     
     cmap=bregion_cmap(nbfaceregions)
@@ -74,7 +69,7 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)
             label = brflag[ireg] ? "b$(ireg)" : ""
             brflag[ireg]=false
             x1=coord[1,bfacenodes[1,ibface]]
-            PlutoVista.plot!(ctx[:figure],[x1,x1],[-2*h,2*h],linewidth=3.0,color=rgbtuple(cmap[ireg]),label=label,legend=leglocs[ctx[:legend]])
+            PlutoVista.plot!(ctx[:figure],[x1,x1],[-2*h,2*h],clear=false,linewidth=3.0,color=rgbtuple(cmap[ireg]),label=label,legend=leglocs[ctx[:legend]])
         end
     end
     reveal(ctx,TP)
