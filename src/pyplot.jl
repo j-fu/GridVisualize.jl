@@ -343,9 +343,9 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func::Abstr
             x1=coord[1,i1]
             x2=coord[1,i2]
             if icell==1
-                ax.plot([x1,x2],[func[i1],func[i2]],color=ctx[:color],label=ctx[:label])
+                ax.plot([x1,x2],[func[i1],func[i2]],color=rgbtuple(ctx[:color]),label=ctx[:label])
             else
-                ax.plot([x1,x2],[func[i1],func[i2]],color=ctx[:color])
+                ax.plot([x1,x2],[func[i1],func[i2]],color=rgbtuple(ctx[:color]))
             end                
         end
     else
@@ -353,20 +353,20 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func::Abstr
             if ctx[:label]!==""
                 ax.plot(coord[1,:],func,
                         linestyle=lstyles[ctx[:linestyle]],
-                        color=ctx[:color],
+                        color=rgbtuple(ctx[:color]),
                         linewidth=ctx[:linewidth],
                         label=ctx[:label])
             else
                 ax.plot(coord[1,:],func,
                         linestyle=lstyles[ctx[:linestyle]],
                         linewidth=ctx[:linewidth],
-                        color=ctx[:color])
+                        color=rgbtuple(ctx[:color]))
             end
         else
             if ctx[:label]!==""
                 ax.plot(coord[1,:],func,
                         linestyle=lstyles[ctx[:linestyle]],
-                        color=ctx[:color],
+                        color=rgbtuple(ctx[:color]),
                         label=ctx[:label],
                         marker=mshapes[ctx[:markershape]],
                         markevery=ctx[:markevery],
@@ -376,7 +376,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func::Abstr
             else
                 ax.plot(coord[1,:],func,
                         linestyle=lstyles[ctx[:linestyle]],
-                        color=ctx[:color],
+                        color=rgbtuple(ctx[:color]),
                         marker=mshapes[ctx[:markershape]],
                         markevery=ctx[:markevery],
                         markersize=ctx[:markersize],

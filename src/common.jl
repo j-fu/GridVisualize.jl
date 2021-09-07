@@ -13,7 +13,7 @@ region_cmap(n)=distinguishable_colors(max(5,n),
 """
 $(SIGNATURES)
 
-Create custumized distinguishable colormap for boundary regions
+Create customized distinguishable colormap for boundary regions
 """
 bregion_cmap(n)=distinguishable_colors(max(5,n),
                                       [RGB(1,0,0), RGB(0,1,0), RGB(0,0,1)],

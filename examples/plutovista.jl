@@ -182,7 +182,7 @@ end
 # ╔═╡ 412c905f-050c-4b78-a66f-0d03978e7edf
 begin
 	vis=GridVisualizer(resolution=(300,300),Plotter=PlutoVista)
-	myplot2(t)=scalarplot!(vis,grid,f(t),show=true,flimits=(-π/2,π/2))
+	myplot2(t)=scalarplot!(vis,grid,f(t),show=true,clear=true,flimits=(-π/2,π/2))
 end
 
 # ╔═╡ 6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
