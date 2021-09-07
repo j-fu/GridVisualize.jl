@@ -141,7 +141,7 @@ function flayoutscene(;blocked=false,
     gallery_view=Makie.Node(true)
 
     # Watch mouse position
-    mouseposition=Makie.Node((0,0))
+    mouseposition=Makie.Node((0.0,0.0))
 
     Makie.on(parent.events.mouseposition) do m
         mouseposition[]=m
