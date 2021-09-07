@@ -90,7 +90,7 @@ function scene_interaction(update_scene,scene,Makie,switchkeys::Vector{Symbol}=[
     activeswitch=Makie.Node(switchkeys[1])
 
     # Handle mouse position within scene
-    mouseposition=Makie.Node((0,0))
+    mouseposition=Makie.Node((0.0,0.0))
 
 
     Makie.on(scene.events.mouseposition) do m
