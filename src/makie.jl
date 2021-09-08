@@ -1,3 +1,4 @@
+using Observables
 include("flippablelayout.jl")
 
 function initialize!(p::GridVisualizer,::Type{MakieType})
@@ -884,18 +885,48 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
                             )
             end
         end
+
+
+
+        function marching_tetrahedra0(grid::ExtendableGrid,func,planes,flevels; kwargs...)
+            coord=grid[Coordinates]
+            cellnodes=grid[CellNodes][:,1:10]
+            marching_tetrahedra(coord,cellnodes,func,planes,flevels;kwargs...)
+        end
+
+        
+        f0=d->make_mesh(marching_tetrahedra0(d.g,
+                                             d.f,
+                                             makeplanes(d.x,d.y,d.z),
+                                             [d.l],
+                                             primepoints=hcat(xyzmin,xyzmax),
+                                             primevalues=fminmax,
+                                             Tp=Point3f0,
+                                             Tf=GLTriangleFace,
+                                             Tv=Float32)...)
+        f=d->make_mesh(marching_tetrahedra(d.g,
+                                            d.f,
+                                            makeplanes(d.x,d.y,d.z),
+                                            [d.l],
+                                            primepoints=hcat(xyzmin,xyzmax),
+                                            primevalues=fminmax,
+                                            Tp=Point3f0,
+                                            Tf=GLTriangleFace,
+                                            Tv=Float32)...)
+
+
+        # Workaround around 
+        # meshnode=Makie.lift(f,ctx[:data])
+        # calling initialization with a small dataset
+        
+        init=f0(ctx[:data][])
+        meshnode=Observable{typeof(init)}(init)
+        map!(f, meshnode,ctx[:data])
+
         
         #### Plane sections and isosurfaces
         Makie.mesh!(ctx[:scene],
-                    Makie.lift(d->make_mesh(marching_tetrahedra(d.g,
-                                                                d.f,
-                                                                makeplanes(d.x,d.y,d.z),
-                                                                [d.l],
-                                                                primepoints=hcat(xyzmin,xyzmax),
-                                                                primevalues=fminmax,
-                                                                Tp=Point3f0,
-                                                                Tf=GLTriangleFace,
-                                                                Tv=Float32)...),ctx[:data]),
+                    meshnode,
                     backlight=1f0)
 
         #### Interactions
