@@ -1,4 +1,7 @@
 using Observables
+
+
+
 include("flippablelayout.jl")
 
 function initialize!(p::GridVisualizer,::Type{MakieType})
@@ -225,21 +228,21 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
 
         # Set scene size with invisible markers
         Makie.scatter!(ctx[:scene],
-                       Makie.lift(g->scenecorners1d(grid),ctx[:grid]),
+                       map(g->scenecorners1d(grid),ctx[:grid]),
                        color=:white,
                        markersize=0.0,
                        strokewidth=0)
 
         # Draw node markers
         Makie.linesegments!(ctx[:scene],
-                            Makie.lift(g->basemesh1d(g),ctx[:grid]),
+                            map(g->basemesh1d(g),ctx[:grid]),
                             color=:black)
 
         
         # Colored cell regions
         for i=1:nregions
             Makie.linesegments!(ctx[:scene],
-                                Makie.lift(g->regionmesh1d(g,i), ctx[:grid]),
+                                map(g->regionmesh1d(g,i), ctx[:grid]),
                                 color=cmap[i],
                                 linewidth=4,
                                 label="c $(i)")
@@ -248,7 +251,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
         # Colored boundary grid
         for i=1:nbregions
             Makie.linesegments!(ctx[:scene],
-                                Makie.lift(g->bregionmesh1d(g,i),ctx[:grid]),
+                                map(g->bregionmesh1d(g,i),ctx[:grid]),
                                 color=bcmap[i],
                                 linewidth=4,
                                 label="b$(i)")
@@ -321,7 +324,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
     function update_lines(ctx)
         if ctx[:markershape]==:none
             #line without marker
-            Makie.lines!(ctx[:scene],Makie.lift(a->a, ctx[:lines][end]),
+            Makie.lines!(ctx[:scene],map(a->a, ctx[:lines][end]),
                          linestyle=ctx[:linestyle],
                          linewidth=ctx[:linewidth],
                          color=RGB(ctx[:color]),
@@ -330,7 +333,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
             # line with markers separated by markevery
 
             # draw plain line without the label
-            Makie.lines!(ctx[:scene],Makie.lift(a->a, ctx[:lines][end]),
+            Makie.lines!(ctx[:scene],map(a->a, ctx[:lines][end]),
                          linestyle=ctx[:linestyle],
                          color=RGB(ctx[:color]),
                          linewidth=ctx[:linewidth])
@@ -338,7 +341,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
             
             # draw markers without label
             Makie.scatter!(ctx[:scene],
-                           Makie.lift(a->a[1:ctx[:markevery]:end],ctx[:lines][end]),
+                           map(a->a[1:ctx[:markevery]:end],ctx[:lines][end]),
                            color=RGB(ctx[:color]),
                            marker=ctx[:markershape],
                            markercolor=RGB(ctx[:color]),
@@ -349,7 +352,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
             # get the proper legend entry
             if ctx[:label]!=""
                 Makie.scatterlines!(ctx[:scene],
-                                    Makie.lift(a->a[1:1], ctx[:lines][end]),
+                                    map(a->a[1:1], ctx[:lines][end]),
                                     linestyle=ctx[:linestyle],
                                     linewidth=ctx[:linewidth],
                                     marker=ctx[:markershape],
@@ -373,7 +376,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 
         # Axis
         ctx[:scene]=Makie.Axis(ctx[:figure];
-                               title=Makie.lift(a->a,ctx[:xtitle]),
+                               title=map(a->a,ctx[:xtitle]),
                                scenekwargs(ctx)...)
         # Plot size
         Makie.scatter!(ctx[:scene],
@@ -484,7 +487,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
         cmap=region_cmap(nregions)
         ctx[:cmap]=cmap
         for i=1:nregions
-            Makie.poly!(ctx[:scene],Makie.lift(g->regionmesh(g,i), ctx[:grid]) ,
+            Makie.poly!(ctx[:scene],map(g->regionmesh(g,i), ctx[:grid]) ,
                         color=cmap[i],
                         strokecolor=:black,
                         strokewidth=ctx[:linewidth])
@@ -494,7 +497,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
         bcmap=bregion_cmap(nbregions)
         for i=1:nbregions
             Makie.linesegments!(ctx[:scene],
-                                Makie.lift(g->bfacesegments(g,i),ctx[:grid]),
+                                map(g->bfacesegments(g,i),ctx[:grid]),
                                 label="$(i)",
                                 color=bcmap[i],
                                 linewidth=4)
@@ -559,20 +562,20 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
 
         # would need to switch to Axis3 for supporting elevtion
         ctx[:scene]=Makie.Axis(ctx[:figure];
-                               title=Makie.lift(data->data.t,ctx[:data]),
+                               title=map(data->data.t,ctx[:data]),
                                aspect=Makie.DataAspect(),
                                scenekwargs(ctx)...)
 
         # Draw the mesh for the cells
         ctx[:poly]=Makie.poly!(ctx[:scene],
-                               Makie.lift(data->make_mesh(data.g,data.f,data.e),ctx[:data]),
-                               color=Makie.lift(data->data.f,ctx[:data]),
-                               colorrange=Makie.lift(data->data.c,ctx[:data]),
+                               map(data->make_mesh(data.g,data.f,data.e),ctx[:data]),
+                               color=map(data->data.f,ctx[:data]),
+                               colorrange=map(data->data.c,ctx[:data]),
                                colormap=ctx[:colormap])
         
         # draw the isolines via marching triangles
         Makie.linesegments!(ctx[:scene],
-                            Makie.lift(data->marching_triangles(data.g,data.f,data.l),ctx[:data]),
+                            map(data->marching_triangles(data.g,data.f,data.l),ctx[:data]),
                             color=:black,
                             linewidth=ctx[:linewidth])
         
@@ -622,7 +625,7 @@ function makeaxis3d(ctx)
                     elevation=ctx[:elev]*π/180,
                     azimuth=ctx[:azim]*π/180,
                     perspectiveness=ctx[:perspectiveness],
-                    title=Makie.lift(data->data.t,ctx[:data]),
+                    title=map(data->data.t,ctx[:data]),
                     scenekwargs(ctx)...)
     end
 end
@@ -640,7 +643,7 @@ function makescene3d(ctx)
     if ctx[:scene3d]=="LScene"
         # LScene has no title, put the title into protrusion space on top  of the scene
         GL[1,1,Makie.Top()]=Makie.Label(ctx[:figure],
-                                        " $(Makie.lift(data->data.t,ctx[:data])) ",
+                                        " $(map(data->data.t,ctx[:data])) ",
                                         tellwidth=false,
                                         height=30,
                                         textsize=ctx[:fontsize])
@@ -714,7 +717,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         # We draw a mesh for each color.
         if ctx[:interior]
             cmap=region_cmap(nregions)
-            ctx[:celldata]=Makie.lift(
+            ctx[:celldata]=map(
                 d->extract_visible_cells3D(d.g,
                                            (d.x,d.y,d.z),
                                            primepoints=hcat(xyzmin,xyzmax),
@@ -722,16 +725,16 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                                            Tf=GLTriangleFace),
                 ctx[:data])
 
-            ctx[:cellmeshes]=Makie.lift(d->[make_mesh(d[1][i],d[2][i]) for i=1:nregions], ctx[:celldata])
+            ctx[:cellmeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nregions], ctx[:celldata])
             
             for i=1:nregions
-                Makie.mesh!(ctx[:scene],Makie.lift(d->d[i], ctx[:cellmeshes]),
+                Makie.mesh!(ctx[:scene],map(d->d[i], ctx[:cellmeshes]),
                             color=cmap[i],
                             backlight=1f0
                             )
 
                 if ctx[:linewidth]>0
-                    Makie.wireframe!(ctx[:scene],Makie.lift(d->d[i], ctx[:cellmeshes]),
+                    Makie.wireframe!(ctx[:scene],map(d->d[i], ctx[:cellmeshes]),
                                      strokecolor=:black,
                                      strokewidth=ctx[:linewidth],
                                      linewidth=ctx[:linewidth],
@@ -743,7 +746,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         ############# Visible boundary faces
         bcmap=bregion_cmap(nbregions)
 
-        ctx[:facedata]=Makie.lift(
+        ctx[:facedata]=map(
             d->extract_visible_bfaces3D(d.g,
                                         (d.x,d.y,d.z),
                                         primepoints=hcat(xyzmin,xyzmax),
@@ -751,15 +754,15 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                                         Tf=GLTriangleFace),
             ctx[:data])
         
-        ctx[:facemeshes]=Makie.lift(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:facedata])
+        ctx[:facemeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:facedata])
         
         for i=1:nbregions
-            Makie.mesh!(ctx[:scene],Makie.lift(d->d[i], ctx[:facemeshes]),
+            Makie.mesh!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
                         color=bcmap[i],
                         backlight=1f0
                         )
             if ctx[:linewidth]>0
-                Makie.wireframe!(ctx[:scene],Makie.lift(d->d[i], ctx[:facemeshes]),
+                Makie.wireframe!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
                                  strokecolor=:black,
                                  linewidth=ctx[:linewidth])
             end
@@ -769,16 +772,16 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
 
         if ctx[:outline]
             
-            ctx[:outlinedata]=Makie.lift(d->extract_visible_bfaces3D(d.g,
+            ctx[:outlinedata]=map(d->extract_visible_bfaces3D(d.g,
                                                                      xyzmax,
                                                                      primepoints=hcat(xyzmin,xyzmax),
                                                                      Tp=Point3f0,
                                                                      Tf=GLTriangleFace),
                                          ctx[:data])
-            ctx[:outlinemeshes]=Makie.lift(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
+            ctx[:outlinemeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
 
             for i=1:nbregions
-                Makie.mesh!(ctx[:scene],Makie.lift(d->d[i], ctx[:outlinemeshes]),
+                Makie.mesh!(ctx[:scene],map(d->d[i], ctx[:outlinemeshes]),
                             color=(bcmap[i],ctx[:alpha]),
                             transparency=true,
                             backlight=1f0
@@ -816,9 +819,13 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
     reveal(ctx,TP)
 end
 
+
+
 # 3d function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
-    
+
+
+
     make_mesh(pts,fcs)=Mesh(pts,fcs)
     
     function make_mesh(pts,fcs,vals)
@@ -857,9 +864,13 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     adjust_planes()
     
     
-    makeplanes(x,y,z)=[[1,0,0,-x], 
-                       [0,1,0,-y], 
-                       [0,0,1,-z]]
+    function makeplanes(x,y,z)
+        planes=Vector{Vector{Float64}}(undef,0)
+        x>xyzmin[1] && x<xyzmax[1]  && push!(planes,[1,0,0,-x])
+        y>xyzmin[2] && y<xyzmax[2]  && push!(planes,[0,1,0,-y])
+        z>xyzmin[3] && z<xyzmax[3]  && push!(planes,[0,0,1,-z])
+        planes
+    end
     
     if !haskey(ctx,:scene)
 
@@ -869,16 +880,15 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
         
         #### Transparent outlne
         if ctx[:outline]
-            ctx[:outlinedata]=Makie.lift(d->extract_visible_bfaces3D(d.g,
-                                                                     xyzmax,
-                                                                     primepoints=hcat(xyzmin,xyzmax),
-                                                                     Tp=Point3f0,
-                                                                     Tf=GLTriangleFace),
-                                         ctx[:data])
-            ctx[:facemeshes]=Makie.lift(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
+            ctx[:outlinedata]=map(d->extract_visible_bfaces3D(d.g,
+                                                                 xyzmax,
+                                                                 primepoints=hcat(xyzmin,xyzmax),
+                                                                 Tp=Point3f0,
+                                                                 Tf=GLTriangleFace), ctx[:data])
+            ctx[:facemeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
             bcmap=bregion_cmap(nbregions)
             for i=1:nbregions
-                Makie.mesh!(ctx[:scene],Makie.lift(d->d[i], ctx[:facemeshes]),
+                Makie.mesh!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
                             color=(bcmap[i],ctx[:alpha]),
                             transparency=true,
                             backlight=1f0
@@ -886,24 +896,6 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
             end
         end
 
-
-
-        function marching_tetrahedra0(grid::ExtendableGrid,func,planes,flevels; kwargs...)
-            coord=grid[Coordinates]
-            cellnodes=grid[CellNodes][:,1:10]
-            marching_tetrahedra(coord,cellnodes,func,planes,flevels;kwargs...)
-        end
-
-        
-        f0=d->make_mesh(marching_tetrahedra0(d.g,
-                                             d.f,
-                                             makeplanes(d.x,d.y,d.z),
-                                             [d.l],
-                                             primepoints=hcat(xyzmin,xyzmax),
-                                             primevalues=fminmax,
-                                             Tp=Point3f0,
-                                             Tf=GLTriangleFace,
-                                             Tv=Float32)...)
         f=d->make_mesh(marching_tetrahedra(d.g,
                                             d.f,
                                             makeplanes(d.x,d.y,d.z),
@@ -915,19 +907,9 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
                                             Tv=Float32)...)
 
 
-        # Workaround around 
-        # meshnode=Makie.lift(f,ctx[:data])
-        # calling initialization with a small dataset
-        
-        init=f0(ctx[:data][])
-        meshnode=Observable{typeof(init)}(init)
-        map!(f, meshnode,ctx[:data])
-
         
         #### Plane sections and isosurfaces
-        Makie.mesh!(ctx[:scene],
-                    meshnode,
-                    backlight=1f0)
+        Makie.mesh!(ctx[:scene], map(f,ctx[:data]), backlight=1f0)
 
         #### Interactions
         scene_interaction(ctx[:scene].scene,Makie,[:z,:y,:x,:l,:q]) do delta,key
@@ -949,7 +931,6 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
             adjust_planes()
             ctx[:data][]=(g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel],t=ctx[:title])
         end
-        
         ctx[:status]=Makie.Node(" ")
         add_scene!(ctx,makescene3d(ctx))
     else

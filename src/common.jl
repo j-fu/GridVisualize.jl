@@ -102,7 +102,7 @@ end
 
 function extract_visible_bfaces3D(grid::ExtendableGrid,xyzcut; primepoints=zeros(0,0), Tp=SVector{3,Float32},Tf=SVector{3,Int32})
     cutcoord=zeros(3)
-    
+
     function take(coord,simplex,xyzcut)
         for idim=1:3
             all_gt=true
@@ -118,31 +118,40 @@ function extract_visible_bfaces3D(grid::ExtendableGrid,xyzcut; primepoints=zeros
     end
     
     coord=grid[Coordinates]
+    Tc=SVector{3,eltype(coord)}
+    xcoord=reinterpret(Tc,reshape(coord,(length(coord),)))
+    
     nbfaces=num_bfaces(grid)
     bfacenodes=grid[BFaceNodes]
     bfaceregions=grid[BFaceRegions]
     nbregions=grid[NumBFaceRegions]
-
+    
     faces=[Vector{Tf}(undef,0) for iregion=1:nbregions]
     points=[Vector{Tp}(undef,0) for iregion=1:nbregions]
-
     for iregion=1:nbregions
         for iprime=1:size(primepoints,2)
             @views push!(points[iregion],Tp(primepoints[:,iprime]))
         end
     end
 
-    for i=1:nbfaces
-        iregion=bfaceregions[i]
-        tri=view(bfacenodes,:, i)
-        if take(coord,tri,xyzcut)
-            npts=size(points[iregion],1)
-            @views push!(points[iregion],coord[:,bfacenodes[1,i]])
-            @views push!(points[iregion],coord[:,bfacenodes[2,i]])
-            @views push!(points[iregion],coord[:,bfacenodes[3,i]])
-            push!(faces[iregion],(npts+1,npts+2,npts+3))
+    # remove some type instability here
+    function collct(points,faces)
+        trinodes=[1,2,3]
+        for i=1:nbfaces
+            iregion=bfaceregions[i]
+            trinodes[1]=bfacenodes[1,i]
+            trinodes[2]=bfacenodes[2,i]
+            trinodes[3]=bfacenodes[3,i]
+            if take(coord,trinodes,xyzcut)
+                npts=size(points[iregion],1)
+                @views push!(points[iregion],xcoord[trinodes[1]])
+                @views push!(points[iregion],xcoord[trinodes[2]])
+                @views push!(points[iregion],xcoord[trinodes[3]])
+                @views push!(faces[iregion],(npts+1,npts+2,npts+3))
+            end
         end
     end
+    collct(points,faces)
     points,faces
 end
 
@@ -235,15 +244,17 @@ function tet_x_plane!(ixcoord,ixvalues,pointlist,node_indices,planeq_values,func
     # Interpolate coordinates and function_values according to
     # evaluation of the plane equation
     nxs=0
-    for n1=1:3
-        for n2=n1+1:4
+    @inbounds @simd for n1=1:3
+        N1=node_indices[n1]
+        @inbounds @fastmath @simd for n2=n1+1:4
+            N2=node_indices[n2]
             if planeq_values[n1]*planeq_values[n2]<tol
                 nxs+=1
                 t= planeq_values[n1]/(planeq_values[n1]-planeq_values[n2])
-                for i=1:3
-                    ixcoord[i,nxs]=pointlist[i,node_indices[n1]]+t*(pointlist[i,node_indices[n2]]-pointlist[i,node_indices[n1]])
-                end
-                ixvalues[nxs]=function_values[node_indices[n1]]+t*(function_values[node_indices[n2]]-function_values[node_indices[n1]])
+                ixcoord[1,nxs]=pointlist[1,N1]+t*(pointlist[1,N2]-pointlist[1,N1])
+                ixcoord[2,nxs]=pointlist[2,N1]+t*(pointlist[2,N2]-pointlist[2,N1])
+                ixcoord[3,nxs]=pointlist[3,N1]+t*(pointlist[3,N2]-pointlist[3,N1])
+                ixvalues[nxs]=function_values[N1]+t*(function_values[N2]-function_values[N1])
             end
         end
     end
@@ -292,7 +303,7 @@ end
 
 """
 function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
-                             tol=0.0,
+                             tol=1.0e-12,
                              primepoints=zeros(0,0),
                              primevalues=zeros(0),
                              Tv=Float32,
@@ -300,11 +311,13 @@ function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
                              Tf=SVector{3,Int32})
     # We could rewrite this for Meshing.jl
     # CellNodes::Vector{Ttet}, Coord::Vector{Tpt}
-
-
     nplanes=length(planes)
     nlevels=length(flevels)
-    
+    nnodes=size(coord,2)
+    ntet=size(cellnodes,2)
+
+    all_planeq=Vector{Float32}(undef,nnodes)
+
 
     all_ixfaces=Vector{Tf}(undef,0)
     all_ixcoord=Vector{Tp}(undef,0)
@@ -321,9 +334,9 @@ function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
     ixvalues=zeros(6)
     cn=zeros(4)
     node_indices=zeros(Int32,4)
+   
+    @inbounds @fastmath plane_equation(plane,coord)= coord[1]*plane[1]+coord[2]*plane[2]+coord[3]*plane[3]+plane[4]
     
-    plane_equation(plane,coord)=coord[1]*plane[1]+coord[2]*plane[2]+coord[3]*plane[3]+plane[4]
-
     function pushtris(ns,ixcoord,ixvalues)
         # number of intersection points can be 3 or 4
         if ns>=3
@@ -339,25 +352,32 @@ function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
         end
     end
 
-    # allocation free (besides push!)
-    for itet=1:size(cellnodes,2)
-        for i=1:4
-            node_indices[i]=cellnodes[i,itet]
-        end
-        
-        for iplane=1:nplanes
-            @views map!(inode->plane_equation(planes[iplane],coord[:,inode]),planeq,node_indices)
+    function calcxs()
+        @inbounds for itet=1:ntet
+            node_indices[1]=cellnodes[1,itet]
+            node_indices[2]=cellnodes[2,itet]
+            node_indices[3]=cellnodes[3,itet]
+            node_indices[4]=cellnodes[4,itet]
+            planeq[1]=all_planeq[node_indices[1]]
+            planeq[2]=all_planeq[node_indices[2]]
+            planeq[3]=all_planeq[node_indices[3]]
+            planeq[4]=all_planeq[node_indices[4]]
             nxs=tet_x_plane!(ixcoord,ixvalues,coord,node_indices,planeq,func,tol=tol)
             pushtris(nxs,ixcoord,ixvalues)
         end
-        
-        for ilevel=1:nlevels
-            map!(inode->(func[inode]-flevels[ilevel]),planeq,node_indices)
-            nxs=tet_x_plane!(ixcoord,ixvalues,coord,node_indices,planeq,func)
-            pushtris(nxs,ixcoord,ixvalues)
-        end
-
     end
+    
+    @inbounds for iplane=1:nplanes
+        @views @inbounds map!(inode->plane_equation(planes[iplane],coord[:,inode]),all_planeq,1:nnodes)
+        calcxs()
+    end
+    
+    # allocation free (besides push!)
+    @inbounds for ilevel=1:nlevels
+        @views @inbounds @fastmath map!(inode->(func[inode]-flevels[ilevel]),all_planeq,1:nnodes)
+        calcxs()
+    end
+    
     all_ixcoord, all_ixfaces, all_ixvalues
 end
 
