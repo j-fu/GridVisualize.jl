@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.15.1
+# v0.16.0
 
 using Markdown
 using InteractiveUtils
@@ -193,6 +193,24 @@ t= $(@bind t PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 # ╔═╡ 461481ef-f88b-4e4e-b57d-ce003abbfdf1
 myplot2(t)
 
+# ╔═╡ e9bc2dae-c303-4063-9ea9-36f95f93371c
+md"""
+## 2D Grid plot
+"""
+
+# ╔═╡ 2b3cb0f4-0656-4981-bec6-48785caf2994
+function testgridplot2d(Plotter)
+	X=-1:0.2:1
+	grid=simplexgrid(X,X)
+	gridplot(grid,Plotter=Plotter,resolution=(300,300))
+end
+
+# ╔═╡ db488643-2e6b-40d6-ba81-126c752953c5
+testgridplot2d(PyPlot)
+
+# ╔═╡ 1388c246-be49-4757-a2cc-a685642b6b37
+testgridplot2d(PlutoVista)
+
 # ╔═╡ Cell order:
 # ╠═6df3beed-24a7-4b26-a315-0520f4863190
 # ╠═9701cbe0-d048-11eb-151b-67dda7b72b71
@@ -231,3 +249,7 @@ myplot2(t)
 # ╠═412c905f-050c-4b78-a66f-0d03978e7edf
 # ╠═461481ef-f88b-4e4e-b57d-ce003abbfdf1
 # ╟─6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
+# ╟─e9bc2dae-c303-4063-9ea9-36f95f93371c
+# ╠═2b3cb0f4-0656-4981-bec6-48785caf2994
+# ╠═db488643-2e6b-40d6-ba81-126c752953c5
+# ╠═1388c246-be49-4757-a2cc-a685642b6b37

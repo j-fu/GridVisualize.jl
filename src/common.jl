@@ -16,7 +16,7 @@ $(SIGNATURES)
 Create customized distinguishable colormap for boundary regions
 """
 bregion_cmap(n)=distinguishable_colors(max(5,n),
-                                      [RGB(1,0,0), RGB(0,1,0), RGB(0,0,1)],
+                                      [RGB(1.0,0.0,0.0), RGB(0.0,1.0,0.0), RGB(0.0,0.0,1.0)],
                                       lchoices = range(50, stop=75, length=10),
                                       cchoices = range(75, stop=100, length=10),
                                       hchoices = range(20, stop=360, length=30)

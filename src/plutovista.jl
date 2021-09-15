@@ -97,7 +97,27 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid,func)
     reveal(ctx,TP)
 end
 
-gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid)=nothing
+function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid)
+    nregions=num_cellregions(grid)
+    nbregions=num_bfaceregions(grid)
+    cmap=region_cmap(nregions)
+    bcmap=bregion_cmap(nbregions)
+
+    PlutoVista=ctx[:Plotter]
+    pts=grid[Coordinates]
+    tris=grid[CellNodes]
+    markers=grid[CellRegions]
+    edges=grid[BFaceNodes]
+    edgemarkers=grid[BFaceRegions]
+    
+    PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=2)
+    PlutoVista.trimesh!(ctx[:figure],pts,tris,
+                        markers=markers,colormap=cmap,
+                        edges=edges,edgemarkers=edgemarkers,edgecolormap=bcmap)
+    reveal(ctx,TP)
+end
+
+
 function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)
     PlutoVista=ctx[:Plotter]
     pts=grid[Coordinates]
