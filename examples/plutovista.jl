@@ -14,7 +14,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ 6df3beed-24a7-4b26-a315-0520f4863190
-develop=false
+develop=true
 
 # ╔═╡ 9701cbe0-d048-11eb-151b-67dda7b72b71
 begin
@@ -174,24 +174,21 @@ Generally, with plutovista we need two cells - one with the graph shown, and a s
 
 # ╔═╡ a9f4f98f-ec2f-42d6-88da-4a8a6f727e93
 begin
-	X=0:0.1:10
+	X=0:0.05:10
 	grid=simplexgrid(X,X)
 	f(t)=map( (x,y)->sin(x-t)*atan(y)*cos((y-t)),grid)
 end
 
-# ╔═╡ 412c905f-050c-4b78-a66f-0d03978e7edf
-begin
-	vis=GridVisualizer(resolution=(300,300),Plotter=PlutoVista)
-	myplot2(t)=scalarplot!(vis,grid,f(t),show=true,clear=true,flimits=(-π/2,π/2))
-end
+# ╔═╡ faa59bbd-df1f-4c62-9a77-c4752c6a6df4
+vis=GridVisualizer(resolution=(300,300),Plotter=PlutoVista,dim=2)
 
 # ╔═╡ 6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
 md"""
 t= $(@bind t PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 """
 
-# ╔═╡ 461481ef-f88b-4e4e-b57d-ce003abbfdf1
-myplot2(t)
+# ╔═╡ 412c905f-050c-4b78-a66f-0d03978e7edf
+scalarplot!(vis,grid,f(t),flimits=(-π/2,π/2),show=true)
 
 # ╔═╡ e9bc2dae-c303-4063-9ea9-36f95f93371c
 md"""
@@ -229,10 +226,10 @@ function func3d(;n=15)
 end
 
 # ╔═╡ 8b20f720-5470-4da7-bbb6-b746e887046e
-g3,f3=func3d(n=49)
+g3,f3=func3d(n=19)
 
 # ╔═╡ c0a0ea34-6fc3-4409-934e-086a1a36f94e
-p3d=PlutoVista.tetcontour(resolution=(500,500))
+p3d=GridVisualizer(Plotter=PlutoVista,resolution=(500,500),dim=3)
 
 # ╔═╡ 35be5ef4-0664-4196-8f10-cf71ec7cb371
 md"""
@@ -244,8 +241,12 @@ z: $(@bind zplane Slider(0:0.01:1,show_value=true,default=0.45))
 """
 
 # ╔═╡ ecd941a0-85b7-4bb7-a903-b19a500198e1
-tetcontour!(p3d,g3[Coordinates],g3[CellNodes],f3;flevel=flevel,
-	xplane=xplane,yplane=yplane,zplane=zplane)
+scalarplot!(p3d,g3,f3;flevel=flevel,
+	xplane=xplane,yplane=yplane,zplane=zplane,show=true)
+
+# ╔═╡ 597849e9-b9a7-4728-a278-7571d7c1a625
+scalarplot(Plotter=PyPlot,g3,f3;flevel=0.25,
+	xplane=0.4,yplane=0.4,zplane=0.4,show=true)
 
 # ╔═╡ Cell order:
 # ╠═6df3beed-24a7-4b26-a315-0520f4863190
@@ -282,8 +283,8 @@ tetcontour!(p3d,g3[Coordinates],g3[CellNodes],f3;flevel=flevel,
 # ╠═0998a9a7-d57a-476e-aacd-bee9396e9b8f
 # ╟─cefb38c1-159e-42db-8088-294573fcece2
 # ╠═a9f4f98f-ec2f-42d6-88da-4a8a6f727e93
+# ╠═faa59bbd-df1f-4c62-9a77-c4752c6a6df4
 # ╠═412c905f-050c-4b78-a66f-0d03978e7edf
-# ╠═461481ef-f88b-4e4e-b57d-ce003abbfdf1
 # ╟─6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
 # ╟─e9bc2dae-c303-4063-9ea9-36f95f93371c
 # ╠═2b3cb0f4-0656-4981-bec6-48785caf2994
@@ -294,5 +295,6 @@ tetcontour!(p3d,g3[Coordinates],g3[CellNodes],f3;flevel=flevel,
 # ╠═82ccfd24-0053-4399-9bc8-b2e4010bbc92
 # ╠═8b20f720-5470-4da7-bbb6-b746e887046e
 # ╠═c0a0ea34-6fc3-4409-934e-086a1a36f94e
-# ╟─35be5ef4-0664-4196-8f10-cf71ec7cb371
 # ╠═ecd941a0-85b7-4bb7-a903-b19a500198e1
+# ╟─35be5ef4-0664-4196-8f10-cf71ec7cb371
+# ╠═597849e9-b9a7-4728-a278-7571d7c1a625

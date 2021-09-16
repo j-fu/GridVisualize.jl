@@ -63,7 +63,7 @@ ismeshcat(Plotter)= (typeof(Plotter)==Module)&&isdefined(Plotter,:Visualizer)
 """
 $(SIGNATURES)
 
-Heuristically check if Plotter is MeshCat
+Heuristically check if Plotter is PlutoVista
 """
 isplutovista(Plotter)= (typeof(Plotter)==Module)&&isdefined(Plotter,:PlutoVistaPlot)
 
@@ -230,6 +230,14 @@ function GridVisualizer(;Plotter::Union{Module,Nothing}=default_plotter(), kwarg
     p
 end
 
+function Base.show(io::IO, mime::MIME"text/html", p::GridVisualizer)
+    if isplutovista(p.Plotter)
+        show(io,mime,p.context[:scene])
+    else
+        output="""<code>GridVisualizer(Plotter=$(p.Plotter))</code>"""
+        write(io,output)
+    end
+end
 
 """
 $(SIGNATURES)
@@ -301,9 +309,9 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :framepos => Pair(1,"Subplot position in frame (VTKView)"),
     :subplot => Pair((1,1),"Private: Actual subplot"),
     :backend => Pair(:default,"Backend for PlutoVista plot"),
-    :datadim => Pair(1,"Data dimension for PlutoVista plot"),
+    :dim     => Pair(1,"Data dimension for PlutoVista plot"),
     :regions => Pair(:all,"List of regions to plot"),
-    :species => Pair(1,"Number of species to plot or number of species in regions")
+    :species => Pair(1,"Number of species to plot or number of species in regions"),
 )
 
 #
