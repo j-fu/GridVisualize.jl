@@ -864,13 +864,6 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     adjust_planes()
     
     
-    function makeplanes(x,y,z)
-        planes=Vector{Vector{Float64}}(undef,0)
-        x>xyzmin[1] && x<xyzmax[1]  && push!(planes,[1,0,0,-x])
-        y>xyzmin[2] && y<xyzmax[2]  && push!(planes,[0,1,0,-y])
-        z>xyzmin[3] && z<xyzmax[3]  && push!(planes,[0,0,1,-z])
-        planes
-    end
     
     if !haskey(ctx,:scene)
 
@@ -898,7 +891,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
 
         f=d->make_mesh(marching_tetrahedra(d.g,
                                             d.f,
-                                            makeplanes(d.x,d.y,d.z),
+                                            makeplanes(xyzmin,xyzmax,d.x,d.y,d.z),
                                             [d.l],
                                             primepoints=hcat(xyzmin,xyzmax),
                                             primevalues=fminmax,

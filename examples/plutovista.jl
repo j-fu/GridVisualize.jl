@@ -211,6 +211,42 @@ testgridplot2d(PyPlot)
 # ╔═╡ 1388c246-be49-4757-a2cc-a685642b6b37
 testgridplot2d(PlutoVista)
 
+# ╔═╡ 5eee8f1d-49ca-4e95-bd14-fe415b0c15e5
+md"""
+## 3D Scalar plot
+"""
+
+# ╔═╡ 0c99daca-f9a8-4116-867b-e13461c3e754
+function grid3d(;n=15)
+    X=collect(0:1/n:1)
+    g=simplexgrid(X,X,X)
+end
+
+# ╔═╡ 82ccfd24-0053-4399-9bc8-b2e4010bbc92
+function func3d(;n=15)
+    g=grid3d(n=n)
+    g, map((x,y,z)->sinpi(2*x)*sinpi(3.5*y)*sinpi(1.5*z),g)
+end
+
+# ╔═╡ 8b20f720-5470-4da7-bbb6-b746e887046e
+g3,f3=func3d(n=49)
+
+# ╔═╡ c0a0ea34-6fc3-4409-934e-086a1a36f94e
+p3d=PlutoVista.tetcontour(resolution=(500,500))
+
+# ╔═╡ 35be5ef4-0664-4196-8f10-cf71ec7cb371
+md"""
+f: $(@bind flevel Slider(0:0.01:1,show_value=true,default=0.45))
+
+x: $(@bind xplane Slider(0:0.01:1,show_value=true,default=0.45))
+y: $(@bind yplane Slider(0:0.01:1,show_value=true,default=0.45))
+z: $(@bind zplane Slider(0:0.01:1,show_value=true,default=0.45))
+"""
+
+# ╔═╡ ecd941a0-85b7-4bb7-a903-b19a500198e1
+tetcontour!(p3d,g3[Coordinates],g3[CellNodes],f3;flevel=flevel,
+	xplane=xplane,yplane=yplane,zplane=zplane)
+
 # ╔═╡ Cell order:
 # ╠═6df3beed-24a7-4b26-a315-0520f4863190
 # ╠═9701cbe0-d048-11eb-151b-67dda7b72b71
@@ -253,3 +289,10 @@ testgridplot2d(PlutoVista)
 # ╠═2b3cb0f4-0656-4981-bec6-48785caf2994
 # ╠═db488643-2e6b-40d6-ba81-126c752953c5
 # ╠═1388c246-be49-4757-a2cc-a685642b6b37
+# ╟─5eee8f1d-49ca-4e95-bd14-fe415b0c15e5
+# ╠═0c99daca-f9a8-4116-867b-e13461c3e754
+# ╠═82ccfd24-0053-4399-9bc8-b2e4010bbc92
+# ╠═8b20f720-5470-4da7-bbb6-b746e887046e
+# ╠═c0a0ea34-6fc3-4409-934e-086a1a36f94e
+# ╟─35be5ef4-0664-4196-8f10-cf71ec7cb371
+# ╠═ecd941a0-85b7-4bb7-a903-b19a500198e1

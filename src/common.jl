@@ -538,3 +538,13 @@ function markerpoints(points,nmarkers,transform)
     end
     push!(mpoints,points[end])
 end
+
+
+
+function makeplanes(xyzmin,xyzmax,x,y,z)
+    planes=Vector{Vector{Float64}}(undef,0)
+    x>xyzmin[1] && x<xyzmax[1]  && push!(planes,[1,0,0,-x])
+    y>xyzmin[2] && y<xyzmax[2]  && push!(planes,[0,1,0,-y])
+    z>xyzmin[3] && z<xyzmax[3]  && push!(planes,[0,0,1,-z])
+    planes
+end

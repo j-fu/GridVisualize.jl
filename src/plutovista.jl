@@ -139,9 +139,25 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)
 end
 
 gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)=nothing
-scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid,func)=nothing
 
+function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid,func)
+    PlutoVista=ctx[:Plotter]
+    pts=grid[Coordinates]
+    tris=grid[CellNodes]
 
+    isolines=ctx[:isolines]
+    fmin,fmax=ctx[:flimits]
 
-
-
+    if fmin<fmax
+        isolines=collect(range(fmin,fmax,length=isolines))
+    end
+    PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=3)
+    PlutoVista.tetcontour!(ctx[:figure],pts,tris,func,
+                           colormap=ctx[:colormap],
+                           flevel=ctx[:flevel],
+                           xplane=ctx[:xplane],
+                           yplane=ctx[:yplane],
+                           zplane=ctx[:zplane],
+                           )
+    reveal(ctx,TP)
+end

@@ -488,11 +488,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid,func)
     ctx[:zplane]=max(xyzmin[3],min(xyzmax[3],ctx[:zplane]) )
     ctx[:flevel]=max(fminmax[1],min(fminmax[2],ctx[:flevel]))
 
-    makeplanes(x,y,z)=[[1,0,0,-x], 
-                       [0,1,0,-y], 
-                       [0,0,1,-z]]
-
-    ccoord0,faces0,values=marching_tetrahedra(grid,func,makeplanes(ctx[:xplane],ctx[:yplane],ctx[:zplane]),[ctx[:flevel]])
+    ccoord0,faces0,values=marching_tetrahedra(grid,func,makeplanes(xyzmin,xyzmax,ctx[:xplane],ctx[:yplane],ctx[:zplane]),[ctx[:flevel]])
 
     faces=reshape(reinterpret(Int32,faces0),(3,length(faces0)))
     ccoord=reshape(reinterpret(Float32,ccoord0),(3,length(ccoord0)))
