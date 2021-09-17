@@ -48,8 +48,15 @@ function extract_visible_cells3D(grid::ExtendableGrid,xyzcut; primepoints=zeros(
     cellnodes=grid[CellNodes]
     cellregions=grid[CellRegions]
     nregions=grid[NumCellRegions]
-    
+    extract_visible_cells3D(coord,cellnodes,cellregions,nregions,xyzcut;
+                            primepoints=primepoints,
+                            Tp=Tp,Tf=Tf)
+end
 
+
+function extract_visible_cells3D(coord,cellnodes,cellregions,nregions,xyzcut;
+                                 primepoints=zeros(0,0),Tp=SVector{3,Float32},Tf=SVector{3,Int32})
+    
     function take(coord,simplex,xyzcut)
         all_lt=@MVector ones(Bool,3)
         all_gt=@MVector ones(Bool,3)
@@ -65,6 +72,7 @@ function extract_visible_cells3D(grid::ExtendableGrid,xyzcut; primepoints=zeros(
         tke=tke  ||   (!all_lt[2])  &&  (!all_gt[2]) && (!all_gt[1]) && (!all_gt[3])
         tke=tke  ||   (!all_lt[3])  &&  (!all_gt[3]) && (!all_gt[1]) && (!all_gt[2])
     end
+
     
     faces=[Vector{Tf}(undef,0) for iregion=1:nregions]
     points=[Vector{Tp}(undef,0) for iregion=1:nregions]
@@ -98,9 +106,21 @@ function extract_visible_cells3D(grid::ExtendableGrid,xyzcut; primepoints=zeros(
     points,faces
 end
 
-
-
 function extract_visible_bfaces3D(grid::ExtendableGrid,xyzcut; primepoints=zeros(0,0), Tp=SVector{3,Float32},Tf=SVector{3,Int32})
+    coord=grid[Coordinates]
+    bfacenodes=grid[BFaceNodes]
+    bfaceregions=grid[BFaceRegions]
+    nbregions=grid[NumBFaceRegions]
+
+    extract_visible_bfaces3D(coord,bfacenodes,bfaceregions, nbregions, xyzcut;
+                             primepoints=primepoints,Tp=Tp,Tf=Tf)
+end
+
+function extract_visible_bfaces3D(coord,bfacenodes,bfaceregions, nbregions, xyzcut;
+                                  primepoints=zeros(0,0), Tp=SVector{3,Float32},Tf=SVector{3,Int32})
+
+
+    nbfaces=size(bfacenodes,2)
     cutcoord=zeros(3)
 
     function take(coord,simplex,xyzcut)
@@ -117,14 +137,10 @@ function extract_visible_bfaces3D(grid::ExtendableGrid,xyzcut; primepoints=zeros
         return true
     end
     
-    coord=grid[Coordinates]
+
     Tc=SVector{3,eltype(coord)}
     xcoord=reinterpret(Tc,reshape(coord,(length(coord),)))
     
-    nbfaces=num_bfaces(grid)
-    bfacenodes=grid[BFaceNodes]
-    bfaceregions=grid[BFaceRegions]
-    nbregions=grid[NumBFaceRegions]
     
     faces=[Vector{Tf}(undef,0) for iregion=1:nbregions]
     points=[Vector{Tp}(undef,0) for iregion=1:nbregions]
