@@ -14,7 +14,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ 6df3beed-24a7-4b26-a315-0520f4863190
-develop=true
+develop=false
 
 # ╔═╡ 9701cbe0-d048-11eb-151b-67dda7b72b71
 begin
@@ -77,6 +77,11 @@ testplot2(Plots)
 # ╔═╡ 84192945-d4b6-4949-8f06-d94e04a7a56d
 testplot2(PlutoVista)
 
+# ╔═╡ 7fbaf93f-3cfb-47d0-8252-487e60ba3e54
+md"""
+### Changing data by re-creating a plot
+"""
+
 # ╔═╡ 63fe3259-7d79-40ec-98be-e0592e40ee6b
 @bind t2 PlutoUI.Slider(0:0.1:5,show_value=true)
 
@@ -85,9 +90,9 @@ testplot2(PlutoVista,t=t2)
 
 # ╔═╡ 2061e7fd-c740-4d4b-af5b-7a3a9444aafd
 md"""
-### Changeable data (experimental)
+### Changing data by updating the plot
 
-This just updates the data. In the 1D case the difference seems to be not critical.
+For this pattern, we observe a notable difference to other backends:  the plot with PlutoVista appears above the cell where the GridVisualizer is created instead of the cell where data are plotted. The reason is that for updating data, we need to have a visualization context which stays the same.
 """
 
 # ╔═╡ f84beb4f-4136-4e5a-ba43-279b703fc75f
@@ -97,30 +102,16 @@ begin
 	f2(t)=map( (x)->sin(x^2-t),grid2)
 end
 
-# ╔═╡ c1278fb2-3e75-445f-893a-b8b8a7e931d3
-p=PlutoVista.PlutoVistaPlot(resolution=(600,200))
-
 # ╔═╡ 29fa4467-65ee-4dad-a660-5197864ddbdc
 md"""
 t4: $(@bind t4 PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 """
 
+# ╔═╡ c1278fb2-3e75-445f-893a-b8b8a7e931d3
+p=GridVisualizer(Plotter=PlutoVista,resolution=(600,200),dim=1,legend=:lt);p
+
 # ╔═╡ 661531f7-f740-4dd4-9a59-89ddff06ba5c
-PlutoVista.plot!(p,X2,f2(t4))
-
-# ╔═╡ 9bb243cc-c69a-405b-bb35-6cddfde8fd30
-begin
-	myplot(t)=scalarplot!(vis2,grid2,f2(t),show=true)
-	vis2=GridVisualizer(resolution=(600,200),Plotter=PlutoVista,datadim=1)
-end
-
-# ╔═╡ f4c78c61-19b1-4889-aa20-c6a3b157d435
-md"""
-t3: $(@bind t3 PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
-"""
-
-# ╔═╡ be369a01-a0c2-4a6b-831b-f716cc807240
-myplot(t3)
+scalarplot!(p,X2,f2(t4),show=true,clear=true,color=:red,label="t=$(t4)")
 
 # ╔═╡ ed9b80e5-9678-4ba6-bb36-c2e0674ed9ba
 md"""
@@ -165,11 +156,9 @@ testplot3(PlutoVista)
 
 # ╔═╡ cefb38c1-159e-42db-8088-294573fcece2
 md"""
-### Changeable data (experimental)
+### Changing data
 
-Here we observe a more profound advantage, and vtk.js also has a rather understandable way how data can be updated.
-
-Generally, with plutovista we need two cells - one with the graph shown, and a second one which triggers the modification.
+Generally, as above, with Plutovista we need two cells - one with the graph shown, and a second one which triggers the modification.
 """
 
 # ╔═╡ a9f4f98f-ec2f-42d6-88da-4a8a6f727e93
@@ -180,7 +169,7 @@ begin
 end
 
 # ╔═╡ faa59bbd-df1f-4c62-9a77-c4752c6a6df4
-vis=GridVisualizer(resolution=(300,300),Plotter=PlutoVista,dim=2)
+vis=GridVisualizer(resolution=(300,300),Plotter=PlutoVista,dim=2);vis
 
 # ╔═╡ 6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
 md"""
@@ -211,6 +200,8 @@ testgridplot2d(PlutoVista)
 # ╔═╡ 5eee8f1d-49ca-4e95-bd14-fe415b0c15e5
 md"""
 ## 3D Scalar plot
+
+Here we use the possibility to update plots to allow moving isosurfaces and plane cuts.
 """
 
 # ╔═╡ 0c99daca-f9a8-4116-867b-e13461c3e754
@@ -229,7 +220,7 @@ end
 g3,f3=func3d(n=19)
 
 # ╔═╡ c0a0ea34-6fc3-4409-934e-086a1a36f94e
-p3d=GridVisualizer(Plotter=PlutoVista,resolution=(500,500),dim=3)
+p3d=GridVisualizer(Plotter=PlutoVista,resolution=(300,300),dim=3);p3d
 
 # ╔═╡ 35be5ef4-0664-4196-8f10-cf71ec7cb371
 md"""
@@ -242,30 +233,30 @@ z: $(@bind zplane Slider(0:0.01:1,show_value=true,default=0.45))
 
 # ╔═╡ ecd941a0-85b7-4bb7-a903-b19a500198e1
 scalarplot!(p3d,g3,f3;flevel=flevel,
-	xplane=xplane,yplane=yplane,zplane=zplane,show=true)
+	xplane=xplane,yplane=yplane,zplane=zplane,show=true,colormap=:hot)
 
 # ╔═╡ 597849e9-b9a7-4728-a278-7571d7c1a625
-scalarplot(Plotter=PyPlot,g3,f3;flevel=0.25,
-	xplane=0.4,yplane=0.4,zplane=0.4,show=true)
+scalarplot(Plotter=PyPlot,g3,f3;resolution=(300,300),flevel=0.25,
+	xplane=0.4,yplane=0.4,zplane=0.4,show=true,colormap=:hot)
 
 # ╔═╡ 4b9113d2-10bd-4f7a-a2b8-22092656c6b3
 md"""
-### 3D grid plot
+## 3D grid plot
 """
 
 # ╔═╡ 81f0a07d-3d0c-4e7a-9684-1ca4d584b210
 gridplot(Plotter=PyPlot,g3; resolution=(300,300),
-	xplane=0.4,yplane=0.4,zplane=0.4,show=true)
-
-# ╔═╡ 7dd92757-c100-4158-baa8-1d9218c39aa7
-md"""
-x: $(@bind gxplane Slider(0:0.01:1,show_value=true,default=0.45))
-y: $(@bind gyplane Slider(0:0.01:1,show_value=true,default=0.45))
-z: $(@bind gzplane Slider(0:0.01:1,show_value=true,default=0.45))
-"""
+	xplane=1.0,yplane=1.0,zplane=0.4,show=true)
 
 # ╔═╡ f78196ca-d972-4fa6-bdc2-e76eba7ca5a1
 p3dgrid=GridVisualizer(Plotter=PlutoVista,resolution=(300,300),dim=3)
+
+# ╔═╡ 7dd92757-c100-4158-baa8-1d9218c39aa7
+md"""
+x: $(@bind gxplane Slider(0:0.01:1,show_value=true,default=1.0))
+y: $(@bind gyplane Slider(0:0.01:1,show_value=true,default=1.0))
+z: $(@bind gzplane Slider(0:0.01:1,show_value=true,default=0.45))
+"""
 
 # ╔═╡ 840c80b7-5186-45a5-a8df-ec4fb50a5dbb
 gridplot!(p3dgrid,g3; xplane=gxplane,yplane=gyplane,zplane=gzplane,show=true)
@@ -284,16 +275,14 @@ gridplot!(p3dgrid,g3; xplane=gxplane,yplane=gyplane,zplane=gzplane,show=true)
 # ╠═29ca4775-6ba5-474c-bd2c-8f770b09addd
 # ╠═c0ab77e8-01ea-436d-85f2-34e253944f11
 # ╠═84192945-d4b6-4949-8f06-d94e04a7a56d
-# ╠═63fe3259-7d79-40ec-98be-e0592e40ee6b
+# ╟─7fbaf93f-3cfb-47d0-8252-487e60ba3e54
+# ╟─63fe3259-7d79-40ec-98be-e0592e40ee6b
 # ╠═4de6b5c9-4d2d-4bcb-bc88-c6f50a23f9b6
 # ╟─2061e7fd-c740-4d4b-af5b-7a3a9444aafd
 # ╠═f84beb4f-4136-4e5a-ba43-279b703fc75f
+# ╟─29fa4467-65ee-4dad-a660-5197864ddbdc
 # ╠═c1278fb2-3e75-445f-893a-b8b8a7e931d3
 # ╠═661531f7-f740-4dd4-9a59-89ddff06ba5c
-# ╟─29fa4467-65ee-4dad-a660-5197864ddbdc
-# ╠═9bb243cc-c69a-405b-bb35-6cddfde8fd30
-# ╠═be369a01-a0c2-4a6b-831b-f716cc807240
-# ╟─f4c78c61-19b1-4889-aa20-c6a3b157d435
 # ╠═ed9b80e5-9678-4ba6-bb36-c2e0674ed9ba
 # ╠═9ce4f63d-cd96-48d7-a637-07cb84fa88ab
 # ╠═77eeefc7-e416-426b-8f87-1bc8439dae6d
@@ -317,11 +306,11 @@ gridplot!(p3dgrid,g3; xplane=gxplane,yplane=gyplane,zplane=gzplane,show=true)
 # ╠═82ccfd24-0053-4399-9bc8-b2e4010bbc92
 # ╠═8b20f720-5470-4da7-bbb6-b746e887046e
 # ╠═c0a0ea34-6fc3-4409-934e-086a1a36f94e
+# ╟─35be5ef4-0664-4196-8f10-cf71ec7cb371
 # ╠═ecd941a0-85b7-4bb7-a903-b19a500198e1
-# ╠═35be5ef4-0664-4196-8f10-cf71ec7cb371
 # ╠═597849e9-b9a7-4728-a278-7571d7c1a625
-# ╠═4b9113d2-10bd-4f7a-a2b8-22092656c6b3
+# ╟─4b9113d2-10bd-4f7a-a2b8-22092656c6b3
 # ╠═81f0a07d-3d0c-4e7a-9684-1ca4d584b210
-# ╟─7dd92757-c100-4158-baa8-1d9218c39aa7
 # ╠═f78196ca-d972-4fa6-bdc2-e76eba7ca5a1
+# ╟─7dd92757-c100-4158-baa8-1d9218c39aa7
 # ╠═840c80b7-5186-45a5-a8df-ec4fb50a5dbb

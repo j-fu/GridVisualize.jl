@@ -1,5 +1,3 @@
-
-
 function initialize!(p::GridVisualizer,::Type{PlutoVistaType})
     PlutoVista=p.context[:Plotter]
     layout=p.context[:layout]
@@ -27,7 +25,7 @@ end
 function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)
     PlutoVista=ctx[:Plotter]
     coord=grid[Coordinates]
-
+    
     cellregions=grid[CellRegions]
     cellnodes=grid[CellNodes]
     coord=grid[Coordinates]
@@ -39,16 +37,16 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)
     
     crflag=ones(Bool,ncellregions)
     brflag=ones(Bool,nbfaceregions)
-        
+    
     xmin=minimum(coord)
     xmax=maximum(coord)
     h=(xmax-xmin)/20.0
-
+    
     #    ax.set_aspect(ctx[:aspect])
-#    ax.get_yaxis().set_ticks([])
-#    ax.set_ylim(-5*h,xmax-xmin)
+    #    ax.get_yaxis().set_ticks([])
+    #    ax.set_ylim(-5*h,xmax-xmin)
     cmap=region_cmap(ncellregions)
-
+    
     for icell=1:num_cells(grid)
         ireg=cellregions[icell]
         label = crflag[ireg] ? "c$(ireg)" : ""
@@ -72,6 +70,7 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)
             PlutoVista.plot!(ctx[:figure],[x1,x1],[-2*h,2*h],clear=false,linewidth=3.0,color=rgbtuple(cmap[ireg]),label=label,legend=leglocs[ctx[:legend]])
         end
     end
+
     reveal(ctx,TP)
 end
 
@@ -80,6 +79,7 @@ end
 function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid,func)
     PlutoVista=ctx[:Plotter]
     coord=grid[Coordinates]
+    PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=1)
     PlutoVista.plot!(ctx[:figure],coord[1,:],func,
                      color=ctx[:color],
                      markertype=ctx[:markershape],
