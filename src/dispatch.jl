@@ -351,7 +351,7 @@ function gridplot!(ctx::SubVisualizer,grid::ExtendableGrid; kwargs...)
     gridplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid)
 end
 
-gridplot!(p::GridVisualizer,grid::ExtendableGrid, kwargs...)= gridplot!(p[1,1],grid; kwargs...)
+gridplot!(p::GridVisualizer,grid::ExtendableGrid; kwargs...)= gridplot!(p[1,1],grid; kwargs...)
 
 
 """

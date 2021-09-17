@@ -248,6 +248,28 @@ scalarplot!(p3d,g3,f3;flevel=flevel,
 scalarplot(Plotter=PyPlot,g3,f3;flevel=0.25,
 	xplane=0.4,yplane=0.4,zplane=0.4,show=true)
 
+# ╔═╡ 4b9113d2-10bd-4f7a-a2b8-22092656c6b3
+md"""
+### 3D grid plot
+"""
+
+# ╔═╡ 81f0a07d-3d0c-4e7a-9684-1ca4d584b210
+gridplot(Plotter=PyPlot,g3; resolution=(300,300),
+	xplane=0.4,yplane=0.4,zplane=0.4,show=true)
+
+# ╔═╡ 7dd92757-c100-4158-baa8-1d9218c39aa7
+md"""
+x: $(@bind gxplane Slider(0:0.01:1,show_value=true,default=0.45))
+y: $(@bind gyplane Slider(0:0.01:1,show_value=true,default=0.45))
+z: $(@bind gzplane Slider(0:0.01:1,show_value=true,default=0.45))
+"""
+
+# ╔═╡ f78196ca-d972-4fa6-bdc2-e76eba7ca5a1
+p3dgrid=GridVisualizer(Plotter=PlutoVista,resolution=(300,300),dim=3)
+
+# ╔═╡ 840c80b7-5186-45a5-a8df-ec4fb50a5dbb
+gridplot!(p3dgrid,g3; xplane=gxplane,yplane=gyplane,zplane=gzplane,show=true)
+
 # ╔═╡ Cell order:
 # ╠═6df3beed-24a7-4b26-a315-0520f4863190
 # ╠═9701cbe0-d048-11eb-151b-67dda7b72b71
@@ -296,5 +318,10 @@ scalarplot(Plotter=PyPlot,g3,f3;flevel=0.25,
 # ╠═8b20f720-5470-4da7-bbb6-b746e887046e
 # ╠═c0a0ea34-6fc3-4409-934e-086a1a36f94e
 # ╠═ecd941a0-85b7-4bb7-a903-b19a500198e1
-# ╟─35be5ef4-0664-4196-8f10-cf71ec7cb371
+# ╠═35be5ef4-0664-4196-8f10-cf71ec7cb371
 # ╠═597849e9-b9a7-4728-a278-7571d7c1a625
+# ╠═4b9113d2-10bd-4f7a-a2b8-22092656c6b3
+# ╠═81f0a07d-3d0c-4e7a-9684-1ca4d584b210
+# ╟─7dd92757-c100-4158-baa8-1d9218c39aa7
+# ╠═f78196ca-d972-4fa6-bdc2-e76eba7ca5a1
+# ╠═840c80b7-5186-45a5-a8df-ec4fb50a5dbb
