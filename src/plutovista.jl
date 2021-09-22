@@ -122,6 +122,8 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)
     PlutoVista=ctx[:Plotter]
     pts=grid[Coordinates]
     tris=grid[CellNodes]
+    faces=grid[BFaceNodes]
+    facemarkers=grid[BFaceRegions]
 
     isolines=ctx[:isolines]
     fmin,fmax=ctx[:flimits]
@@ -148,17 +150,18 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)
     PlutoVista=ctx[:Plotter]
     pts=grid[Coordinates]
     tris=grid[CellNodes]
-    markers=grid[CellRegions]
     faces=grid[BFaceNodes]
+    markers=grid[CellRegions]
     facemarkers=grid[BFaceRegions]
     
     PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=3)
     PlutoVista.tetmesh!(ctx[:figure],pts,tris,
-                           xplane=ctx[:xplane],
-                           yplane=ctx[:yplane],
-                           zplane=ctx[:zplane],
+                        xplane=ctx[:xplane],
+                        yplane=ctx[:yplane],
+                        zplane=ctx[:zplane],
                         markers=markers,colormap=cmap,
-                        faces=faces,facemarkers=facemarkers,facecolormap=bcmap)
+                        faces=faces,facemarkers=facemarkers,facecolormap=bcmap,
+                        outline=ctx[:outline], alpha=ctx[:alpha])
     reveal(ctx,TP)
 end
 
@@ -166,6 +169,11 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid,func)
     PlutoVista=ctx[:Plotter]
     pts=grid[Coordinates]
     tris=grid[CellNodes]
+    faces=grid[BFaceNodes]
+    facemarkers=grid[BFaceRegions]
+
+    nbregions=num_bfaceregions(grid)
+    bcmap=bregion_cmap(nbregions)
 
     isolines=ctx[:isolines]
     fmin,fmax=ctx[:flimits]
@@ -180,6 +188,8 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid,func)
                            xplane=ctx[:xplane],
                            yplane=ctx[:yplane],
                            zplane=ctx[:zplane],
-                           )
+                           faces=faces,facemarkers=facemarkers,facecolormap=bcmap,
+                           outline=ctx[:outline], alpha=ctx[:alpha])
+                           
     reveal(ctx,TP)
 end
