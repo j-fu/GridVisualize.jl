@@ -14,7 +14,7 @@ macro bind(def, element)
 end
 
 # ╔═╡ 6df3beed-24a7-4b26-a315-0520f4863190
-develop=false
+develop=true
 
 # ╔═╡ 9701cbe0-d048-11eb-151b-67dda7b72b71
 begin
@@ -142,7 +142,8 @@ function testplot3(Plotter)
 	X=0:0.1:10
 	grid=simplexgrid(X,X)
 	f=map( (x,y)->sin(x)*atan(y),grid)
-	scalarplot(grid,f,Plotter=Plotter,resolution=(300,300),flimits=(-π/2,π/2),backend=:vtk)
+	scalarplot(grid,f,Plotter=Plotter,
+		resolution=(300,300),limits=(-π/2,π/2))
 end
 
 # ╔═╡ c98a90bf-1a3e-4681-a3b0-663c6844df6b
@@ -177,7 +178,7 @@ t= $(@bind t PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 """
 
 # ╔═╡ 412c905f-050c-4b78-a66f-0d03978e7edf
-scalarplot!(vis,grid,f(t),flimits=(-π/2,π/2),show=true)
+scalarplot!(vis,grid,f(t),limits=(-π/2,π/2),show=true)
 
 # ╔═╡ e9bc2dae-c303-4063-9ea9-36f95f93371c
 md"""
@@ -232,12 +233,14 @@ z: $(@bind zplane Slider(0:0.01:1,show_value=true,default=0.45))
 """
 
 # ╔═╡ ecd941a0-85b7-4bb7-a903-b19a500198e1
-scalarplot!(p3d,g3,f3;flevel=flevel,
-	xplane=xplane,yplane=yplane,zplane=zplane,show=true,colormap=:hot)
+scalarplot!(p3d,g3,f3;levels=[flevel],xplanes=[xplane],yplanes=[yplane],zplanes=[zplane],colormap=:hot,outlinealpha=0.05,show=true,levelalpha=0.5)
+
+# ╔═╡ b4f12ae5-b188-48b4-8821-360ff3ca347c
+scalarplot(g3,f3,Plotter=PlutoVista)
 
 # ╔═╡ 597849e9-b9a7-4728-a278-7571d7c1a625
-scalarplot(Plotter=PyPlot,g3,f3;resolution=(300,300),flevel=0.25,
-	xplane=0.4,yplane=0.4,zplane=0.4,show=true,colormap=:hot)
+scalarplot(Plotter=PyPlot,g3,f3;resolution=(300,300),levels=[0.5],
+	xplanes=[0.4],yplanes=[0.4],zplanes=[0.4],show=true,colormap=:viridis)
 
 # ╔═╡ 4b9113d2-10bd-4f7a-a2b8-22092656c6b3
 md"""
@@ -246,7 +249,7 @@ md"""
 
 # ╔═╡ 81f0a07d-3d0c-4e7a-9684-1ca4d584b210
 gridplot(Plotter=PyPlot,g3; resolution=(300,300),
-	xplane=1.0,yplane=1.0,zplane=0.4,show=true)
+	xplanes=[1.0],yplanes=[1.0],zplanes=[0.4],show=true)
 
 # ╔═╡ f78196ca-d972-4fa6-bdc2-e76eba7ca5a1
 p3dgrid=GridVisualizer(Plotter=PlutoVista,resolution=(300,300),dim=3)
@@ -308,6 +311,7 @@ gridplot!(p3dgrid,g3; xplane=gxplane,yplane=gyplane,zplane=gzplane,show=true)
 # ╠═c0a0ea34-6fc3-4409-934e-086a1a36f94e
 # ╟─35be5ef4-0664-4196-8f10-cf71ec7cb371
 # ╠═ecd941a0-85b7-4bb7-a903-b19a500198e1
+# ╠═b4f12ae5-b188-48b4-8821-360ff3ca347c
 # ╠═597849e9-b9a7-4728-a278-7571d7c1a625
 # ╟─4b9113d2-10bd-4f7a-a2b8-22092656c6b3
 # ╠═81f0a07d-3d0c-4e7a-9684-1ca4d584b210

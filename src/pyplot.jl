@@ -264,7 +264,7 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid)
     cmap=region_cmap(nregions)
     bcmap=bregion_cmap(nbregions)
 
-    xyzcut=[ctx[:xplane],ctx[:yplane],ctx[:zplane]]
+    xyzcut=[ctx[:xplanes][1],ctx[:yplanes][1],ctx[:zplanes][1]]
     
     if ctx[:interior]
         regpoints0,regfacets0=extract_visible_cells3D(grid,
@@ -319,7 +319,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func::Abstr
     if ctx[:clear]
         ctx[:ax].cla()
         xlimits=ctx[:xlimits]
-        ylimits=ctx[:flimits]
+        ylimits=ctx[:limits]
         ax=ctx[:ax]
         
         if xlimits[1]<xlimits[2]
@@ -419,15 +419,11 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     fig=ctx[:figure]
     ax.set_aspect(ctx[:aspect])
     ax.set_title(ctx[:title])
-    umin=minimum(func)
-    umax=maximum(func)
-    flimits=ctx[:flimits]
-    if flimits[1]<flimits[2]
-        umin=flimits[1]
-        umax=flimits[2]
-    end
-    colorlevels=collect(umin:(umax-umin)/(ctx[:colorlevels]-1):umax)
-    isolines=collect(umin:(umax-umin)/(ctx[:isolines]-1):umax)
+
+
+    isolines,crange=isolevels(ctx,func)
+    colorlevels=collect(crange[1]:(crange[2]-crange[1])/(ctx[:colorlevels]-1):crange[2])
+
     if !haskey(ctx,:grid) || !seemingly_equal(ctx[:grid],grid)
         ctx[:grid]=grid
         ctx[:tridata]=tridata(grid)
@@ -474,21 +470,13 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid,func)
         xyzmin[idim]=minimum(coord[idim,:])
         xyzmax[idim]=maximum(coord[idim,:])
     end
-    xyzcut=[ctx[:xplane],ctx[:yplane],ctx[:zplane]]
-    fminmax=extrema(func)
-    flimits=ctx[:flimits]
-    if flimits[1]<flimits[2]
-        fminmax[1]=flimits[1]
-        fminmax[2]=flimits[2]
-    end
-
+    xyzcut=[ctx[:xplanes],ctx[:yplanes],ctx[:zplanes]]
     
-    ctx[:xplane]=max(xyzmin[1],min(xyzmax[1],ctx[:xplane]) )
-    ctx[:yplane]=max(xyzmin[2],min(xyzmax[2],ctx[:yplane]) )
-    ctx[:zplane]=max(xyzmin[3],min(xyzmax[3],ctx[:zplane]) )
-    ctx[:flevel]=max(fminmax[1],min(fminmax[2],ctx[:flevel]))
+    levels,crange=isolevels(ctx,func)
 
-    ccoord0,faces0,values=marching_tetrahedra(grid,func,makeplanes(xyzmin,xyzmax,ctx[:xplane],ctx[:yplane],ctx[:zplane]),[ctx[:flevel]])
+    planes=makeplanes(xyzmin,xyzmax,ctx[:xplanes],ctx[:yplanes],ctx[:zplanes])
+
+    ccoord0,faces0,values=marching_tetrahedra(grid,func,planes,levels)
 
     faces=reshape(reinterpret(Int32,faces0),(3,length(faces0)))
     ccoord=reshape(reinterpret(Float32,ccoord0),(3,length(ccoord0)))
@@ -502,8 +490,8 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid,func)
         # thx, https://stackoverflow.com/a/24229480/8922290 
         collec=ctx[:ax].plot_trisurf(ccoord[1,:],ccoord[2,:],transpose(faces.-1),ccoord[3,:],
                                      cmap=PyPlot.ColorMap(plaincolormap(ctx)),
-                                     vmin=fminmax[1],
-                                     vmax=fminmax[2])
+                                     vmin=crange[1],
+                                     vmax=crange[2])
         collec.set_array(colors)
         collec.autoscale()
     end

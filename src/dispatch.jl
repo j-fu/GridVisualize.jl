@@ -141,12 +141,21 @@ including type of the plotter and its position in the plot.
 const SubVisualizer=Union{Dict{Symbol,Any},Nothing}
 
 #
-# Update subplot context from dict
-#
+# Update subplot context from dict 
+# and provide some backward compatibilitiy switches.
 function _update_context!(ctx::SubVisualizer,kwargs)
+
     for (k,v) in kwargs
         ctx[Symbol(k)]=v
     end
+    
+    haskey(ctx,:flevel) ?  ctx[:levels] = [ctx[:flevel]] : nothing
+    haskey(ctx,:flimits) ? ctx[:limits] = ctx[:flimits] : nothing
+    haskey(ctx,:xplane) ? ctx[:xplanes] = [ctx[:xplane]] : nothing
+    haskey(ctx,:yplane) ? ctx[:yplanes] = [ctx[:yplane]] : nothing
+    haskey(ctx,:zplane) ? ctx[:zplanes] = [ctx[:zplane]] : nothing
+    haskey(ctx,:alpha) ? ctx[:outlinealpha] = ctx[:alpha] : nothing
+
     ctx
 end
 
@@ -278,7 +287,7 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :xlimits => Pair((1,-1),"x limits"),
     :ylimits => Pair((1,-1),"y limits"),
     :zlimits => Pair((1,-1),"z limits"),
-    :flimits => Pair((1,-1),"function limits"),
+    :limits => Pair((1,-1),"function limits"),
     :aspect => Pair(1.0,"Aspect ratio modification"),
     :fontsize => Pair(20,"Fontsize of titles. All others are relative to it"),
     :linewidth => Pair(2,"1D plot or isoline linewidth"),
@@ -289,18 +298,18 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :color => Pair((0.0,0.0,0.0),"1D plot line color"),
     :cellwise => Pair(false,"1D plots cellwise can be slow)"),
     :label => Pair("","1D plot label"),
-    :isolines => Pair(11,"2D contour plot: number of isolines"),
+    :levels => Pair(5,"contour plot: number of isolevels"),
     :elevation => Pair(0.0,"2D plot height factor for elevation"),
     :colorlevels => Pair(51,"2D/3D contour plot: number of color levels"),
     :colormap => Pair(:viridis,"2D/3D contour plot color map (any from [ColorSchemes.jl](https://juliagraphics.github.io/ColorSchemes.jl/stable/basics/#Pre-defined-schemes))"),
     :colorbar => Pair(:vertical,"2D/3D plot colorbar. One of [:none, :vertical, :horizontal]"),
-    :alpha => Pair(0.1,"3D outline surface alpha value"),
+    :outlinealpha => Pair(0.05,"3D outline surface alpha value"),
+    :levelalpha => Pair(0.25,"3D isolevel alpha"),
+    :planealpha => Pair(1.0,"3D plane section alpha"),
     :interior => Pair(true,"3D plot interior of grid"),
-    :outline => Pair(true,"3D plot outline of domain"),
-    :xplane => Pair(prevfloat(Inf),"3D x plane position"),
-    :yplane => Pair(prevfloat(Inf),"3D y plane position"),
-    :zplane => Pair(prevfloat(Inf),"3D z plane position"),
-    :flevel => Pair(prevfloat(Inf),"3D isosurface level"),
+    :xplanes => Pair([prevfloat(Inf)],"3D x plane positions"),
+    :yplanes => Pair([prevfloat(Inf)],"3D y plane positions"),
+    :zplanes => Pair([prevfloat(Inf)],"3D z plane positions"),
     :azim => Pair(-60,"3D azimuth angle  (in degrees)"),
     :elev => Pair(30,"3D elevation angle  (in degrees)"),
     :perspectiveness => Pair(0.25,"3D perspective A number between 0 and 1, where 0 is orthographic, and 1 full perspective"),

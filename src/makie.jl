@@ -307,7 +307,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
     
     coord=grid[Coordinates]
     xlimits=ctx[:xlimits]
-    ylimits=ctx[:flimits]
+    ylimits=ctx[:limits]
     xmin=coord[1,1]
     xmax=coord[1,end]
     if xlimits[1]<xlimits[2]
@@ -537,28 +537,14 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
         Mesh(points,faces)
     end
 
-    # Calculate isolevel values
-    function isolevels(ctx,func)
-        flimits=ctx[:flimits]
-        if flimits[1]<flimits[2]
-            collect(LinRange(flimits[1],flimits[2],ctx[:isolines]))
-        else
-            limits=extrema(func)
-            collect(LinRange(limits[1],limits[2],ctx[:isolines]))
-        end
-    end
 
-    flimits=ctx[:flimits]
-    if flimits[1]<flimits[2]
-        crange=flimits
-    else
-        crange=extrema(func)
-    end
     
     if !haskey(ctx,:scene)
         # Here, we work with data tuples in the nodes,
         # these  can be easily extended.
-        ctx[:data]=Makie.Node((g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=isolevels(ctx,func),c=crange))
+        levels,crange=isolevels(ctx,func)
+
+        ctx[:data]=Makie.Node((g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=levels,c=crange))
 
         # would need to switch to Axis3 for supporting elevtion
         ctx[:scene]=Makie.Axis(ctx[:figure];
@@ -583,7 +569,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
         
     else
         # Just refresh the data.
-        ctx[:data][]=(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=isolevels(ctx,func),c=crange)
+        levels,crange=isolevels(ctx,func)
+        ctx[:data][]=(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=levels,c=crange)
     end
     reveal(ctx,TP)
 end
@@ -700,16 +687,16 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
     xyzstep=(xyzmax-xyzmin)/100
     
     function adjust_planes()
-        ctx[:xplane]=max(xyzmin[1],min(xyzmax[1],ctx[:xplane]) )
-        ctx[:yplane]=max(xyzmin[2],min(xyzmax[2],ctx[:yplane]) )
-        ctx[:zplane]=max(xyzmin[3],min(xyzmax[3],ctx[:zplane]) )
+        ctx[:xplanes][1]=max(xyzmin[1],min(xyzmax[1],ctx[:xplanes][1]) )
+        ctx[:yplanes][1]=max(xyzmin[2],min(xyzmax[2],ctx[:yplanes][1]) )
+        ctx[:zplanes][1]=max(xyzmin[3],min(xyzmax[3],ctx[:zplanes][1]) )
     end
 
     adjust_planes()
 
     if !haskey(ctx,:scene)
 
-        ctx[:data]=Makie.Node((g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],t=ctx[:title]))
+        ctx[:data]=Makie.Node((g=grid,x=ctx[:xplanes][1],y=ctx[:yplanes][1],z=ctx[:zplanes][1],t=ctx[:title]))
 
         ctx[:scene]=makeaxis3d(ctx)
         
@@ -770,19 +757,19 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         
         ############# Transparent outline
 
-        if ctx[:outline]
+        if ctx[:outlinealpha]>0.0
             
             ctx[:outlinedata]=map(d->extract_visible_bfaces3D(d.g,
-                                                                     xyzmax,
-                                                                     primepoints=hcat(xyzmin,xyzmax),
-                                                                     Tp=Point3f0,
-                                                                     Tf=GLTriangleFace),
-                                         ctx[:data])
+                                                              xyzmax,
+                                                              primepoints=hcat(xyzmin,xyzmax),
+                                                              Tp=Point3f0,
+                                                              Tf=GLTriangleFace),
+                                  ctx[:data])
             ctx[:outlinemeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
 
             for i=1:nbregions
                 Makie.mesh!(ctx[:scene],map(d->d[i], ctx[:outlinemeshes]),
-                            color=(bcmap[i],ctx[:alpha]),
+                            color=(bcmap[i],ctx[:outlinealpha]),
                             transparency=true,
                             backlight=1f0
                             )
@@ -792,20 +779,20 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         ##### Interaction
         scene_interaction(ctx[:scene].scene,Makie,[:z,:y,:x,:q]) do delta,key
             if key==:x
-                ctx[:xplane]+=delta*xyzstep[1]
-                ctx[:status][]=@sprintf("x=%.3g",ctx[:xplane])
+                ctx[:xplanes][1]+=delta*xyzstep[1]
+                ctx[:status][]=@sprintf("x=%.3g",ctx[:xplanes][1])
             elseif key==:y
-                ctx[:yplane]+=delta*xyzstep[2]
-                ctx[:status][]=@sprintf("y=%.3g",ctx[:yplane])
+                ctx[:yplanes][1]+=delta*xyzstep[2]
+                ctx[:status][]=@sprintf("y=%.3g",ctx[:yplanes][1])
             elseif key==:z
-                ctx[:zplane]+=delta*xyzstep[3]
-                ctx[:status][]=@sprintf("z=%.3g",ctx[:zplane])
+                ctx[:zplanes][1]+=delta*xyzstep[3]
+                ctx[:status][]=@sprintf("z=%.3g",ctx[:zplanes][1])
             elseif key==:q
                 ctx[:status][]=" "
             end
             adjust_planes()
 
-            ctx[:data][]=(g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],t=ctx[:title])
+            ctx[:data][]=(g=grid,x=ctx[:xplanes][1],y=ctx[:yplanes][1],z=ctx[:zplanes][1],t=ctx[:title])
         end
 
         ctx[:status]=Makie.Node(" ")
@@ -813,7 +800,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         add_scene!(ctx,makescene3d(ctx))
         
     else
-        ctx[:data][]=(g=grid,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],t=ctx[:title])
+        ctx[:data][]=(g=grid,x=ctx[:xplanes][1],y=ctx[:yplanes][1],z=ctx[:zplanes][1],t=ctx[:title])
     end
     
     reveal(ctx,TP)
@@ -825,12 +812,14 @@ end
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
 
 
-
     make_mesh(pts,fcs)=Mesh(pts,fcs)
     
     function make_mesh(pts,fcs,vals)
-        colors = Makie.Makie.interpolated_getindex.((cmap,), vals, (fminmax,))
-        GeometryBasics.Mesh(meta(pts, color=colors,normals=normals(pts, fcs)), fcs)
+        colors = Makie.Makie.interpolated_getindex.((cmap,), vals, (crange,))
+        if ctx[:levelalpha]>0
+            colors= [ RGBA(colors[i].r,colors[i].g,colors[i].b,Float32(ctx[:levelalpha])) for i=1:length(colors)]
+        end
+        GeometryBasics.Mesh(meta(pts, color=colors, normals=normals(pts, fcs)), fcs)
     end
     
     
@@ -842,47 +831,58 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     xyzmin,xyzmax=xyzminmax(grid)
     xyzstep=(xyzmax-xyzmin)/100
     
-    fminmax=extrema(func)
+    levels,crange=isolevels(ctx,func)
     
-    flimits=ctx[:flimits]
-    if flimits[1]<flimits[2]
-        fminmax=(flimits[1],flimits[2])
-    end
-    
-    fstep=(fminmax[2]-fminmax[1])/100
+    fstep=(crange[2]-crange[1])/100
     if fstep≈0
         fstep=0.1
     end
     
-    function adjust_planes()
-        ctx[:xplane]=max(xyzmin[1],min(xyzmax[1],ctx[:xplane]) )
-        ctx[:yplane]=max(xyzmin[2],min(xyzmax[2],ctx[:yplane]) )
-        ctx[:zplane]=max(xyzmin[3],min(xyzmax[3],ctx[:zplane]) )
-        ctx[:flevel]=max(fminmax[1],min(fminmax[2],ctx[:flevel]))
-    end
+    # function adjust_planes()
+    #     ctx[:xplanes][1]=max(xyzmin[1],min(xyzmax[1],ctx[:xplanes][1]) )
+    #     ctx[:yplanes][1]=max(xyzmin[2],min(xyzmax[2],ctx[:yplanes][1]) )
+    #     ctx[:zplanes][1]=max(xyzmin[3],min(xyzmax[3],ctx[:zplanes][1]) )
+    #     ctx[:flevel]=max(fminmax[1],min(fminmax[2],ctx[:flevel]))
+    # end
     
-    adjust_planes()
+    # adjust_planes()
+
+    x=ctx[:xplanes]
+    y=ctx[:yplanes]
+    z=ctx[:zplanes]    
+
+    ε=1.0e-5*(xyzmax.-xyzmin)
     
-    
+    ctx[:xplanes]=isa(x,Number) ? collect(range(xyzmin[1]+ε[1],xyzmax[1]-ε[1],length=ceil(x))) : x
+    ctx[:yplanes]=isa(y,Number) ? collect(range(xyzmin[2]+ε[2],xyzmax[2]-ε[2],length=ceil(y))) : y
+    ctx[:zplanes]=isa(z,Number) ? collect(range(xyzmin[3]+ε[3],xyzmax[3]-ε[3],length=ceil(z))) : z
+
+    ctx[:xplanes][1]=min(xyzmax[1],ctx[:xplanes][1])
+    ctx[:yplanes][1]=min(xyzmax[2],ctx[:yplanes][1])
+    ctx[:zplanes][1]=min(xyzmax[3],ctx[:zplanes][1])
+
+
+
+    ctx[:levels]=levels
     
     if !haskey(ctx,:scene)
 
-        ctx[:data]=Makie.Node((g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel],t=ctx[:title]))
+        ctx[:data]=Makie.Node((g=grid,f=func,x=ctx[:xplanes],y=ctx[:yplanes],z=ctx[:zplanes],l=ctx[:levels],t=ctx[:title]))
 
         ctx[:scene]=makeaxis3d(ctx)
         
         #### Transparent outlne
-        if ctx[:outline]
+        if ctx[:outlinealpha]>0.0
             ctx[:outlinedata]=map(d->extract_visible_bfaces3D(d.g,
-                                                                 xyzmax,
-                                                                 primepoints=hcat(xyzmin,xyzmax),
-                                                                 Tp=Point3f0,
-                                                                 Tf=GLTriangleFace), ctx[:data])
+                                                              xyzmax,
+                                                              primepoints=hcat(xyzmin,xyzmax),
+                                                              Tp=Point3f0,
+                                                              Tf=GLTriangleFace), ctx[:data])
             ctx[:facemeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
             bcmap=bregion_cmap(nbregions)
             for i=1:nbregions
                 Makie.mesh!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
-                            color=(bcmap[i],ctx[:alpha]),
+                            color=(bcmap[i],ctx[:outlinealpha]),
                             transparency=true,
                             backlight=1f0
                             )
@@ -892,9 +892,9 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
         f=d->make_mesh(marching_tetrahedra(d.g,
                                             d.f,
                                             makeplanes(xyzmin,xyzmax,d.x,d.y,d.z),
-                                            [d.l],
+                                            d.l,
                                             primepoints=hcat(xyzmin,xyzmax),
-                                            primevalues=fminmax,
+                                            primevalues=crange,
                                             Tp=Point3f0,
                                             Tf=GLTriangleFace,
                                             Tv=Float32)...)
@@ -902,32 +902,32 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
 
         
         #### Plane sections and isosurfaces
-        Makie.mesh!(ctx[:scene], map(f,ctx[:data]), backlight=1f0)
+        Makie.mesh!(ctx[:scene], map(f,ctx[:data]), backlight=1f0, transparency= ctx[:levelalpha]<1.0)
 
         #### Interactions
         scene_interaction(ctx[:scene].scene,Makie,[:z,:y,:x,:l,:q]) do delta,key
             if key==:x
-                ctx[:xplane]+=delta*xyzstep[1]
-                ctx[:status][]=@sprintf("x=%.3g",ctx[:xplane])
+                ctx[:xplanes].+=delta*xyzstep[1]
+                ctx[:status][]= "x=["*mapreduce(x->@sprintf("%.3g,",x),*,ctx[:xplanes])*"]"
             elseif key==:y
-                ctx[:yplane]+=delta*xyzstep[2]
-                ctx[:status][]=@sprintf("y=%.3g",ctx[:yplane])
+                ctx[:yplanes].+=delta*xyzstep[2]
+                ctx[:status][]= "y=["*mapreduce(y->@sprintf("%.3g,",y),*,ctx[:yplanes])*"]"
             elseif key==:z
-                ctx[:zplane]+=delta*xyzstep[3]
-                ctx[:status][]=@sprintf("z=%.3g",ctx[:zplane])
+                ctx[:zplanes].+=delta*xyzstep[3]
+                ctx[:status][]= "z=["*mapreduce(z->@sprintf("%.3g,",z),*,ctx[:zplanes])*"]"
             elseif key==:l
-                ctx[:flevel]+=delta*fstep
-                ctx[:status][]=@sprintf("l=%.3g",ctx[:flevel])
+                ctx[:levels].+=delta*fstep
+                ctx[:status][]= "l=["*mapreduce(l->@sprintf("%.3g,",l),*,ctx[:levels])*"]"
             elseif key==:q
                 ctx[:status][]=" "
             end
-            adjust_planes()
-            ctx[:data][]=(g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel],t=ctx[:title])
+#            adjust_planes()
+            ctx[:data][]=(g=grid,f=func,x=ctx[:xplanes],y=ctx[:yplanes],z=ctx[:zplanes],l=ctx[:levels],t=ctx[:title])
         end
         ctx[:status]=Makie.Node(" ")
         add_scene!(ctx,makescene3d(ctx))
     else
-        ctx[:data][]=(g=grid,f=func,x=ctx[:xplane],y=ctx[:yplane],z=ctx[:zplane],l=ctx[:flevel],t=ctx[:title])
+        ctx[:data][]=(g=grid,f=func,x=ctx[:xplanes],y=ctx[:yplanes],z=ctx[:zplanes],l=ctx[:levels],t=ctx[:title])
     end
     reveal(ctx,TP)
 end

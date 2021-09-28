@@ -153,7 +153,7 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
     ymin=func[1]
     ymax=func[end]
     xlimits=ctx[:xlimits]
-    ylimits=ctx[:flimits]
+    ylimits=ctx[:limits]
     if xlimits[1]<xlimits[2]
         xmin=xlimits[1]
         xmax=xlimits[2]
@@ -251,14 +251,9 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid, func)
         ctx[:ax]=Plots.plot(title=ctx[:title])
     end
     p=ctx[:ax]
-    umin=minimum(func)
-    umax=maximum(func)
-    flimits=ctx[:flimits]
-    if flimits[1]<flimits[2]
-        umin=flimits[1]
-        umax=flimits[2]
-    end
-    levels=collect(umin:(umax-umin)/(ctx[:isolines]-1):umax)
+
+    levels,crange=isolevels(ctx,func)
+
     Plots.contourf!(p,rdata...,aspect_ratio=ctx[:aspect],fill=ctx[:colormap],c=:black,levels=levels)
     reveal(ctx,TP)
 end

@@ -116,7 +116,7 @@ function scalarplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}},grid, func)
         ctx[:plot]=VTKView.XYPlot()
         VTKView.addview!(frame,ctx[:plot],ctx[:iplot])
         VTKView.xrange!(ctx[:plot],ctx[:xlimits]...)
-        VTKView.yrange!(ctx[:plot],ctx[:flimits]...)
+        VTKView.yrange!(ctx[:plot],ctx[:limits]...)
         VTKView.linewidth!(ctx[:plot],1)
     end
     if ctx[:clear]

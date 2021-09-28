@@ -559,8 +559,44 @@ end
 
 function makeplanes(xyzmin,xyzmax,x,y,z)
     planes=Vector{Vector{Float64}}(undef,0)
-    x>xyzmin[1] && x<xyzmax[1]  && push!(planes,[1,0,0,-x])
-    y>xyzmin[2] && y<xyzmax[2]  && push!(planes,[0,1,0,-y])
-    z>xyzmin[3] && z<xyzmax[3]  && push!(planes,[0,0,1,-z])
+    ε=1.0e-1*(xyzmax.-xyzmin)
+
+    X=isa(x,Number) ? collect(range(xyzmin[1]+ε[1],xyzmax[1]-ε[1],length=ceil(x))) : x
+    Y=isa(y,Number) ? collect(range(xyzmin[2]+ε[2],xyzmax[2]-ε[2],length=ceil(y))) : y
+    Z=isa(z,Number) ? collect(range(xyzmin[3]+ε[3],xyzmax[3]-ε[3],length=ceil(z))) : z
+
+    for i=1:length(X)
+        x=X[i]
+        x>xyzmin[1] && x<xyzmax[1]  && push!(planes,[1,0,0,-x])
+    end
+    
+    for i=1:length(Y)
+        y=Y[i]
+        y>xyzmin[2] && y<xyzmax[2]  && push!(planes,[0,1,0,-y])
+    end
+    
+    for i=1:length(Z)
+        z=Z[i]
+        z>xyzmin[3] && z<xyzmax[3]  && push!(planes,[0,0,1,-z])
+    end
     planes
+end
+
+
+
+# Calculate isolevel values and function limits
+function isolevels(ctx,func)
+
+    limits=ctx[:limits]
+    if limits==:auto || limits[1]>limits[2] 
+        limits=extrema(func)
+    end
+    
+    if isa(ctx[:levels],Number)
+        levels=collect(LinRange(limits[1],limits[2],ctx[:levels]))
+    else
+        levels=ctx[:levels]
+    end
+    
+    levels,limits
 end
