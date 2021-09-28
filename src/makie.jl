@@ -377,6 +377,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
         # Axis
         ctx[:scene]=Makie.Axis(ctx[:figure];
                                title=map(a->a,ctx[:xtitle]),
+                               xscale = ctx[:xscale]==:log ? log10 : identity,
+                               yscale = ctx[:yscale]==:log ? log10 : identity,
                                scenekwargs(ctx)...)
         # Plot size
         Makie.scatter!(ctx[:scene],

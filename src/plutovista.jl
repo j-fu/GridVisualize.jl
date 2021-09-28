@@ -80,7 +80,9 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid,func)
     PlutoVista=ctx[:Plotter]
     coord=grid[Coordinates]
     PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=1)
-    PlutoVista.plot!(ctx[:figure],coord[1,:],func,
+    PlutoVista.plot!(ctx[:figure],
+                     coord[1,:],
+                     func,
                      color=ctx[:color],
                      markertype=ctx[:markershape],
                      markercount=length(func)÷ctx[:markevery],
@@ -92,7 +94,10 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid,func)
                      legend=ctx[:legend],
                      xlimits=ctx[:xlimits],
                      ylimits=ctx[:limits],
-                     clear=ctx[:clear]
+                     clear=ctx[:clear],
+                     title=ctx[:title],
+                     xscale=ctx[:xscale],
+                     yscale=ctx[:yscale]
                      )
     reveal(ctx,TP)
 end

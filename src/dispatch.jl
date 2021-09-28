@@ -1,12 +1,9 @@
-"""
-`nothing` as initial default plotter
-"""
-default_backend=nothing
 
 """
-$(SIGNATURES)
+    default_plotter()
 
-Return default plotter backend
+Return default plotter backend. By default, this is set to one of `PlutoVista`,`GLMakie`,`PyPlot` and `Plots`
+if one of these packages is imported.
 """
 function default_plotter()
     global default_backend
@@ -14,11 +11,9 @@ function default_plotter()
 end
 
 """
-````
-   plotter!(Plotter)
-````
+    default_plotter!(Module)
 
-Set plotter module as the default plotter backend.
+Set plotter module or `nothing` as the default plotter backend.
 """
 function default_plotter!(Plotter)
     global default_backend=Plotter
@@ -112,7 +107,7 @@ abstract type PlutoVistaType end
 """
 $(SIGNATURES)
     
-Heuristically detect type of plotter, returns the corresponding abstract type fro plotting.
+Heuristically detect type of plotter, returns the corresponding abstract type for plotting.
 """
 function plottertype(Plotter::Union{Module,Nothing})
     if ismakie(Plotter)
@@ -136,7 +131,7 @@ end
 $(TYPEDEF)
 
 A SubVisualizer is just a dictionary which contains plotting information,
-including type of the plotter and its position in the plot.
+including the type of the plotter and its position in the plot.
 """
 const SubVisualizer=Union{Dict{Symbol,Any},Nothing}
 
@@ -180,9 +175,8 @@ end
 
 Create a  grid visualizer
 
-Plotter: defaults to `default_plotter()` and can be `PyPlot`, `Plots`, `VTKView`, `Makie`.
-This pattern to pass the backend as a module to a plot function allows to circumvent
-to create heavy default package dependencies.
+Plotter: defaults to `default_plotter()` and can be `PyPlot`, `Plots`, `VTKView`, `Makie` or `PlutoVista´.
+This pattern allows  to pass the backend as a module to a plot function without heavy default package dependencies.
 
 
 Depending on the `layout` keyword argument, a 2D grid of subplots is created.
@@ -276,7 +270,7 @@ plottertype(p::GridVisualizer)=plottertype(p.Plotter)
 default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :show => Pair(false,"Show plot immediately"),
     :reveal => Pair(false,"Show plot immediately (same as :show)"),
-    :clear => Pair(true,"Clear plot before new plot."),
+    :clear => Pair(true,"Clear plot before adding new content"),
     :layout => Pair((1,1),"Layout of plots in window"),
     :resolution => Pair((500,500),"Plot window resolution"),
     :legend => Pair(:none,"Legend (position): one of [:none, :best, :lt, :ct, :rt, :lc, :rc, :lb, :cb, :rb]"),    
@@ -284,21 +278,23 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :xlabel => Pair("","x axis label"),
     :ylabel => Pair("","y axis label"),
     :zlabel => Pair("","z axis label"),
-    :xlimits => Pair((1,-1),"x limits"),
-    :ylimits => Pair((1,-1),"y limits"),
-    :zlimits => Pair((1,-1),"z limits"),
+    :xlimits => Pair((1,-1),"x axis limits"),
+    :ylimits => Pair((1,-1),"y axis limits"),
+    :zlimits => Pair((1,-1),"z axis limits"),
     :limits => Pair((1,-1),"function limits"),
+    :xscale => Pair(:identity,"x axis  scale: one of [:log, :identity]"),
+    :yscale => Pair(:identity,"y axis  scale: one of [:log, :identity]"),
     :aspect => Pair(1.0,"Aspect ratio modification"),
     :fontsize => Pair(20,"Fontsize of titles. All others are relative to it"),
-    :linewidth => Pair(2,"1D plot or isoline linewidth"),
+    :linewidth => Pair(2,"linewidth for isolines or 1D plots"),
     :linestyle => Pair(:solid,"1D Plot linestyle: one of [:solid, :dash, :dot, :dashdot, :dashdotdot]"),
     :markevery => Pair(5,"1D plot marker stride"),
     :markersize => Pair(5,"1D plot marker size"),
     :markershape => Pair(:none,"1D plot marker shape: one of [:none, :circle, :star5, :diamond, :hexagon, :cross, :xcross, :utriangle, :dtriangle, :rtriangle, :ltriangle, :pentagon, :+, :x]"),
     :color => Pair((0.0,0.0,0.0),"1D plot line color"),
-    :cellwise => Pair(false,"1D plots cellwise can be slow)"),
+    :cellwise => Pair(false,"1D plots cellwise; unmaintained and can be slow)"),
     :label => Pair("","1D plot label"),
-    :levels => Pair(5,"contour plot: number of isolevels"),
+    :levels => Pair(5,"array of isolevels or number of isolevels for comtour plots"),
     :elevation => Pair(0.0,"2D plot height factor for elevation"),
     :colorlevels => Pair(51,"2D/3D contour plot: number of color levels"),
     :colormap => Pair(:viridis,"2D/3D contour plot color map (any from [ColorSchemes.jl](https://juliagraphics.github.io/ColorSchemes.jl/stable/basics/#Pre-defined-schemes))"),
@@ -307,9 +303,9 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :levelalpha => Pair(0.25,"3D isolevel alpha"),
     :planealpha => Pair(1.0,"3D plane section alpha"),
     :interior => Pair(true,"3D plot interior of grid"),
-    :xplanes => Pair([prevfloat(Inf)],"3D x plane positions"),
-    :yplanes => Pair([prevfloat(Inf)],"3D y plane positions"),
-    :zplanes => Pair([prevfloat(Inf)],"3D z plane positions"),
+    :xplanes => Pair([prevfloat(Inf)],"3D x plane positions or number thereof"),
+    :yplanes => Pair([prevfloat(Inf)],"3D y plane positions or number thereof"),
+    :zplanes => Pair([prevfloat(Inf)],"3D z plane positions or number thereof"),
     :azim => Pair(-60,"3D azimuth angle  (in degrees)"),
     :elev => Pair(30,"3D elevation angle  (in degrees)"),
     :perspectiveness => Pair(0.25,"3D perspective A number between 0 and 1, where 0 is orthographic, and 1 full perspective"),

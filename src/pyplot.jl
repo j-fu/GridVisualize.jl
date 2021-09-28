@@ -336,7 +336,26 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func::Abstr
     
     cellnodes=grid[CellNodes]
     coord=grid[Coordinates]
-    if ctx[:cellwise]
+
+    pplot=ax.plot
+    if ctx[:xscale]==:log 
+        if ctx[:yscale]==:log
+            pplot=ax.loglog
+        else
+            pplot=ax.semilogx
+        end
+    end
+    if ctx[:yscale]==:log 
+        if ctx[:xscale]==:log
+            pplot=ax.loglog
+        else
+            pplot=ax.semilogy
+        end
+    end
+
+
+    
+    if ctx[:cellwise] # not checked
         for icell=1:num_cells(grid)
             i1=cellnodes[1,icell]
             i2=cellnodes[2,icell]
@@ -351,37 +370,37 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func::Abstr
     else
         if ctx[:markershape]==:none
             if ctx[:label]!==""
-                ax.plot(coord[1,:],func,
+                pplot(coord[1,:],func,
                         linestyle=lstyles[ctx[:linestyle]],
                         color=rgbtuple(ctx[:color]),
                         linewidth=ctx[:linewidth],
                         label=ctx[:label])
             else
-                ax.plot(coord[1,:],func,
+                pplot(coord[1,:],func,
                         linestyle=lstyles[ctx[:linestyle]],
                         linewidth=ctx[:linewidth],
                         color=rgbtuple(ctx[:color]))
             end
         else
             if ctx[:label]!==""
-                ax.plot(coord[1,:],func,
-                        linestyle=lstyles[ctx[:linestyle]],
-                        color=rgbtuple(ctx[:color]),
-                        label=ctx[:label],
-                        marker=mshapes[ctx[:markershape]],
-                        markevery=ctx[:markevery],
-                        markersize=ctx[:markersize],
-                        linewidth=ctx[:linewidth]
-                        )
+                pplot(coord[1,:],func,
+                      linestyle=lstyles[ctx[:linestyle]],
+                      color=rgbtuple(ctx[:color]),
+                      label=ctx[:label],
+                      marker=mshapes[ctx[:markershape]],
+                      markevery=ctx[:markevery],
+                      markersize=ctx[:markersize],
+                      linewidth=ctx[:linewidth]
+                      )
             else
-                ax.plot(coord[1,:],func,
-                        linestyle=lstyles[ctx[:linestyle]],
-                        color=rgbtuple(ctx[:color]),
-                        marker=mshapes[ctx[:markershape]],
-                        markevery=ctx[:markevery],
-                        markersize=ctx[:markersize],
-                        linewidth=ctx[:linewidth]
-                        )
+                pplot(coord[1,:],func,
+                      linestyle=lstyles[ctx[:linestyle]],
+                      color=rgbtuple(ctx[:color]),
+                      marker=mshapes[ctx[:markershape]],
+                      markevery=ctx[:markevery],
+                      markersize=ctx[:markersize],
+                      linewidth=ctx[:linewidth]
+                      )
             end                
         end
         # points=[Point2f0(coord[1,i],func[i]) for i=1:length(func)]

@@ -162,6 +162,11 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
         ymin=ylimits[1]
         ymax=ylimits[2]
     end
+
+    ctx[:xscale]==:log ? ctx[:xscale]=:log10 : nothing
+    ctx[:yscale]==:log ? ctx[:yscale]=:log10 : nothing
+
+
     
     Plots.plot!(p,[xmin,xmax], [ymin,ymax], seriestype = :scatter,
                 makersize=0,
@@ -170,7 +175,7 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
                 label="")
     
     color=ctx[:color]
-    if ctx[:cellwise]
+    if ctx[:cellwise] ## not checked
         cellnodes=grid[CellNodes]
         for icell=1:num_cells(grid)
             i1=cellnodes[1,icell]
@@ -193,6 +198,8 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
                         linewidth=ctx[:linewidth],
                         linestyle=ctx[:linestyle],
                         legend=legpos[ctx[:legend]],
+                        xscale=ctx[:xscale],
+                        yscale=ctx[:yscale],
                         label=ctx[:label])
         else
             #Trick plots to use markers
@@ -200,6 +207,8 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
                         linecolor = Plots.RGB(color),
                         linewidth=ctx[:linewidth],
                         linestyle=ctx[:linestyle],
+                        xscale=ctx[:xscale],
+                        yscale=ctx[:yscale],
                         label="")
             Plots.plot!(p,[X[1]], [func[1]],
                         markershape = markershape,
@@ -207,6 +216,8 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
                         markersize = ctx[:markersize] ,
                         linecolor = Plots.RGB(color),
                         linewidth=ctx[:linewidth],
+                        xscale=ctx[:xscale],
+                        yscale=ctx[:yscale],
                         legend=legpos[ctx[:legend]],
                         linestyle=ctx[:linestyle],
                         markercolor = Plots.RGB(color))
@@ -214,6 +225,8 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}},grid, func)
                                markercolor=Plots.RGB(color),
                                label="",
                                linecolor = :white,
+                               xscale=ctx[:xscale],
+                               yscale=ctx[:yscale],
                                markershape = markershape ,
                                markersize = ctx[:markersize] ,
                                lines=false)
