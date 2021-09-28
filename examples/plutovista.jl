@@ -178,7 +178,7 @@ t= $(@bind t PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 """
 
 # ╔═╡ 412c905f-050c-4b78-a66f-0d03978e7edf
-scalarplot!(vis,grid,f(t),limits=(-π/2,π/2),show=true)
+scalarplot!(vis,grid,f(t),limits=(-π/2,π/2),show=true,levels=4)
 
 # ╔═╡ e9bc2dae-c303-4063-9ea9-36f95f93371c
 md"""
@@ -235,8 +235,11 @@ z: $(@bind zplane Slider(0:0.01:1,show_value=true,default=0.45))
 # ╔═╡ ecd941a0-85b7-4bb7-a903-b19a500198e1
 scalarplot!(p3d,g3,f3;levels=[flevel],xplanes=[xplane],yplanes=[yplane],zplanes=[zplane],colormap=:hot,outlinealpha=0.05,show=true,levelalpha=0.5)
 
-# ╔═╡ b4f12ae5-b188-48b4-8821-360ff3ca347c
-scalarplot(g3,f3,Plotter=PlutoVista)
+# ╔═╡ d924d90d-4102-4ae8-b8de-254a17a5d4df
+X4=-1:0.1:1; g4=simplexgrid(X4,X4,X4)
+
+# ╔═╡ 57ed5eea-bc1c-45eb-b4d3-dc63088db21a
+scalarplot(g4,map( (x,y,z)-> 0.01*exp(-x^2-y^2-z^2),g4),levels=3)
 
 # ╔═╡ 597849e9-b9a7-4728-a278-7571d7c1a625
 scalarplot(Plotter=PyPlot,g3,f3;resolution=(300,300),levels=[0.5],
@@ -311,7 +314,8 @@ gridplot!(p3dgrid,g3; xplane=gxplane,yplane=gyplane,zplane=gzplane,show=true)
 # ╠═c0a0ea34-6fc3-4409-934e-086a1a36f94e
 # ╟─35be5ef4-0664-4196-8f10-cf71ec7cb371
 # ╠═ecd941a0-85b7-4bb7-a903-b19a500198e1
-# ╠═b4f12ae5-b188-48b4-8821-360ff3ca347c
+# ╠═d924d90d-4102-4ae8-b8de-254a17a5d4df
+# ╠═57ed5eea-bc1c-45eb-b4d3-dc63088db21a
 # ╠═597849e9-b9a7-4728-a278-7571d7c1a625
 # ╟─4b9113d2-10bd-4f7a-a2b8-22092656c6b3
 # ╠═81f0a07d-3d0c-4e7a-9684-1ca4d584b210

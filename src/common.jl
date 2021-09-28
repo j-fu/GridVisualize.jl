@@ -555,15 +555,25 @@ function markerpoints(points,nmarkers,transform)
     push!(mpoints,points[end])
 end
 
-
+function makeplanes(mmin,mmax,n)
+    if isa(n,Number)
+        if n==0
+            return [Inf]
+        end
+        p=collect(range(mmin,mmax,length=ceil(n)+2))
+        p[2:end-1]
+    else
+        n
+    end
+end
 
 function makeplanes(xyzmin,xyzmax,x,y,z)
     planes=Vector{Vector{Float64}}(undef,0)
-    ε=1.0e-1*(xyzmax.-xyzmin)
-
-    X=isa(x,Number) ? collect(range(xyzmin[1]+ε[1],xyzmax[1]-ε[1],length=ceil(x))) : x
-    Y=isa(y,Number) ? collect(range(xyzmin[2]+ε[2],xyzmax[2]-ε[2],length=ceil(y))) : y
-    Z=isa(z,Number) ? collect(range(xyzmin[3]+ε[3],xyzmax[3]-ε[3],length=ceil(z))) : z
+#    ε=1.0e-1*(xyzmax.-xyzmin)
+    
+    X=makeplanes(xyzmin[1],xyzmax[1],x)
+    Y=makeplanes(xyzmin[2],xyzmax[2],y)
+    Z=makeplanes(xyzmin[3],xyzmax[3],z)
 
     for i=1:length(X)
         x=X[i]
@@ -593,7 +603,7 @@ function isolevels(ctx,func)
     end
     
     if isa(ctx[:levels],Number)
-        levels=collect(LinRange(limits[1],limits[2],ctx[:levels]))
+        levels=collect(LinRange(limits[1],limits[2],ctx[:levels]+2))
     else
         levels=ctx[:levels]
     end
