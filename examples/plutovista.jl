@@ -239,7 +239,7 @@ scalarplot!(p3d,g3,f3;levels=[flevel],xplanes=[xplane],yplanes=[yplane],zplanes=
 X4=-1:0.1:1; g4=simplexgrid(X4,X4,X4)
 
 # ╔═╡ 57ed5eea-bc1c-45eb-b4d3-dc63088db21a
-scalarplot(g4,map( (x,y,z)-> 0.01*exp(-x^2-y^2-z^2),g4),levels=3)
+scalarplot(g4,map( (x,y,z)-> 0.01*exp(-10*(x^2+y^2+z^2)),g4),levels=3)
 
 # ╔═╡ 597849e9-b9a7-4728-a278-7571d7c1a625
 scalarplot(Plotter=PyPlot,g3,f3;resolution=(300,300),levels=[0.5],

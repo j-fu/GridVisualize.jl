@@ -153,9 +153,9 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)
     
     PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=3)
     PlutoVista.tetmesh!(ctx[:figure],pts,tris,
-                        xplane=ctx[:xplane],
-                        yplane=ctx[:yplane],
-                        zplane=ctx[:zplane],
+                        xplanes=ctx[:xplanes],
+                        yplanes=ctx[:yplanes],
+                        zplanes=ctx[:zplanes],
                         markers=markers,colormap=cmap,
                         faces=faces,facemarkers=facemarkers,facecolormap=bcmap,
                         outlinealpha=ctx[:outlinealpha])
