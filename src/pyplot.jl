@@ -528,3 +528,29 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid,func)
     reveal(ctx,TP)
 end
 
+### 2D Vector
+function vectorplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
+    PyPlot=ctx[:Plotter]
+    if !haskey(ctx,:ax)
+        ctx[:ax]=ctx[:figure].add_subplot(ctx[:layout]...,ctx[:iplot])
+    end
+    if ctx[:clear]
+        if haskey(ctx,:cbar)
+            ctx[:cbar].remove()
+        end
+        ctx[:ax].remove()
+        ctx[:ax]=ctx[:figure].add_subplot(ctx[:layout]...,ctx[:iplot])
+    end
+    
+    ax=ctx[:ax]
+    fig=ctx[:figure]
+    ax.set_aspect(ctx[:aspect])
+    ax.set_title(ctx[:title])
+    
+    qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale])
+    ax.quiver(qc[1,:], qc[2,:], qv[1,:],qv[2,:])
+    ax.set_xlabel(ctx[:xlabel])
+    ax.set_ylabel(ctx[:ylabel])
+    
+    reveal(ctx,TP)
+end

@@ -610,3 +610,135 @@ function isolevels(ctx,func)
     
     levels,limits
 end
+
+
+"""
+      vpoints,vfield=vectorsample(grid,vfield;offset=:default,spacing=:default, vscale=1, eps=0.1)
+
+Extract values of piecewise linear vector field at all sampling points
+on  `offset+ i*spacing` for i in Z^d  defined by the tuples offset and spacing.
+
+By default, offset is at the minimum of grid coordinates, and spacing is defined
+the largest grid extend divided by 10.
+
+Points and vfield are both  d x nquiver matrices.
+
+The vector field is normalized to vscale*min(spacing).
+
+Result data are meant to  be ready for being passed to calls to `quiver`.
+
+"""
+function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, eps=1.0e-10)
+    
+    dim=dim_space(grid)
+    eltype= dim ==2 ? Triangle2D : Tetrahedron3D
+    L2G = L2GTransformer(eltype, grid, ON_CELLS)
+    invA=zeros(dim+1,dim+1)
+    λ=zeros(dim+1)
+    qvcoord=Vector{SVector{dim,Float32}}(undef,0)
+    qvvalues=Vector{SVector{dim,Float32}}(undef,0)
+
+
+    coord=grid[Coordinates]
+    cminmax=extrema(coord, dims=(2,))
+
+    if offset==:default
+        offset=[cminmax[i][1] for i=1:dim]
+    end
+    extent=maximum([cminmax[i][2]-cminmax[i][1] for i=1:dim])
+    eps=eps*extent
+    if spacing==:default
+        spacing=(extent/15,extent/15)
+    elseif isa(spacing,Number)
+        spacing=(spacing,spacing)
+    end
+    cn=grid[CellNodes]
+
+    O=zeros(dim)
+    O.=offset
+    S=Float32[spacing...]
+    I=[0,0,0]
+    V=zeros(dim)
+    X=zeros(dim)
+    Imin=Int[0,0,0]
+    Imax=Int[0,0,0]
+    lcn=zeros(Int,dim+1)
+
+    for icell=1:num_cells(grid)
+
+        update_trafo!(L2G, icell) # 1 alloc
+
+        # Cell coordinates
+        for i=1:dim+1
+            lcn[i]=cn[i,icell]
+        end
+
+        # Cell coordinate window
+        @views tminmax=extrema(coord[:,lcn], dims=(2,))  # 1 alloc
+
+
+        # min an max of raster indices falling into cell coordinate window
+        for i=1:dim 
+            Imin[i]=floor(Int64,(tminmax[i][1]-O[i])/S[i])
+            Imax[i]=ceil(Int64,(tminmax[i][2]-O[i])/S[i])
+        end
+
+
+        # For raster indices falling into cell coordinate window,
+        # check if raster points are in window
+        # If so, push coordinates and P1 interpolated  vector data
+        for I[1] ∈ Imin[1]:Imax[1]
+            for I[2] ∈ Imin[2]:Imax[2]
+                for I[3] ∈ Imin[3]:Imax[3]
+                    # Fill raster point to be tested
+                    for i=1:dim
+                        X[i]=O[i]+I[i]*S[i]
+                    end
+
+                    # Get barycentric coordinates
+                    bary!(λ,invA,L2G,X)
+
+                    # Check positivity of bc coordinated (with some slack fo
+                    # round off errors
+                    if all(x->x>-eps,λ)
+                        # Push raster point
+                        push!(qvcoord,X)
+
+                        # Interpolate vector value
+                        fill!(V,0.0)
+                        for inode=1:dim+1
+                            for idim=1:dim
+                                V[idim]+=λ[inode]*v[idim,lcn[inode]]
+                            end
+                        end
+                        # Push vector value
+                        push!(qvvalues,V)
+                    end
+                end
+            end
+        end
+    end
+
+    # Reshape into matrices
+    qc=reshape(reinterpret(Float32,qvcoord),(2,length(qvcoord)))
+    qv=reshape(reinterpret(Float32,qvvalues),(2,length(qvvalues)))
+
+    # Normalize vectors to raster point spacing
+    vmax=maximum(norm,(qv[:,i] for i=1:length(qvvalues)))
+    vscale=vscale*min(spacing...)/vmax
+    qv.*=vscale
+    
+    qc,qv
+end
+
+function bary!(λ,invA,L2G,x)
+    mapderiv!(invA,L2G,nothing)
+    fill!(λ ,0)
+    for j = 1 : length(x)
+        dj=x[j] - L2G.b[j]
+        for  k = 1 : length(x)
+            λ[k] += invA[j,k] * dj
+        end
+    end
+    ExtendableGrids.postprocess_xreftest!(λ,Triangle2D)
+end

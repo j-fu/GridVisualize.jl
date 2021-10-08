@@ -42,6 +42,7 @@ include("plutovista.jl")
 
 export scalarplot,scalarplot!
 export gridplot,gridplot!
+export vectorplot,vectorplot!
 export save,reveal,backend!
 export isplots,isvtkview,ispyplot,ismakie,isplutovista
 export GridVisualizer, SubVisualizer

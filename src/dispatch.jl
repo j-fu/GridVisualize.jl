@@ -302,6 +302,9 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :outlinealpha => Pair(0.05,"3D outline surface alpha value"),
     :levelalpha => Pair(0.25,"3D isolevel alpha"),
     :planealpha => Pair(1.0,"3D plane section alpha"),
+    :spacing => Pair(:default,"Spacing of quiver points in vector plot"),
+    :offset => Pair(:default,"Offset of quiver grid"),
+    :vscale => Pair(1.0,"Vector scale for quiver grid"),
     :interior => Pair(true,"3D plot interior of grid"),
     :xplanes => Pair([prevfloat(Inf)],"3D x plane positions or number thereof"),
     :yplanes => Pair([prevfloat(Inf)],"3D y plane positions or number thereof"),
@@ -427,6 +430,31 @@ scalarplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = sca
 scalarplot(X::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
 scalarplot(X::AbstractVector,Y::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X,Y),func;kwargs...)
 scalarplot(X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func ;kwargs...)=scalarplot(simplexgrid(X,Y,Z),func;kwargs...)
+
+
+
+
+
+
+
+function vectorplot!(ctx::SubVisualizer,grid::ExtendableGrid,func; kwargs...)
+    _update_context!(ctx,Dict(:clear=>true,:show=>false,:reveal=>false))
+    _update_context!(ctx,kwargs)
+    vectorplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid,func)
+end
+
+vectorplot!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...) = vectorplot!(p[1,1],grid,func; kwargs...)
+vectorplot!(ctx::SubVisualizer,grid::ExtendableGrid,func::Function; kwargs...)=vectorplot!(ctx,grid,map(func,grid);kwargs...)
+vectorplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,func; kwargs...)=vectorplot!(ctx,simplexgrid(X,Y),func;kwargs...)
+vectorplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func; kwargs...)=vectorplot!(ctx,simplexgrid(X,Y,Z),func;kwargs...)
+
+
+vectorplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = vectorplot!(GridVisualizer(Plotter=Plotter; datadim=dim_space(grid),kwargs...),grid,func,show=true)
+vectorplot(X::AbstractVector,Y::AbstractVector,func ;kwargs...)=vectorplot(simplexgrid(X,Y),func;kwargs...)
+vectorplot(X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func ;kwargs...)=vectorplot(simplexgrid(X,Y,Z),func;kwargs...)
+
+
+
 
 """
 $(SIGNATURES)

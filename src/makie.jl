@@ -578,6 +578,33 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
 end
 
 
+
+# 2D vector
+function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
+    Makie=ctx[:Plotter]
+
+    qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale])
+
+    if !haskey(ctx,:scene)
+        ctx[:scene]=Makie.Axis(ctx[:figure];
+                               title=ctx[:title],
+                               aspect=Makie.DataAspect(),
+                               scenekwargs(ctx)...)
+        add_scene!(ctx,ctx[:scene])
+    end
+    
+
+    # Need to learn how to update here from two different calls
+    Makie.arrows!(ctx[:scene],
+                  qc[1,:],qc[2,:],qv[1,:], qv[2,:],
+                  color=:black,
+                  linewidth=2)
+    reveal(ctx,TP)
+end
+
+
+
+
 #######################################################################################
 #######################################################################################
 # 3D Grid
