@@ -1,4 +1,3 @@
-
 """
     default_plotter()
 
@@ -86,14 +85,14 @@ abstract type PlotsType   end
 """
 $(TYPEDEF)
 
-Abstract type for dispatching on plotter
+Abstract type for dispatching on plotter. Experimental.
 """
 abstract type VTKViewType end
 
 """
 $(TYPEDEF)
 
-Abstract type for dispatching on plotter
+Abstract type for dispatching on plotter. Experimental.
 """
 abstract type MeshCatType end
 
@@ -168,10 +167,9 @@ struct GridVisualizer
                                                                                               copy(default))
 end
 
+
 """
-````
-    GridVisualizer(; Plotter=default_plotter() , kwargs...)
-````
+$(TYPEDSIGNATURES)
 
 Create a  grid visualizer
 
@@ -345,11 +343,9 @@ available_kwargs()=println(_myprint(default_plot_kwargs()))
 
 
 
+###################################################################################
 """
-````
-gridplot!(visualizer[i,j], grid, kwargs...)
-gridplot!(visualizer, grid, kwargs...)
-````
+$(TYPEDSIGNATURES)
 
 Plot grid into subplot in the visualizer. If `[i,j]` is omitted, `[1,1]` is assumed.
 
@@ -360,13 +356,12 @@ function gridplot!(ctx::SubVisualizer,grid::ExtendableGrid; kwargs...)
     gridplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid)
 end
 
+"$(TYPEDSIGNATURES)"
 gridplot!(p::GridVisualizer,grid::ExtendableGrid; kwargs...)= gridplot!(p[1,1],grid; kwargs...)
 
 
 """
-````
-gridplot(grid; Plotter=default_plotter(); kwargs...)
-````
+$(TYPEDSIGNATURES)
 
 Create grid visualizer and plot grid
 
@@ -375,16 +370,9 @@ Keyword arguments: see [`available_kwargs`](@ref)
 gridplot(grid::ExtendableGrid; Plotter=default_plotter(), kwargs...)=gridplot!(GridVisualizer(Plotter=Plotter; show=true, kwargs...),grid)
 
 
+###################################################################################
 """
-````
-scalarplot!(visualizer[i,j], grid, vector; kwargs...)
-scalarplot!(visualizer, grid, vector; kwargs...)
-scalarplot!(visualizer[i,j], grid, function; kwargs...)
-scalarplot!(visualizer[i,j], X, vector; kwargs...)
-scalarplot!(visualizer[i,j], X, function; kwargs...)
-scalarplot!(visualizer[i,j], X, Y, function; kwargs...)
-scalarplot!(visualizer[i,j], X, Y, Z, function; kwargs...)
-````
+$(TYPEDSIGNATURES)
 
 Plot node vector on grid as P1 FEM function on the triangulation into subplot in the visualizer. If `[i,j]` is omitted, `[1,1]` is assumed.
 
@@ -400,65 +388,86 @@ function scalarplot!(ctx::SubVisualizer,grid::ExtendableGrid,func; kwargs...)
     scalarplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid,func)
 end
 
+"$(TYPEDSIGNATURES)"
 scalarplot!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...) = scalarplot!(p[1,1],grid,func; kwargs...)
+
+"$(TYPEDSIGNATURES)"
 scalarplot!(ctx::SubVisualizer,grid::ExtendableGrid,func::Function; kwargs...)=scalarplot!(ctx,grid,map(func,grid);kwargs...)
+
+"$(TYPEDSIGNATURES)"
 scalarplot!(ctx::SubVisualizer,X::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
+
+"$(TYPEDSIGNATURES)"
 scalarplot!(ctx::GridVisualizer,X::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
+
+"$(TYPEDSIGNATURES)"
 scalarplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X,Y),func;kwargs...)
+
+"$(TYPEDSIGNATURES)"
 scalarplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func; kwargs...)=scalarplot!(ctx,simplexgrid(X,Y,Z),func;kwargs...)
 
 
-"""
-````
-scalarplot(grid,vector; Plotter=default_plotter())
-scalarplot(grid,function; Plotter=default_plotter())
-scalarplot(X,vector; Plotter=default_plotter())
-scalarplot(X,function; Plotter=default_plotter())
-scalarplot(X,Y,function; Plotter=default_plotter())
-scalarplot(X,Y,Z,function; Plotter=default_plotter())
 
-````
+"""
+$(TYPEDSIGNATURES)
 
 Plot node vector on grid as P1 FEM function on the triangulation.
 
 If instead of the node vector,  a function is given, it will be evaluated on the grid.
-
+ 
 If instead of the grid,  vectors for coordinates are given, a grid is created automatically.
 
-Keyword arguments: see [`available_kwargs`](@ref)
+For keyword arguments, see [`available_kwargs`](@ref)
 """
 scalarplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter; datadim=dim_space(grid),kwargs...),grid,func,show=true)
+
+"$(TYPEDSIGNATURES)"
 scalarplot(X::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
+
+"$(TYPEDSIGNATURES)"
 scalarplot(X::AbstractVector,Y::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X,Y),func;kwargs...)
+
+"$(TYPEDSIGNATURES)"
 scalarplot(X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func ;kwargs...)=scalarplot(simplexgrid(X,Y,Z),func;kwargs...)
 
+###################################################################################
 
 
+"""
+$(TYPEDSIGNATURES)
 
-
-
-
+Plot piecewise linear vector field  as quiver plot.
+"""
 function vectorplot!(ctx::SubVisualizer,grid::ExtendableGrid,func; kwargs...)
     _update_context!(ctx,Dict(:clear=>true,:show=>false,:reveal=>false))
     _update_context!(ctx,kwargs)
     vectorplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid,func)
 end
 
+"$(TYPEDSIGNATURES)"
 vectorplot!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...) = vectorplot!(p[1,1],grid,func; kwargs...)
-vectorplot!(ctx::SubVisualizer,grid::ExtendableGrid,func::Function; kwargs...)=vectorplot!(ctx,grid,map(func,grid);kwargs...)
+"$(TYPEDSIGNATURES)"
 vectorplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,func; kwargs...)=vectorplot!(ctx,simplexgrid(X,Y),func;kwargs...)
+"$(TYPEDSIGNATURES)"
 vectorplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func; kwargs...)=vectorplot!(ctx,simplexgrid(X,Y,Z),func;kwargs...)
 
 
+"""
+$(TYPEDSIGNATURES)
+
+Plot piecewise linear vector field  as quiver plot.
+"""
 vectorplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = vectorplot!(GridVisualizer(Plotter=Plotter; datadim=dim_space(grid),kwargs...),grid,func,show=true)
+"$(TYPEDSIGNATURES)"
 vectorplot(X::AbstractVector,Y::AbstractVector,func ;kwargs...)=vectorplot(simplexgrid(X,Y),func;kwargs...)
+"$(TYPEDSIGNATURES)"
 vectorplot(X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func ;kwargs...)=vectorplot(simplexgrid(X,Y,Z),func;kwargs...)
 
 
 
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Finish and show plot. Same as setting `:reveal=true` or `:show=true` in last plot statment
 for a context.
@@ -466,14 +475,14 @@ for a context.
 reveal(visualizer::GridVisualizer)=reveal(visualizer, plottertype(visualizer.Plotter))
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Save last plotted figure from visualizer to disk.
 """
 save(fname::String,visualizer::GridVisualizer)=save(fname,p, plottertype(p.Plotter))
 
 """
-$(SIGNATURES)
+$(TYPEDSIGNATURES)
 
 Save scene returned from [`reveal`](@ref), [`scalarplot`](@ref) or [`gridplot`](@ref)  to disk.
 """

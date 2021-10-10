@@ -1,8 +1,53 @@
 # Public API
-    
-```@autodocs
-Modules = [GridVisualize]
-Private = false
-Order  = [:function, :type]
-Pages = ["dispatch.jl"]
+
+## Visualizer
+```@docs
+GridVisualizer
+GridVisualizer(; Plotter=default_plotter() , kwargs...)
+SubVisualizer
+reveal
+save
+default_plotter!
 ```
+
+## Plotters
+```@docs
+default_plotter
+default_plotter!
+plottertype
+PyPlotType
+MakieType
+PlotsType
+PlutoVistaType
+VTKViewType
+MeshCatType
+```
+
+
+
+## Plotting grids
+```@docs
+gridplot
+gridplot!
+```
+
+
+## Plotting scalar data
+```@docs
+scalarplot
+scalarplot!
+```
+
+## Plotting vector data
+```@docs
+vectorplot
+vectorplot!
+```
+
+
+## Keyword Arguments
+```@docs
+available_kwargs
+```
+
+    

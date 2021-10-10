@@ -5,6 +5,7 @@
 ```@autodocs
 Modules = [GridVisualize]
 Private = true
+Public = false
 Pages = ["dispatch.jl","common.jl"]
 ```
 
@@ -12,6 +13,7 @@ Pages = ["dispatch.jl","common.jl"]
 ```@autodocs
 Modules = [GridVisualize]
 Private = true
+Public = false
 Pages = ["pyplot.jl"]
 ```
 
@@ -19,6 +21,7 @@ Pages = ["pyplot.jl"]
 ```@autodocs
 Modules = [GridVisualize,FlippableLayout]
 Private = true
+Public = false
 Pages = ["makie.jl", "flippablelayout.jl"]
 ```
 
@@ -26,6 +29,7 @@ Pages = ["makie.jl", "flippablelayout.jl"]
 ```@autodocs
 Modules = [GridVisualize]
 Private = true
+Public = false
 Pages = ["plots.jl"]
 ```
 
@@ -33,5 +37,6 @@ Pages = ["plots.jl"]
 ```@autodocs
 Modules = [GridVisualize]
 Private = true
+Public = false
 Pages = ["vtkview.jl"]
 ```

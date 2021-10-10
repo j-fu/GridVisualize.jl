@@ -16,9 +16,7 @@ OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 PkgVersion = "eebad327-c553-4316-9ea0-9fa01ccd7688"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
-SimplexGridFactory = "57bfcd06-606e-45d6-baf4-4ba06da0efd5"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
-Triangulate = "f7e6ffb2-c36d-4f8f-a77e-16e897189344"
 
 [compat]
 ColorSchemes = "3"
