@@ -547,7 +547,7 @@ function vectorplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     ax.set_aspect(ctx[:aspect])
     ax.set_title(ctx[:title])
     
-    qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale])
+    qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale],vnormalize=ctx[:vnormalize])
     ax.quiver(qc[1,:], qc[2,:], qv[1,:],qv[2,:])
     ax.set_xlabel(ctx[:xlabel])
     ax.set_ylabel(ctx[:ylabel])

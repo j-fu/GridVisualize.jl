@@ -613,7 +613,7 @@ end
 
 
 """
-      vpoints,vfield=vectorsample(grid,vfield;offset=:default,spacing=:default, vscale=1, eps=0.1)
+      vpoints,vfield=vectorsample(grid,vfield;offset=:default,spacing=:default, vscale=1, vnormalize=true, eps=0.1)
 
 Extract values of piecewise linear vector field at all sampling points
 on  `offset+ i*spacing` for i in Z^d  defined by the tuples offset and spacing.
@@ -623,12 +623,13 @@ the largest grid extend divided by 10.
 
 Points and vfield are both  d x nquiver matrices.
 
-The vector field is normalized to vscale*min(spacing).
+If vnormalize is true, the vector field is normalized to vscale*min(spacing), otherwise, it
+is scaled by vscale
 
 Result data are meant to  be ready for being passed to calls to `quiver`.
 
 """
-function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, eps=1.0e-10)
+function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnormalize=true,eps=1.0e-10)
     
     dim=dim_space(grid)
     eltype= dim ==2 ? Triangle2D : Tetrahedron3D
@@ -724,8 +725,10 @@ function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, eps=
     qv=reshape(reinterpret(Float32,qvvalues),(2,length(qvvalues)))
 
     # Normalize vectors to raster point spacing
-    vmax=maximum(norm,(qv[:,i] for i=1:length(qvvalues)))
-    vscale=vscale*min(spacing...)/vmax
+    if vnormalize
+        vmax=maximum(norm,(qv[:,i] for i=1:length(qvvalues)))
+        vscale=vscale*min(spacing...)/vmax
+    end
     qv.*=vscale
     
     qc,qv

@@ -282,7 +282,7 @@ function vectorplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid, func)
     end
     p=ctx[:ax]
 
-    qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale])
+    qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale],vnormalize=ctx[:vnormalize])
     Plots.quiver!(p,qc[1,:], qc[2,:], quiver=(qv[1,:],qv[2,:]),color=:black)
     reveal(ctx,TP)
 end

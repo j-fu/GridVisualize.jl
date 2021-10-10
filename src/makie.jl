@@ -436,14 +436,14 @@ end
 Complete scene with title and status line showing interaction state.
 This uses a gridlayout and its  protrusion capabilities.
 """
-function makescene2d(ctx)
+function makescene2d(ctx,key)
     Makie=ctx[:Plotter]
     GL=Makie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
     if ctx[:colorbar]==:vertical
-        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[:poly],width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
     elseif ctx[:colorbar]==:horizontal
-        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[:poly],height=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],vertical=false)
+        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[key],height=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],vertical=false)
     end
     GL
 end
@@ -468,6 +468,13 @@ function makescene2d_grid(ctx)
     GL
 end
 
+
+# Put all data which could be updated in to one plot.
+set_plot_data!(ctx,m,key,data) = haskey(ctx,key) ?  ctx[key][]=data : ctx[key]=m.Node(data) 
+    
+
+
+
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
     
     Makie=ctx[:Plotter]
@@ -476,14 +483,16 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
 
     nbregions=num_bfaceregions(grid)
 
+    set_plot_data!(ctx,Makie,:grid,grid)
 
-    if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.Axis(ctx[:figure];
-                               title=ctx[:title],
-                               aspect=Makie.DataAspect(),
-                               scenekwargs(ctx)...)
-
-        ctx[:grid]=Makie.Node(grid)
+    if !haskey(ctx,:gridplot)
+        
+        if !haskey(ctx,:scene)
+            ctx[:scene]=Makie.Axis(ctx[:figure];
+                                   title=ctx[:title],
+                                   aspect=Makie.DataAspect(),
+                                   scenekwargs(ctx)...)
+        end
 
         # Draw cells with region mark
         cmap=region_cmap(nregions)
@@ -512,10 +521,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
                              labelsize=0.5*ctx[:fontsize],
                              backgroundcolor=:transparent)
         end
-        
         add_scene!(ctx, makescene2d_grid(ctx))
-    else
-        ctx[:grid][]=grid
     end
     reveal(ctx,TP)
 end
@@ -525,6 +531,8 @@ end
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
     Makie=ctx[:Plotter]
 
+
+    
     # Create GeometryBasics.mesh from grid data.
     function make_mesh(grid::ExtendableGrid,func,elevation)
         coord=grid[Coordinates]
@@ -539,40 +547,34 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
         Mesh(points,faces)
     end
 
-
+    levels,crange=isolevels(ctx,func)
+        
+    set_plot_data!(ctx,Makie,:contourdata,(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=levels,c=crange))
     
-    if !haskey(ctx,:scene)
-        # Here, we work with data tuples in the nodes,
-        # these  can be easily extended.
-        levels,crange=isolevels(ctx,func)
+    if !haskey(ctx,:contourplot)
 
-        ctx[:data]=Makie.Node((g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=levels,c=crange))
-
-        # would need to switch to Axis3 for supporting elevtion
-        ctx[:scene]=Makie.Axis(ctx[:figure];
-                               title=map(data->data.t,ctx[:data]),
-                               aspect=Makie.DataAspect(),
-                               scenekwargs(ctx)...)
-
+        if !haskey(ctx,:scene)
+            # would need to switch to Axis3 for supporting elevtion
+            ctx[:scene]=Makie.Axis(ctx[:figure];
+                                   title=map(data->data.t,ctx[:contourdata]),
+                                   aspect=Makie.DataAspect(),
+                                   scenekwargs(ctx)...)
+        end
+        
         # Draw the mesh for the cells
-        ctx[:poly]=Makie.poly!(ctx[:scene],
-                               map(data->make_mesh(data.g,data.f,data.e),ctx[:data]),
-                               color=map(data->data.f,ctx[:data]),
-                               colorrange=map(data->data.c,ctx[:data]),
-                               colormap=ctx[:colormap])
+        ctx[:contourplot]=Makie.poly!(ctx[:scene],
+                                      map(data->make_mesh(data.g,data.f,data.e),ctx[:contourdata]),
+                                      color=map(data->data.f,ctx[:contourdata]),
+                                      colorrange=map(data->data.c,ctx[:contourdata]),
+                                      colormap=ctx[:colormap])
         
         # draw the isolines via marching triangles
         Makie.linesegments!(ctx[:scene],
-                            map(data->marching_triangles(data.g,data.f,data.l),ctx[:data]),
+                            map(data->marching_triangles(data.g,data.f,data.l),ctx[:contourdata]),
                             color=:black,
                             linewidth=ctx[:linewidth])
-        
-        add_scene!(ctx,makescene2d(ctx))
-        
-    else
-        # Just refresh the data.
-        levels,crange=isolevels(ctx,func)
-        ctx[:data][]=(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=levels,c=crange)
+
+        add_scene!(ctx,makescene2d(ctx,:contourplot))
     end
     reveal(ctx,TP)
 end
@@ -583,22 +585,28 @@ end
 function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
     Makie=ctx[:Plotter]
 
-    qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale])
+    qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale],vnormalize=ctx[:vnormalize])
 
-    if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.Axis(ctx[:figure];
-                               title=ctx[:title],
-                               aspect=Makie.DataAspect(),
-                               scenekwargs(ctx)...)
-        add_scene!(ctx,ctx[:scene])
-    end
     
+    set_plot_data!(ctx,Makie,:arrowdata,(qc=qc,qv=qv))
 
-    # Need to learn how to update here from two different calls
-    Makie.arrows!(ctx[:scene],
-                  qc[1,:],qc[2,:],qv[1,:], qv[2,:],
-                  color=:black,
-                  linewidth=2)
+    if !haskey(ctx,:arrowplot)
+        if !haskey(ctx,:scene)
+            ctx[:scene]=Makie.Axis(ctx[:figure];
+                                   title=ctx[:title],
+                                   aspect=Makie.DataAspect(),
+                                   scenekwargs(ctx)...)
+            add_scene!(ctx,ctx[:scene])
+        end
+    
+        ctx[:arrowplot]=Makie.arrows!(ctx[:scene],
+                                      map(data->data.qc[1,:],ctx[:arrowdata]),
+                                      map(data->data.qc[2,:],ctx[:arrowdata]),
+                                      map(data->data.qv[1,:],ctx[:arrowdata]),
+                                      map(data->data.qv[2,:],ctx[:arrowdata]),
+                                      color=:black,
+                                      linewidth=ctx[:linewidth])
+    end
     reveal(ctx,TP)
 end
 
