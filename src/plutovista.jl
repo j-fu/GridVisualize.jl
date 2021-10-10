@@ -137,6 +137,17 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)
     reveal(ctx,TP)
 end
 
+
+function vectorplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}},grid, func)
+    PlutoVista=ctx[:Plotter]
+    PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=2)
+    qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale])
+    PlutoVista.quiver2d!(ctx[:figure],qc,qv)
+    reveal(ctx,TP)
+end
+
+
+
 function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)
 
     nregions=num_cellregions(grid)

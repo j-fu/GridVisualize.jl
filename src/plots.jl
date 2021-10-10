@@ -283,11 +283,9 @@ function vectorplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid, func)
     p=ctx[:ax]
 
     qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale])
-    Plots.quiver!(qc[1,:], qc[2,:], quiver=(qv[1,:],qv[2,:]),color=:black)
+    Plots.quiver!(p,qc[1,:], qc[2,:], quiver=(qv[1,:],qv[2,:]),color=:black)
     reveal(ctx,TP)
 end
-
-
 
 function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grid)
     Plots=ctx[:Plotter]

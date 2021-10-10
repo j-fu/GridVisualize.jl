@@ -497,6 +497,12 @@ scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{1}},grid,func)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid,func)=nothing
 scalarplot!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid,func)=nothing
 
+vectorplot!(ctx::Nothing,grid::ExtendableGrid,func;kwargs...)=nothing
+vectorplot!(ctx::Nothing,grid::ExtendableGrid,func::Function;kwargs...)=nothing
+vectorplot!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid,func)=nothing
+vectorplot!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid,func)=nothing
+
+
 save(fname,scene,Plotter,::Type{Nothing})=nothing
 displayable(ctx,Any)=nothing
 reveal(p,::Type{Nothing})=nothing

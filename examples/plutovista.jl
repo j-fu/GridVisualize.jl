@@ -31,6 +31,9 @@ begin
    using PyPlot,PlutoVista,GridVisualize,ExtendableGrids,PlutoUI,Plots
 end
 
+# ╔═╡ 62c6c85c-e374-4315-b737-b7a0005d2985
+Plots.gr()
+
 # ╔═╡ 68e2c958-b417-4ba1-9577-697304fe140a
 TableOfContents()
 
@@ -267,9 +270,42 @@ z: $(@bind gzplane Slider(0:0.01:1,show_value=true,default=0.45))
 # ╔═╡ 840c80b7-5186-45a5-a8df-ec4fb50a5dbb
 gridplot!(p3dgrid,g3; xplane=gxplane,yplane=gyplane,zplane=gzplane,show=true)
 
+# ╔═╡ e656dac5-466e-4c07-acfa-0478ad000cb2
+function qv2d(;Plotter=nothing,n=20,kwargs...)
+	
+    X=0.0:10/(n-1):10
+
+
+    f(x,y)=sin(x)*cos(y)+0.05*x*y
+    fx(x,y)=-cos(x)*cos(y)-0.05*y
+    fy(x,y)=sin(x)*sin(y)-0.05*x
+    
+    
+    grid=simplexgrid(X,X)
+    
+
+    v=map(f,grid)
+    ∇v=vcat(map(fx,grid)',map(fy,grid)')
+
+    gvis=GridVisualizer(Plotter=Plotter,resolution=(400,400))
+    scalarplot!(gvis,grid,v,colormap=:summer,levels=7)
+    vectorplot!(gvis,grid,∇v;clear=false, show=true,kwargs...)
+	reveal(gvis)
+end
+
+# ╔═╡ 812af347-7606-4c54-b155-88322d20d921
+qv2d(Plotter=PlutoVista)
+
+# ╔═╡ 9462f2a4-e7ef-469f-85d4-12f3fa411091
+qv2d(Plotter=PyPlot)
+
+# ╔═╡ f03cb172-82c7-4187-be43-01d307977713
+qv2d(Plotter=Plots)
+
 # ╔═╡ Cell order:
 # ╠═6df3beed-24a7-4b26-a315-0520f4863190
 # ╠═9701cbe0-d048-11eb-151b-67dda7b72b71
+# ╠═62c6c85c-e374-4315-b737-b7a0005d2985
 # ╠═68e2c958-b417-4ba1-9577-697304fe140a
 # ╟─b35d982d-1fa9-413d-b008-892b4f241097
 # ╟─00b04f6b-34a6-4e30-9864-d273305281d4
@@ -322,3 +358,7 @@ gridplot!(p3dgrid,g3; xplane=gxplane,yplane=gyplane,zplane=gzplane,show=true)
 # ╠═f78196ca-d972-4fa6-bdc2-e76eba7ca5a1
 # ╟─7dd92757-c100-4158-baa8-1d9218c39aa7
 # ╠═840c80b7-5186-45a5-a8df-ec4fb50a5dbb
+# ╠═e656dac5-466e-4c07-acfa-0478ad000cb2
+# ╠═812af347-7606-4c54-b155-88322d20d921
+# ╠═9462f2a4-e7ef-469f-85d4-12f3fa411091
+# ╠═f03cb172-82c7-4187-be43-01d307977713
