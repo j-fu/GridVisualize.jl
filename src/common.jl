@@ -596,7 +596,7 @@ end
 
 # Calculate isolevel values and function limits
 function isolevels(ctx,func)
-
+    
     limits=ctx[:limits]
     if limits==:auto || limits[1]>limits[2] 
         limits=extrema(func)
@@ -610,6 +610,40 @@ function isolevels(ctx,func)
     
     levels,limits
 end
+
+
+mutable struct VectorSampler{D,T}
+    qvcoord::Vector{SVector{D,T}}
+    qvvalues::Vector{SVector{D,T}}
+    VectorSampler{D,T}() where {D,T} =new(Vector{SVector{D,T}}(undef,0),Vector{SVector{D,T}}(undef,0))
+end
+
+function sample!(vs::VectorSampler,ijk,coord,value)
+    push!(vs.qvcoord,coord)
+    push!(vs.qvvalue,value)
+end
+
+function extract(vs::VectorSampler)
+    ### normalize, reshape
+    vs.qvcoord,vs.qvvalues
+end
+
+
+mutable struct RasterSampler{D,T}
+    qvalues::Array{T}
+    RasterSampler{D,T}(bounds) where {D,T}=new(zeros(T,(D,bounds...)))
+end
+
+function sample!(vs::RasterSampler,ijk,coord,value)
+     vs.qvvalue[:,ijk...].=value
+end
+
+function extract(vs::VectorSampler)
+   vs.qvvalue 
+end
+
+
+
 
 
 """
@@ -643,9 +677,16 @@ function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnor
     coord=grid[Coordinates]
     cminmax=extrema(coord, dims=(2,))
 
+
+
+
+    
     if offset==:default
         offset=[cminmax[i][1] for i=1:dim]
     end
+
+
+
     extent=maximum([cminmax[i][2]-cminmax[i][1] for i=1:dim])
     eps=eps*extent
     if spacing==:default
@@ -655,9 +696,21 @@ function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnor
     end
     cn=grid[CellNodes]
 
+
+
+
+    
     O=zeros(dim)
     O.=offset
     S=Float32[spacing...]
+
+    ijkmax=zeros(dim)
+    
+    for i=1:dim 
+        ijkmax[i]=ceil(Int64,(cminmax[i][2]-O[i])/S[i])+1
+    end
+    rasterflux=zeros(dim,ijkmax...)
+    
     I=[0,0,0]
     V=zeros(dim)
     X=zeros(dim)
@@ -702,6 +755,7 @@ function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnor
                     # Check positivity of bc coordinated (with some slack fo
                     # round off errors
                     if all(x->x>-eps,λ)
+
                         # Push raster point
                         push!(qvcoord,X)
 
@@ -712,6 +766,7 @@ function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnor
                                 V[idim]+=λ[inode]*v[idim,lcn[inode]]
                             end
                         end
+                        rasterflux[:,(I.+1)...].=V
                         # Push vector value
                         push!(qvvalues,V)
                     end
@@ -720,6 +775,21 @@ function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnor
         end
     end
 
+    if false
+        for i=1:ijkmax[1]
+            for j=1:ijkmax[2]
+                for k=1:ijkmax[3]
+                    if rasterflux[:,i,j,k] ≠ 0
+                        push!(qc)
+                        push!(qv)
+                    end
+                end
+            end
+        end
+    end
+
+
+    
     # Reshape into matrices
     qc=reshape(reinterpret(Float32,qvcoord),(2,length(qvcoord)))
     qv=reshape(reinterpret(Float32,qvvalues),(2,length(qvvalues)))
