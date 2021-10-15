@@ -419,7 +419,7 @@ If instead of the grid,  vectors for coordinates are given, a grid is created au
 
 For keyword arguments, see [`available_kwargs`](@ref)
 """
-scalarplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter; datadim=dim_space(grid),kwargs...),grid,func,show=true)
+scalarplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter; kwargs...),grid,func,show=true)
 
 "$(TYPEDSIGNATURES)"
 scalarplot(X::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)
@@ -457,7 +457,7 @@ $(TYPEDSIGNATURES)
 
 Plot piecewise linear vector field  as quiver plot.
 """
-vectorplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = vectorplot!(GridVisualizer(Plotter=Plotter; datadim=dim_space(grid),kwargs...),grid,func,show=true)
+vectorplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = vectorplot!(GridVisualizer(Plotter=Plotter; kwargs...),grid,func,show=true)
 "$(TYPEDSIGNATURES)"
 vectorplot(X::AbstractVector,Y::AbstractVector,func ;kwargs...)=vectorplot(simplexgrid(X,Y),func;kwargs...)
 "$(TYPEDSIGNATURES)"
