@@ -22,14 +22,20 @@ begin
    Pkg.activate(mktempdir())
    Pkg.add("Revise")
    using Revise
-   Pkg.add(["PyPlot","PlutoUI","Plots","GLMakie"])
+   Pkg.add(["PyPlot","PlutoUI","Plots"])
 	if develop
+		Pkg.add("GLMakie")
 	   Pkg.develop(["PlutoVista","GridVisualize", "ExtendableGrids"])
 	else
 	   Pkg.add(["PlutoVista","GridVisualize","ExtendableGrids"])
 	end
    using PlutoVista,GridVisualize,ExtendableGrids,PlutoUI
-   import Plots,GLMakie,PyPlot
+   import Plots,PyPlot
+	if develop
+		import GLMakie
+	else
+		GLMakie=nothing
+	end
 end
 
 # ╔═╡ 62c6c85c-e374-4315-b737-b7a0005d2985
@@ -63,6 +69,9 @@ testplot1(Plots)
 # ╔═╡ 33482af8-3542-4723-ae43-770a789b69b3
 testplot1(PlutoVista)
 
+# ╔═╡ d21982eb-aa7e-424c-932e-f0b1460f19b9
+testplot1(GLMakie)
+
 # ╔═╡ c4eeb06f-932e-4acc-8e5b-f2a7f9242a42
 function testplot2(Plotter;t=0)
 	p=GridVisualizer(Plotter=Plotter, resolution=(500,200),legend=:rt,xlabel="x")
@@ -77,6 +86,9 @@ testplot2(PyPlot)
 
 # ╔═╡ c0ab77e8-01ea-436d-85f2-34e253944f11
 testplot2(Plots)
+
+# ╔═╡ 4f73fb99-fab9-4ca4-addb-7d12d16ceba0
+testplot2(GLMakie)
 
 # ╔═╡ 84192945-d4b6-4949-8f06-d94e04a7a56d
 testplot2(PlutoVista)
@@ -135,6 +147,9 @@ testgridplot(PyPlot)
 
 # ╔═╡ d503ee1e-1e1f-4235-b286-dc3137a2c96a
 testgridplot(PlutoVista)
+
+# ╔═╡ 395d05f4-46a9-4e85-804c-35c79acc96e3
+testgridplot(GLMakie)
 
 # ╔═╡ ae1fe1ab-4a0e-4c80-bd6f-912201fb4bb4
 md"""
@@ -202,6 +217,9 @@ testgridplot2d(PyPlot)
 # ╔═╡ 1388c246-be49-4757-a2cc-a685642b6b37
 testgridplot2d(PlutoVista)
 
+# ╔═╡ 3f807dfe-7ad3-4740-9e4f-23a39c15603c
+testgridplot2d(GLMakie)
+
 # ╔═╡ 5eee8f1d-49ca-4e95-bd14-fe415b0c15e5
 md"""
 ## 3D Scalar plot
@@ -243,7 +261,7 @@ scalarplot!(p3d,g3,f3;levels=[flevel],xplanes=[xplane],yplanes=[yplane],zplanes=
 X4=-1:0.1:1; g4=simplexgrid(X4,X4,X4)
 
 # ╔═╡ 57ed5eea-bc1c-45eb-b4d3-dc63088db21a
-scalarplot(g4,map( (x,y,z)-> 0.01*exp(-10*(x^2+y^2+z^2)),g4),levels=3)
+scalarplot(g4,map( (x,y,z)-> 0.01*exp(-10*(x^2+y^2+z^2)),g4),levels=3,Plotter=PlutoVista)
 
 # ╔═╡ 597849e9-b9a7-4728-a278-7571d7c1a625
 scalarplot(Plotter=PyPlot,g3,f3;resolution=(300,300),levels=[0.5],
@@ -299,13 +317,13 @@ function qv2d(;Plotter=nothing,n=20,stream=false,kwargs...)
 end
 
 # ╔═╡ 812af347-7606-4c54-b155-88322d20d921
-qv2d(Plotter=PlutoVista,n=100,spacing=0.35)
+qv2d(Plotter=PlutoVista,n=50,spacing=0.35)
 
 # ╔═╡ 9462f2a4-e7ef-469f-85d4-12f3fa411091
-qv2d(Plotter=PyPlot,n=100,spacing=0.5)
+qv2d(Plotter=PyPlot,n=100,spacing=0.35)
 
 # ╔═╡ 8293e0a4-ae15-4929-b20d-95369788f3c9
-qv2d(Plotter=PyPlot,n=100,spacing=0.1,stream=true,color=:darkred)
+qv2d(Plotter=PyPlot,n=100,spacing=0.06,stream=true,color=:darkred)
 
 # ╔═╡ 7c66ca9f-7365-489e-ae50-f8c3f9eb145b
 qv2d(Plotter=GLMakie)
@@ -324,9 +342,11 @@ qv2d(Plotter=Plots);
 # ╠═cc17187f-404c-4c31-8625-fa067eea7273
 # ╠═ad1c4dd6-7c6b-4433-a1ac-b2f817ba5d81
 # ╠═33482af8-3542-4723-ae43-770a789b69b3
+# ╠═d21982eb-aa7e-424c-932e-f0b1460f19b9
 # ╠═c4eeb06f-932e-4acc-8e5b-f2a7f9242a42
 # ╠═29ca4775-6ba5-474c-bd2c-8f770b09addd
 # ╠═c0ab77e8-01ea-436d-85f2-34e253944f11
+# ╠═4f73fb99-fab9-4ca4-addb-7d12d16ceba0
 # ╠═84192945-d4b6-4949-8f06-d94e04a7a56d
 # ╟─7fbaf93f-3cfb-47d0-8252-487e60ba3e54
 # ╟─63fe3259-7d79-40ec-98be-e0592e40ee6b
@@ -340,6 +360,7 @@ qv2d(Plotter=Plots);
 # ╠═9ce4f63d-cd96-48d7-a637-07cb84fa88ab
 # ╠═77eeefc7-e416-426b-8f87-1bc8439dae6d
 # ╠═d503ee1e-1e1f-4235-b286-dc3137a2c96a
+# ╠═395d05f4-46a9-4e85-804c-35c79acc96e3
 # ╟─ae1fe1ab-4a0e-4c80-bd6f-912201fb4bb4
 # ╠═d5258595-60e4-406f-a71e-69111cdad8b9
 # ╠═c98a90bf-1a3e-4681-a3b0-663c6844df6b
@@ -354,6 +375,7 @@ qv2d(Plotter=Plots);
 # ╠═2b3cb0f4-0656-4981-bec6-48785caf2994
 # ╠═db488643-2e6b-40d6-ba81-126c752953c5
 # ╠═1388c246-be49-4757-a2cc-a685642b6b37
+# ╠═3f807dfe-7ad3-4740-9e4f-23a39c15603c
 # ╟─5eee8f1d-49ca-4e95-bd14-fe415b0c15e5
 # ╠═0c99daca-f9a8-4116-867b-e13461c3e754
 # ╠═82ccfd24-0053-4399-9bc8-b2e4010bbc92

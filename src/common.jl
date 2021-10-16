@@ -681,9 +681,7 @@ function vectorsample(grid,v; offset=:default, spacing=:default,reltol=1.0e-10)
     # in order to avoid to calculate them from the raster indices
     rastercoord=[zeros(Float32,ijkmax[idim]) for idim=1:dim]
     for idim=1:dim
-        for k=1:ijkmax[idim]
-            rastercoord[idim][k]=offset[idim]+spacing[idim]*(k-1)
-        end
+        rastercoord[idim]=collect(range(start=offset[idim],step=spacing[idim],length=ijkmax[idim]))
     end
     
     # Memory for flux vectors on ijk grid

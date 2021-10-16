@@ -72,7 +72,9 @@ and all plotting functions will do nothing. This also is the default.
 |------------|--------|---------|------------|-------|---------|
 | scalar, 1D | y      | y       | y,i        | y     | y       |
 | grid, 1D   | y      | y       | y          | y     | n       |
-| scalar, 2D | y      | y,i     | y          | (y)   | y,i     |
+| scalar, 2D | y      | y       | y          | (y)   | y,i     |
+| vector, 2D | y      | y       | y          | y     | n       |
+| stream, 2D | y      | n       | n          | n     | n       |
 | grid, 2D   | y      | y,i     | y          | (y)   | y,i     |
 | scalar, 3D | y      | y,i     | y,i        | no    | y,i     |
 | grid, 3D   | y      | y,i     | y,i        | no    | y,i     |
