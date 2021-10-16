@@ -25,7 +25,7 @@ end
 function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)
     PlutoVista=ctx[:Plotter]
 
-    Plutovista.backend!(ctx[:figure],backend=ctx[:backend],datadim=1)
+    PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=1)
 
     coord=grid[Coordinates]
     cellregions=grid[CellRegions]

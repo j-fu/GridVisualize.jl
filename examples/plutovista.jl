@@ -22,11 +22,11 @@ begin
    Pkg.activate(mktempdir())
    Pkg.add("Revise")
    using Revise
-   Pkg.add(["PyPlot","ExtendableGrids","PlutoUI","Plots"])
+   Pkg.add(["PyPlot","PlutoUI","Plots"])
 	if develop
-	   Pkg.develop(["PlutoVista","GridVisualize"])
+	   Pkg.develop(["PlutoVista","GridVisualize", "ExtendableGrids"])
 	else
-	   Pkg.add(["PlutoVista","GridVisualize"])
+	   Pkg.add(["PlutoVista","GridVisualize","ExtendableGrids"])
 	end
    using PyPlot,PlutoVista,GridVisualize,ExtendableGrids,PlutoUI,Plots
 end
@@ -287,20 +287,20 @@ function qv2d(;Plotter=nothing,n=20,kwargs...)
     v=map(f,grid)
     ∇v=vcat(map(fx,grid)',map(fy,grid)')
 
-    gvis=GridVisualizer(Plotter=Plotter,resolution=(400,400))
+    gvis=GridVisualizer(Plotter=Plotter,resolution=(600,600))
     scalarplot!(gvis,grid,v,colormap=:summer,levels=7)
     vectorplot!(gvis,grid,∇v;clear=false, show=true,kwargs...)
 	reveal(gvis)
 end
 
 # ╔═╡ 812af347-7606-4c54-b155-88322d20d921
-qv2d(Plotter=PlutoVista)
+qv2d(Plotter=PlutoVista,n=100,spacing=0.35)
 
 # ╔═╡ 9462f2a4-e7ef-469f-85d4-12f3fa411091
-qv2d(Plotter=PyPlot)
+qv2d(Plotter=PyPlot,n=100,spacing=0.5)
 
 # ╔═╡ f03cb172-82c7-4187-be43-01d307977713
-qv2d(Plotter=Plots)
+qv2d(Plotter=Plots);
 
 # ╔═╡ Cell order:
 # ╠═6df3beed-24a7-4b26-a315-0520f4863190
