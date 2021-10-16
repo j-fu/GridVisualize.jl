@@ -272,7 +272,7 @@ z: $(@bind gzplane Slider(0:0.01:1,show_value=true,default=0.45))
 gridplot!(p3dgrid,g3; xplane=gxplane,yplane=gyplane,zplane=gzplane,show=true)
 
 # ╔═╡ e656dac5-466e-4c07-acfa-0478ad000cb2
-function qv2d(;Plotter=nothing,n=20,kwargs...)
+function qv2d(;Plotter=nothing,n=20,stream=false,kwargs...)
 	
     X=0.0:10/(n-1):10
 
@@ -290,7 +290,11 @@ function qv2d(;Plotter=nothing,n=20,kwargs...)
 
     gvis=GridVisualizer(Plotter=Plotter,resolution=(600,600))
     scalarplot!(gvis,grid,v,colormap=:summer,levels=7)
-    vectorplot!(gvis,grid,∇v;clear=false, show=true,kwargs...)
+	if stream
+    	streamplot!(gvis,grid,∇v;clear=false, show=true,kwargs...)
+	else
+  	 vectorplot!(gvis,grid,∇v;clear=false, show=true,kwargs...)
+	end
 	reveal(gvis)
 end
 
@@ -299,6 +303,9 @@ qv2d(Plotter=PlutoVista,n=100,spacing=0.35)
 
 # ╔═╡ 9462f2a4-e7ef-469f-85d4-12f3fa411091
 qv2d(Plotter=PyPlot,n=100,spacing=0.5)
+
+# ╔═╡ 8293e0a4-ae15-4929-b20d-95369788f3c9
+qv2d(Plotter=PyPlot,n=100,spacing=0.1,stream=true,color=:darkred)
 
 # ╔═╡ 7c66ca9f-7365-489e-ae50-f8c3f9eb145b
 qv2d(Plotter=GLMakie)
@@ -365,5 +372,6 @@ qv2d(Plotter=Plots);
 # ╠═e656dac5-466e-4c07-acfa-0478ad000cb2
 # ╠═812af347-7606-4c54-b155-88322d20d921
 # ╠═9462f2a4-e7ef-469f-85d4-12f3fa411091
+# ╠═8293e0a4-ae15-4929-b20d-95369788f3c9
 # ╠═7c66ca9f-7365-489e-ae50-f8c3f9eb145b
 # ╠═f03cb172-82c7-4187-be43-01d307977713

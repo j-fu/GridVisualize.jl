@@ -556,3 +556,50 @@ function vectorplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     
     reveal(ctx,TP)
 end
+
+### 2D stream
+function streamplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
+    PyPlot=ctx[:Plotter]
+    if !haskey(ctx,:ax)
+        ctx[:ax]=ctx[:figure].add_subplot(ctx[:layout]...,ctx[:iplot])
+    end
+    if ctx[:clear]
+        if haskey(ctx,:cbar)
+            ctx[:cbar].remove()
+        end
+        ctx[:ax].remove()
+        ctx[:ax]=ctx[:figure].add_subplot(ctx[:layout]...,ctx[:iplot])
+    end
+    
+    ax=ctx[:ax]
+    fig=ctx[:figure]
+    ax.set_aspect(ctx[:aspect])
+    ax.set_title(ctx[:title])
+
+    # thx https://discourse.julialang.org/t/meshgrid-function-in-julia/48679/4?u=j-fu
+    function meshgrid(rc)
+        nx=length(rc[1])
+        ny=length(rc[2])
+        xout=zeros(ny,nx)
+        yout=zeros(ny,nx)
+        for jx=1:nx
+            for ix=1:ny
+                xout[ix,jx]=rc[1][jx]
+                yout[ix,jx]=rc[2][ix]
+            end
+        end
+        xout,yout
+    end
+
+    
+    rc,rv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset])
+
+    X,Y=meshgrid(rc)
+
+    ax.streamplot(X,Y, rv[1,:,:,1],rv[2,:,:,1],color=ctx[:color])
+    ax.set_xlabel(ctx[:xlabel])
+    ax.set_ylabel(ctx[:ylabel])
+    
+    reveal(ctx,TP)
+end
+

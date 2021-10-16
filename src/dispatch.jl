@@ -465,6 +465,43 @@ vectorplot(X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func ;kwargs..
 
 
 
+###################################################################################
+
+
+"""
+$(TYPEDSIGNATURES)
+
+Plot piecewise linear vector field  as stream plot.
+(2D pyplot only)
+"""
+function streamplot!(ctx::SubVisualizer,grid::ExtendableGrid,func; kwargs...)
+    _update_context!(ctx,Dict(:clear=>true,:show=>false,:reveal=>false))
+    _update_context!(ctx,kwargs)
+    streamplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid,func)
+end
+
+"$(TYPEDSIGNATURES)"
+streamplot!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...) = streamplot!(p[1,1],grid,func; kwargs...)
+"$(TYPEDSIGNATURES)"
+streamplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,func; kwargs...)=streamplot!(ctx,simplexgrid(X,Y),func;kwargs...)
+"$(TYPEDSIGNATURES)"
+streamplot!(ctx::GridVisualizer,X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func; kwargs...)=streamplot!(ctx,simplexgrid(X,Y,Z),func;kwargs...)
+
+
+"""
+$(TYPEDSIGNATURES)
+
+Plot piecewise linear vector field  as stream plot.
+(2D pyplot only)
+"""
+streamplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = streamplot!(GridVisualizer(Plotter=Plotter; kwargs...),grid,func,show=true)
+"$(TYPEDSIGNATURES)"
+streamplot(X::AbstractVector,Y::AbstractVector,func ;kwargs...)=streamplot(simplexgrid(X,Y),func;kwargs...)
+"$(TYPEDSIGNATURES)"
+streamplot(X::AbstractVector,Y::AbstractVector,Z::AbstractVector, func ;kwargs...)=streamplot(simplexgrid(X,Y,Z),func;kwargs...)
+
+
+
 
 """
 $(TYPEDSIGNATURES)
@@ -511,6 +548,11 @@ vectorplot!(ctx::Nothing,grid::ExtendableGrid,func;kwargs...)=nothing
 vectorplot!(ctx::Nothing,grid::ExtendableGrid,func::Function;kwargs...)=nothing
 vectorplot!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid,func)=nothing
 vectorplot!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid,func)=nothing
+
+streamplot!(ctx::Nothing,grid::ExtendableGrid,func;kwargs...)=nothing
+streamplot!(ctx::Nothing,grid::ExtendableGrid,func::Function;kwargs...)=nothing
+streamplot!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid,func)=nothing
+streamplot!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid,func)=nothing
 
 
 save(fname,scene,Plotter,::Type{Nothing})=nothing
