@@ -143,7 +143,10 @@ end
 function vectorplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}},grid, func)
     PlutoVista=ctx[:Plotter]
     PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=2)
-    qc,qv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset],vscale=ctx[:vscale],vnormalize=ctx[:vnormalize])
+
+    rc,rv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset])
+    qc,qv=quiverdata(rc,rv;vscale=ctx[:vscale],vnormalize=ctx[:vnormalize])
+
     PlutoVista.quiver2d!(ctx[:figure],qc,qv)
     reveal(ctx,TP)
 end

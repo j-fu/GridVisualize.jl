@@ -22,13 +22,14 @@ begin
    Pkg.activate(mktempdir())
    Pkg.add("Revise")
    using Revise
-   Pkg.add(["PyPlot","PlutoUI","Plots"])
+   Pkg.add(["PyPlot","PlutoUI","Plots","GLMakie"])
 	if develop
 	   Pkg.develop(["PlutoVista","GridVisualize", "ExtendableGrids"])
 	else
 	   Pkg.add(["PlutoVista","GridVisualize","ExtendableGrids"])
 	end
-   using PyPlot,PlutoVista,GridVisualize,ExtendableGrids,PlutoUI,Plots
+   using PlutoVista,GridVisualize,ExtendableGrids,PlutoUI
+   import Plots,GLMakie,PyPlot
 end
 
 # ╔═╡ 62c6c85c-e374-4315-b737-b7a0005d2985
@@ -299,6 +300,9 @@ qv2d(Plotter=PlutoVista,n=100,spacing=0.35)
 # ╔═╡ 9462f2a4-e7ef-469f-85d4-12f3fa411091
 qv2d(Plotter=PyPlot,n=100,spacing=0.5)
 
+# ╔═╡ 7c66ca9f-7365-489e-ae50-f8c3f9eb145b
+qv2d(Plotter=GLMakie)
+
 # ╔═╡ f03cb172-82c7-4187-be43-01d307977713
 qv2d(Plotter=Plots);
 
@@ -361,4 +365,5 @@ qv2d(Plotter=Plots);
 # ╠═e656dac5-466e-4c07-acfa-0478ad000cb2
 # ╠═812af347-7606-4c54-b155-88322d20d921
 # ╠═9462f2a4-e7ef-469f-85d4-12f3fa411091
+# ╠═7c66ca9f-7365-489e-ae50-f8c3f9eb145b
 # ╠═f03cb172-82c7-4187-be43-01d307977713

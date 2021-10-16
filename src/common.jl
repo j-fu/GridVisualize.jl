@@ -615,7 +615,7 @@ end
 
 
 """
-      vpoints,vfield=vectorsample(grid,vfield;offset=:default,spacing=:default, vscale=1, vnormalize=true, eps=0.1)
+$(TYPEDSIGNATURES)
 
 Extract values of piecewise linear vector field at all sampling points
 on  `offset+ i*spacing` for i in Z^d  defined by the tuples offset and spacing.
@@ -623,12 +623,6 @@ on  `offset+ i*spacing` for i in Z^d  defined by the tuples offset and spacing.
 By default, offset is at the minimum of grid coordinates, and spacing is defined
 the largest grid extend divided by 10.
 
-Points and vfield are both  d x nquiver matrices.
-
-If vnormalize is true, the vector field is normalized to vscale*min(spacing), otherwise, it
-is scaled by vscale
-
-Result data are meant to  be ready for being passed to calls to `quiver`.
 
 
 The intermediate `rasterflux` in future versions can be used to calculate
@@ -636,7 +630,7 @@ streamlines.
     
 The code is 3D ready.
 """
-function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnormalize=true,eps=1.0e-10)
+function vectorsample(grid,v; offset=:default, spacing=:default,reltol=1.0e-10)
 
     coord=grid[Coordinates]
     cn=grid[CellNodes]
@@ -665,7 +659,7 @@ function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnor
     extent=maximum([cminmax[i][2]-cminmax[i][1] for i=1:dim])
     
     # scale tolerance
-    eps=eps*extent
+    tol=reltol*extent
     
     # point spacing
     if spacing==:default
@@ -757,7 +751,7 @@ function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnor
                     # round-off errors. Therefore a point may be found in two
                     # neigboring triangles. Constraining points to the raster ensures
                     # that only the last of them is taken.
-                    if all(x->x>-eps,λ)
+                    if all(x-> x>-tol,λ)
                         # Interpolate vector value
                         fill!(V,0.0)
                         for inode=1:dim+1
@@ -774,21 +768,49 @@ function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnor
             end
         end
     end
+    rastercoord, rasterflux
+end
 
-    # for streamline calculation, we would return
-    # rastercoord, rasterflux
-    # return rastecoord, rasterflux,  in fact
-    # the rest here is kind of a filter
+
+"""
+$(TYPEDSIGNATURES)
+
+
+Extract  nonzero fluxes for quiver plots from rastergrid.
+
+Returns qc, qv -  `d x nquiver` matrices.
+
+If vnormalize is true, the vector field is normalized to vscale*min(spacing), otherwise, it
+is scaled by vscale
+Result data are meant to  be ready for being passed to calls to `quiver`.
+
+"""
+function quiverdata(rastercoord, rasterflux;   vscale=1.0, vnormalize=true)
+    dim=length(rastercoord)
+    
+    imax=length(rastercoord[1])
+    jmax=length(rastercoord[2])
+    spacing=(rastercoord[1][2]-rastercoord[1][1],rastercoord[2][2]-rastercoord[2][1])
+    kmax=1
+    if dim>2
+        spacing=(spacing...,rastercoord[3][2]-rastercoord[3][1])
+        kmax=length(rastercoord[3])
+    end
 
     
     
-    # Extract nonzero fluxes for quiver plots
-    # This also helps to work on unstructured domains
+    # memory for point, vector to be investigated
+    X=zeros(Float32,dim)
+    V=zeros(Float32,dim)
+
+
     qvcoord=Vector{SVector{dim,Float32}}(undef,0)
     qvvalues=Vector{SVector{dim,Float32}}(undef,0)
-    for I[1]=1:ijkmax[1] # 0 allocs besides of push
-        for I[2]=1:ijkmax[2]
-            for I[3]=1:ijkmax[3]
+
+    I=ones(Int,3)
+    for I[1]=1:imax # 0 allocs besides of push
+        for I[2]=1:jmax
+            for I[3]=1:kmax
                 for idim=1:dim
                     V[idim]=rasterflux[idim,I[1],I[2],I[3]]
                     X[idim]=rastercoord[idim][I[idim]]
@@ -813,12 +835,10 @@ function vectorsample(grid,v; offset=:default, spacing=:default,vscale=1.0, vnor
 
     # Scale vectors with user input
     qv.*=vscale
-
-
     qc,qv
-
- 
 end
+
+
 
 function bary!(λ,invA,L2G,x)
     mapderiv!(invA,L2G,nothing)
