@@ -108,3 +108,4 @@ Plotting in Pluto notebooks using [PlutoVista.jl](https://github.com/j-fu/PlutoV
 development - see the example notebook: [pluto](https://raw.githubusercontent.com/j-fu/GridVisualize.jl/main/examples/plutovista.jl),
 [html](https://j-fu.github.io/GridVisualize.jl/dev/examples/plutovista.html).
 
+
