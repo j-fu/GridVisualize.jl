@@ -151,6 +151,7 @@ function vectorplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}},grid, func)
     reveal(ctx,TP)
 end
 
+function streamplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}},grid, func) end
 
 
 function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)

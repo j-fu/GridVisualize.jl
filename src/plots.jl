@@ -288,6 +288,10 @@ function vectorplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid, func)
     reveal(ctx,TP)
 end
 
+function streamplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid, func) end
+
+
+
 function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grid)
     Plots=ctx[:Plotter]
     if !haskey(ctx,:ax)

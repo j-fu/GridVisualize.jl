@@ -7,7 +7,6 @@ GridVisualizer(; Plotter=default_plotter() , kwargs...)
 SubVisualizer
 reveal
 save
-default_plotter!
 ```
 
 ## Plotters
@@ -42,6 +41,8 @@ scalarplot!
 ```@docs
 vectorplot
 vectorplot!
+streamplot
+streamplot!
 ```
 
 

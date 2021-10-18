@@ -125,6 +125,15 @@ function plottertype(Plotter::Union{Module,Nothing})
     Nothing
 end
 
+plottername(::Type{MakieType})="Makie"
+plottername(::Type{PlotsType})="Plots"
+plottername(::Type{PyPlotType})="PyPlot"
+plottername(::Type{PlutoVistaType})="PlutoVista"
+plottername(::Type{VTKViewType})="VTKView"
+plottername(::Type{MeshCatType})="MeshCat"
+plottername(::Type{Nothing})="nothing"
+plottername(p::Union{Module,Nothing}) = plottertype(p) |> plottername
+
 
 """
 $(TYPEDEF)

@@ -1,7 +1,7 @@
 ENV["MPLBACKEND"]="agg"
 using Documenter, ExtendableGrids, Literate, GridVisualize,Pluto
 using GridVisualize.FlippableLayout
-import PyPlot,PlutoVista,Plots
+import PyPlot
 
 plotting=joinpath(@__DIR__,"..","examples","plotting.jl")
 include(plotting)
@@ -10,7 +10,7 @@ include(plotting)
 
 function rendernotebook(name)
     input=joinpath(@__DIR__,"..","examples",name*".jl")
-    output=joinpath(@__DIR__,"src",name*".html")
+    output=joinpath(@__DIR__,"src","examples",name*".html")
     session = Pluto.ServerSession();
     notebook = Pluto.SessionActions.open(session, input; run_async=false)
     html_contents = Pluto.generate_html(notebook)
@@ -37,9 +37,9 @@ function mkdocs()
              repo="https://github.com/j-fu/GridVisualize.jl",
              pages=[
                  "Home"=>"index.md",
-#                 "Examples" => generated_examples,
                  "Public API"=> "api.md",
                  "Private API"=> "privapi.md",
+                 "Examples" => generated_examples,
              ])
 end
 

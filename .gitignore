@@ -1,8 +1,9 @@
 QUARRY
 .project.jl
 docs/build
-docs/src/examples
 *~
+*.html
+*.svg
 Manifest.toml
 .repl_history.jl
 

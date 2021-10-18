@@ -611,6 +611,7 @@ function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
     reveal(ctx,TP)
 end
 
+function streamplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func) end
 
 
 
