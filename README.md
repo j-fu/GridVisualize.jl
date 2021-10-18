@@ -80,23 +80,25 @@ and all plotting functions will do nothing. This also is the default.
 | grid, 3D   | y      | y,i     | y,i        | no    | y,i     |
 
 
-For 2D plots, CairoMakie works as well.
+
+## Sample output
+
 
 ### [PyPlot](https://github.com/JuliaPy/PyPlot.jl):
-<img src="docs/src/assets/multiscene_pyplot.png?raw=true" width=300/> 
+![](https://github.com/j-fu/GridVisualize.jl/blob/main/docs/src/assets/multiscene_pyplot.png?raw=true)
 
 
 ### [GLMakie](https://github.com/JuliaPlots/GLMakie.jl):
 
-<img src="docs/src/assets/multiscene_glmakie.png?raw=true" width=300/> 
+![](https://github.com/j-fu/GridVisualize.jl/blob/main/docs/src/assets/multiscene_glmakie.png?raw=true)
 
 
 ### [Plots/gr](https://github.com/JuliaPlots/Plots.jl):
-<img src="docs/src/assets/multiscene_plots.png?raw=true" width=300/> 
+![](https://github.com/j-fu/GridVisualize.jl/blob/main/docs/src/assets/multiscene_plots.png?raw=true")
 
 
 ### [VTKView](https://github.com/j-fu/VTKView.jl):
-<img src="docs/src/assets/multiscene_vtkview.png?raw=true" width=300/> 
+![](https://github.com/j-fu/GridVisualize.jl/blob/main/docs/src/assets/multiscene_vtkview.png?raw=true")
 
 
 ## Notebooks
@@ -104,5 +106,5 @@ Plotting within Pluto notebooks for PyPlot, Plots, GLMakie is working.
 
 Plotting in Pluto notebooks using [PlutoVista.jl](https://github.com/j-fu/PlutoVista.jl) is under
 development - see the example notebook: [pluto](https://raw.githubusercontent.com/j-fu/GridVisualize.jl/main/examples/plutovista.jl),
-[html](https://j-fu.github.io/GridVisualize.jl/dev/plutovista.html).
+[html](https://j-fu.github.io/GridVisualize.jl/dev/examples/plutovista.html).
 
