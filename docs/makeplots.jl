@@ -1,72 +1,62 @@
-function makeplots(picdir)
-    PyPlot.clf()
-    plotting_multiscene(Plotter=PyPlot)
-    fname=joinpath(picdir,"plotting_multiscene.svg")
-    PyPlot.savefig(fname)
-    @assert isfile(fname)
-    @show "multiscene"
+function makeplots(picdir; Plotter=PyPlot, extension="svg")
+
+    p=plotting_multiscene(Plotter=Plotter)
+
+    fname=joinpath(picdir,"plotting_multiscene."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname)
+    println("multiscene")
 
    
-    PyPlot.clf()
-    plotting_func3d(Plotter=PyPlot)
-    fname=joinpath(picdir,"plotting_func3d.svg")
-    PyPlot.savefig(fname)
-    @assert isfile(fname)
-    @show "func3d"
+    p=plotting_func3d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_func3d."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname)
+    println("func3d")
 
 
-    PyPlot.clf()
-    plotting_func2d(Plotter=PyPlot)
-    fname=joinpath(picdir,"plotting_func2d.svg")
-    PyPlot.savefig(fname)
-    @assert isfile(fname)
-    @show "func2d"
+    p=plotting_func2d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_func2d."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname)
+    println("func2d")
 
-    PyPlot.clf()
-    plotting_func1d(Plotter=PyPlot)
-    fname=joinpath(picdir,"plotting_func1d.svg")
-    PyPlot.savefig(fname)
-    @assert isfile(fname)
-    @show "func1d"
+    p=plotting_func1d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_func1d."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname)
+    println("func1d")
 
-    PyPlot.clf()
-    plotting_vec2d(Plotter=PyPlot)
-    fname=joinpath(picdir,"plotting_vec2d.svg")
-    PyPlot.savefig(fname)
-    @assert isfile(fname)
-    @show "vec2d"
+    p=plotting_vec2d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_vec2d."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname)
+    println("vec2d")
 
-    PyPlot.clf()
-    plotting_stream2d(Plotter=PyPlot)
-    fname=joinpath(picdir,"plotting_stream2d.svg")
-    PyPlot.savefig(fname)
-    @assert isfile(fname)
-    @show "stream2d"
+    p=plotting_stream2d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_stream2d."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname) || GridVisualize.plottername!="PyPlot"
+    println("stream2d")
 
+    p=plotting_grid3d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_grid3d."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname)
+    println("grid3d")
 
-
-    
-    PyPlot.clf()
-    plotting_grid3d(Plotter=PyPlot)
-    fname=joinpath(picdir,"plotting_grid3d.svg")
-    PyPlot.savefig(fname)
-    @assert isfile(fname)
-    @show "grid3d"
-
-    PyPlot.clf()
-    plotting_grid2d(Plotter=PyPlot)
-    fname=joinpath(picdir,"plotting_grid2d.svg")
-    PyPlot.savefig(fname)
-    @assert isfile(fname)
-    @show "grid2d"
+    p=plotting_grid2d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_grid2d."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname)
+    println("grid2d")
 
 
-    PyPlot.clf()
-    plotting_grid1d(Plotter=PyPlot)
-    fname=joinpath(picdir,"plotting_grid1d.svg")
-    PyPlot.savefig(fname)
-    @assert isfile(fname)
-    @show "grid1d"
+    p=plotting_grid1d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_grid1d."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname)
+    println("grid1d")
 
 
     true

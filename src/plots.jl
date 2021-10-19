@@ -39,7 +39,7 @@ function reveal(ctx::SubVisualizer,TP::Type{PlotsType})
 end
 
 function save(fname,scene,Plots,::Type{PlotsType})
-   Plots.savefig(scene,fname)
+   isnothing(scene) ? nothing : Plots.savefig(scene,fname)
 end
 
 

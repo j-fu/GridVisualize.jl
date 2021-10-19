@@ -525,14 +525,14 @@ $(TYPEDSIGNATURES)
 
 Save last plotted figure from visualizer to disk.
 """
-save(fname::String,visualizer::GridVisualizer)=save(fname,p, plottertype(p.Plotter))
+save(fname::String,visualizer::GridVisualizer)=save(fname,visualizer, plottertype(visualizer.Plotter))
 
 """
 $(TYPEDSIGNATURES)
 
 Save scene returned from [`reveal`](@ref), [`scalarplot`](@ref) or [`gridplot`](@ref)  to disk.
 """
-save(fname::String,scene;Plotter::Union{Module,Nothing}=default_plotter())=save(fname,scene, Plotter, plottertype(Plotter))
+save(fname::String,scene;Plotter = default_plotter() )=save(fname,scene,Plotter,plottertype(Plotter))
 
 
 
@@ -564,7 +564,9 @@ streamplot!(ctx, ::Type{Nothing}, ::Type{Val{2}},grid,func)=nothing
 streamplot!(ctx, ::Type{Nothing}, ::Type{Val{3}},grid,func)=nothing
 
 
-save(fname,scene,Plotter,::Type{Nothing})=nothing
+
+
+save(fname,scene,Plotter::Nothing,::Type{Nothing})=nothing
 displayable(ctx,Any)=nothing
 reveal(p,::Type{Nothing})=nothing
 

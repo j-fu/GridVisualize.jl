@@ -20,7 +20,7 @@ function save(fname,p,::Type{PyPlotType})
 end
 
 function save(fname,scene,PyPlot,::Type{PyPlotType})
-    scene.savefig(fname)
+       isnothing(scene) ? nothing : scene.savefig(fname)
 end
 
 function reveal(p::GridVisualizer,::Type{PyPlotType})

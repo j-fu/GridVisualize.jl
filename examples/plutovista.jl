@@ -182,10 +182,10 @@ function func3d(;n=15)
 end
 
 # ╔═╡ 8b20f720-5470-4da7-bbb6-b746e887046e
-g3,f3=func3d(n=19)
+g3,f3=func3d(n=101)
 
 # ╔═╡ c0a0ea34-6fc3-4409-934e-086a1a36f94e
-p3d=GridVisualizer(Plotter=PlutoVista,resolution=(300,300),dim=3);p3d
+p3d=GridVisualizer(Plotter=PlutoVista,resolution=(500,500),dim=3);p3d
 
 # ╔═╡ 35be5ef4-0664-4196-8f10-cf71ec7cb371
 md"""

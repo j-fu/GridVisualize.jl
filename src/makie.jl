@@ -63,7 +63,7 @@ function reveal(ctx::SubVisualizer,TP::Type{MakieType})
 end
 
 save(fname,p::GridVisualizer,::Type{MakieType})= p.context[:Plotter].save(fname, p.context[:figure])
-save(fname,scene,Makie,::Type{MakieType})=Makie.save(fname, scene)
+save(fname,scene,Makie,::Type{MakieType})= isnothing(scene) ? nothing :  Makie.save(fname, scene)
 
 
 """
