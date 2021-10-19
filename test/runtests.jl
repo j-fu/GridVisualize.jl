@@ -9,7 +9,4 @@ if !Sys.isapple()
     @testset "makeplots - PyPlot" begin
         makeplots(mktempdir(),Plotter=PyPlot)
     end
-    @testset "makeplots - Plots" begin
-        makeplots(mktempdir(),Plotter=Plots)
-    end
 end
