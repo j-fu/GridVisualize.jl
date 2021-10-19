@@ -99,9 +99,6 @@ function testgridplot(Plotter)
 	gridplot(grid, Plotter=Plotter,resolution=(600,200),legend=:rt)
 end
 
-# ╔═╡ 77eeefc7-e416-426b-8f87-1bc8439dae6d
-testgridplot(PyPlot)
-
 # ╔═╡ d503ee1e-1e1f-4235-b286-dc3137a2c96a
 testgridplot(PlutoVista)
 
@@ -631,7 +628,6 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╠═661531f7-f740-4dd4-9a59-89ddff06ba5c
 # ╠═ed9b80e5-9678-4ba6-bb36-c2e0674ed9ba
 # ╠═9ce4f63d-cd96-48d7-a637-07cb84fa88ab
-# ╠═77eeefc7-e416-426b-8f87-1bc8439dae6d
 # ╠═d503ee1e-1e1f-4235-b286-dc3137a2c96a
 # ╟─ae1fe1ab-4a0e-4c80-bd6f-912201fb4bb4
 # ╠═d5258595-60e4-406f-a71e-69111cdad8b9
