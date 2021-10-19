@@ -1,5 +1,5 @@
 using Test, ExtendableGrids, GridVisualize
-import PyPlot, Plots, GLMakie
+import PyPlot, Plots
 
 @test true
 if !Sys.isapple()
@@ -11,8 +11,5 @@ if !Sys.isapple()
     end
     @testset "makeplots - Plots" begin
         makeplots(mktempdir(),Plotter=Plots)
-    end
-    @testset "makeplots - GLMakie" begin
-        makeplots(mktempdir(),Plotter=GLMakie)
     end
 end
