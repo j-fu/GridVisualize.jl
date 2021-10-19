@@ -3,7 +3,7 @@ $(SIGNATURES)
 
 Create customized distinguishable colormap for interior regions
 """
-region_cmap(n)=distinguishable_colors(max(5,n),
+region_cmap(n)=distinguishable_colors(min(5,n),
                                       [RGB(0.85,0.6,0.6), RGB(0.6,0.85,0.6),RGB(0.6,0.6,0.85)],
                                       lchoices = range(70, stop=80, length=5),
                                       cchoices = range(25, stop=65, length=15),
@@ -15,7 +15,7 @@ $(SIGNATURES)
 
 Create customized distinguishable colormap for boundary regions
 """
-bregion_cmap(n)=distinguishable_colors(max(5,n),
+bregion_cmap(n)=distinguishable_colors(min(5,n),
                                       [RGB(1.0,0.0,0.0), RGB(0.0,1.0,0.0), RGB(0.0,0.0,1.0)],
                                       lchoices = range(50, stop=75, length=10),
                                       cchoices = range(75, stop=100, length=10),
