@@ -1,5 +1,5 @@
 using Test, ExtendableGrids, GridVisualize
-import PyPlot, Plots
+import PyPlot
 
 @test true
 if !Sys.isapple()
