@@ -617,8 +617,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Extract values of piecewise linear vector field at all sampling points
-on  `offset+ i*spacing` for i in Z^d  defined by the tuples offset and spacing.
+Extract values of given vector field (either nodal values of a linear field or a callback function)
+at all sampling points on  `offset+ i*spacing` for i in Z^d  defined by the tuples offset and spacing.
 
 By default, offset is at the minimum of grid coordinates, and spacing is defined
 the largest grid extend divided by 10.
@@ -630,7 +630,7 @@ streamlines.
     
 The code is 3D ready.
 """
-function vectorsample(grid,v; offset=:default, spacing=:default,reltol=1.0e-10)
+function vectorsample(grid::ExtendableGrid{Tv,Ti},v; offset=:default, spacing=:default,reltol=1.0e-10) where {Tv,Ti}
 
     coord=grid[Coordinates]
     cn=grid[CellNodes]
@@ -706,7 +706,7 @@ function vectorsample(grid,v; offset=:default, spacing=:default,reltol=1.0e-10)
     # cell extent
     Imin=ones(Int,3)
     Imax=ones(Int,3)
-    
+
     for icell::Int=1:ncells
         update_trafo!(L2G, icell) # 1 alloc: the only one left in this cell loop
 
@@ -736,7 +736,6 @@ function vectorsample(grid,v; offset=:default, spacing=:default,reltol=1.0e-10)
             for I[2] ∈ Imin[2]:Imax[2]
                 for I[3] ∈ Imin[3]:Imax[3]
                     
-                    
                     # Fill raster point to be tested
                     for idim=1:dim
                         X[idim]=rastercoord[idim][I[idim]]
@@ -751,10 +750,14 @@ function vectorsample(grid,v; offset=:default, spacing=:default,reltol=1.0e-10)
                     # that only the last of them is taken.
                     if all(x-> x>-tol,λ)
                         # Interpolate vector value
-                        fill!(V,0.0)
-                        for inode=1:dim+1
-                            for idim=1:dim
-                                V[idim]+=λ[inode]*v[idim,cn[inode,icell]]
+                        if typeof(v) <: Function
+                            v(V,λ,icell)
+                        else
+                            fill!(V,0.0)
+                            for inode=1:dim+1
+                                for idim=1:dim
+                                    V[idim]+=λ[inode]*v[idim,cn[inode,icell]]
+                                end
                             end
                         end
                         
