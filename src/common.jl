@@ -226,8 +226,8 @@ end
 
 """
   $(SIGNATURES)
-  Calculate intersections between tetrahedron with given linear
-  fucntion data and plane 
+  Calculate intersections between tetrahedron with given piecewise linear
+  function data and plane 
 
   Adapted from https://github.com/j-fu/gltools/blob/master/glm-3d.c#L341
  
@@ -617,7 +617,8 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Extract values of given vector field (either nodal values of a linear field or a callback function)
+Extract values of given vector field (either nodal values of a piecewise linear vector field or a callback function
+providing evaluation of the vector field for given generalized barycentric coordinates).
 at all sampling points on  `offset+ i*spacing` for i in Z^d  defined by the tuples offset and spacing.
 
 By default, offset is at the minimum of grid coordinates, and spacing is defined
