@@ -759,8 +759,9 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                             backlight=1f0
                             )
 
-                if ctx[:linewidth]>0
+                if ctx[:linewidth]>0 
                     Makie.wireframe!(ctx[:scene],map(d->d[i], ctx[:cellmeshes]),
+                                     color=:black,
                                      strokecolor=:black,
                                      strokewidth=ctx[:linewidth],
                                      linewidth=ctx[:linewidth],
@@ -789,6 +790,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                         )
             if ctx[:linewidth]>0
                 Makie.wireframe!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
+                                 color=:black,
                                  strokecolor=:black,
                                  linewidth=ctx[:linewidth])
             end
