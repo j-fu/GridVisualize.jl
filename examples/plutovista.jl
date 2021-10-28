@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.16.1
+# v0.17.0
 
 using Markdown
 using InteractiveUtils
@@ -14,7 +14,13 @@ macro bind(def, element)
 end
 
 # ╔═╡ 9701cbe0-d048-11eb-151b-67dda7b72b71
-using PlutoVista,GridVisualize,ExtendableGrids,PlutoUI
+begin
+using PlutoVista
+using GridVisualize
+using ExtendableGrids
+using PlutoUI
+	GridVisualize.default_plotter!(PlutoVista)
+end
 
 # ╔═╡ 68e2c958-b417-4ba1-9577-697304fe140a
 TableOfContents()
@@ -30,25 +36,25 @@ md"""
 """
 
 # ╔═╡ a20d74c9-16da-408a-b247-0c17321888f9
-function testplot1(Plotter)
+function testplot1()
 	grid=simplexgrid(0:0.01:10)	
-	scalarplot(grid,map(sin,grid),Plotter=Plotter,resolution=(600,200),markershape=:star5,markevery=20, xlabel="x",ylabel="z",legend=:rt,label="sin")
+	scalarplot(grid,map(sin,grid),resolution=(600,200),markershape=:star5,markevery=20, xlabel="x",ylabel="z",legend=:rt,label="sin")
 end
 
 # ╔═╡ 33482af8-3542-4723-ae43-770a789b69b3
-testplot1(PlutoVista)
+testplot1()
 
 # ╔═╡ c4eeb06f-932e-4acc-8e5b-f2a7f9242a42
-function testplot2(Plotter;t=0)
-	p=GridVisualizer(Plotter=Plotter, resolution=(500,200),legend=:rt,xlabel="x")
+function testplot2(;t=0)
+	p=GridVisualizer(resolution=(500,200),legend=:rt,xlabel="x")
 	grid=simplexgrid(0:0.01:10)	
-	scalarplot!(p,grid,map(x->sin(x-t),grid),Plotter=Plotter,color=:red,label="sin(x-$(t))",linestyle=:dash)
-	scalarplot!(p,grid,map(cos,grid),Plotter=Plotter,color=:green,clear=false,label="cos",linestyle=:dashdot,linewidth=3)
+	scalarplot!(p,grid,map(x->sin(x-t),grid),color=:red,label="sin(x-$(t))",linestyle=:dash)
+	scalarplot!(p,grid,map(cos,grid),color=:green,clear=false,label="cos",linestyle=:dashdot,linewidth=3)
 	reveal(p)
 end
 
 # ╔═╡ 84192945-d4b6-4949-8f06-d94e04a7a56d
-testplot2(PlutoVista)
+testplot2()
 
 # ╔═╡ 7fbaf93f-3cfb-47d0-8252-487e60ba3e54
 md"""
@@ -59,7 +65,7 @@ md"""
 @bind t2 PlutoUI.Slider(0:0.1:5,show_value=true)
 
 # ╔═╡ 4de6b5c9-4d2d-4bcb-bc88-c6f50a23f9b6
-testplot2(PlutoVista,t=t2)
+testplot2(t=t2)
 
 # ╔═╡ 2061e7fd-c740-4d4b-af5b-7a3a9444aafd
 md"""
@@ -81,7 +87,7 @@ t4: $(@bind t4 PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 """
 
 # ╔═╡ c1278fb2-3e75-445f-893a-b8b8a7e931d3
-p=GridVisualizer(Plotter=PlutoVista,resolution=(600,200),dim=1,legend=:lt);p
+p=GridVisualizer(resolution=(600,200),dim=1,legend=:lt);p
 
 # ╔═╡ 661531f7-f740-4dd4-9a59-89ddff06ba5c
 scalarplot!(p,X2,f2(t4),show=true,clear=true,color=:red,label="t=$(t4)")
@@ -92,15 +98,15 @@ md"""
 """
 
 # ╔═╡ 9ce4f63d-cd96-48d7-a637-07cb84fa88ab
-function testgridplot(Plotter)
+function testgridplot()
 	grid=simplexgrid(0:1:10)
 	cellmask!(grid,[0.0],[5],2)
 	bfacemask!(grid,[5],[5],3)
-	gridplot(grid, Plotter=Plotter,resolution=(600,200),legend=:rt)
+	gridplot(grid,resolution=(600,200),legend=:rt)
 end
 
 # ╔═╡ d503ee1e-1e1f-4235-b286-dc3137a2c96a
-testgridplot(PlutoVista)
+testgridplot()
 
 # ╔═╡ ae1fe1ab-4a0e-4c80-bd6f-912201fb4bb4
 md"""
@@ -108,16 +114,16 @@ md"""
 """
 
 # ╔═╡ d5258595-60e4-406f-a71e-69111cdad8b9
-function testplot3(Plotter)
+function testplot3()
 	X=0:0.1:10
 	grid=simplexgrid(X,X)
 	f=map( (x,y)->sin(x)*atan(y),grid)
-	scalarplot(grid,f,Plotter=Plotter,
+	scalarplot(grid,f,
 		resolution=(300,300),limits=(-π/2,π/2))
 end
 
 # ╔═╡ 0998a9a7-d57a-476e-aacd-bee9396e9b8f
-testplot3(PlutoVista)
+testplot3()
 
 # ╔═╡ cefb38c1-159e-42db-8088-294573fcece2
 md"""
@@ -134,7 +140,7 @@ begin
 end
 
 # ╔═╡ faa59bbd-df1f-4c62-9a77-c4752c6a6df4
-vis=GridVisualizer(resolution=(300,300),Plotter=PlutoVista,dim=2);vis
+vis=GridVisualizer(resolution=(300,300),dim=2);vis
 
 # ╔═╡ 6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
 md"""
@@ -150,14 +156,14 @@ md"""
 """
 
 # ╔═╡ 2b3cb0f4-0656-4981-bec6-48785caf2994
-function testgridplot2d(Plotter)
+function testgridplot2d()
 	X=-1:0.2:1
 	grid=simplexgrid(X,X)
-	gridplot(grid,Plotter=Plotter,resolution=(300,300))
+	gridplot(grid,resolution=(300,300))
 end
 
 # ╔═╡ 1388c246-be49-4757-a2cc-a685642b6b37
-testgridplot2d(PlutoVista)
+testgridplot2d()
 
 # ╔═╡ 5eee8f1d-49ca-4e95-bd14-fe415b0c15e5
 md"""
@@ -179,10 +185,10 @@ function func3d(;n=15)
 end
 
 # ╔═╡ 8b20f720-5470-4da7-bbb6-b746e887046e
-g3,f3=func3d(n=101)
+g3,f3=func3d(n=31)
 
 # ╔═╡ c0a0ea34-6fc3-4409-934e-086a1a36f94e
-p3d=GridVisualizer(Plotter=PlutoVista,resolution=(500,500),dim=3);p3d
+p3d=GridVisualizer(resolution=(500,500),dim=3);p3d
 
 # ╔═╡ 35be5ef4-0664-4196-8f10-cf71ec7cb371
 md"""
@@ -200,7 +206,7 @@ scalarplot!(p3d,g3,f3;levels=[flevel],xplanes=[xplane],yplanes=[yplane],zplanes=
 X4=-1:0.1:1; g4=simplexgrid(X4,X4,X4)
 
 # ╔═╡ 57ed5eea-bc1c-45eb-b4d3-dc63088db21a
-scalarplot(g4,map( (x,y,z)-> 0.01*exp(-10*(x^2+y^2+z^2)),g4),levels=5,Plotter=PlutoVista)
+scalarplot(g4,map( (x,y,z)-> 0.01*exp(-10*(x^2+y^2+z^2)),g4),levels=5)
 
 # ╔═╡ 4b9113d2-10bd-4f7a-a2b8-22092656c6b3
 md"""
@@ -208,7 +214,7 @@ md"""
 """
 
 # ╔═╡ f78196ca-d972-4fa6-bdc2-e76eba7ca5a1
-p3dgrid=GridVisualizer(Plotter=PlutoVista,resolution=(300,300),dim=3)
+p3dgrid=GridVisualizer(resolution=(300,300),dim=3)
 
 # ╔═╡ 7dd92757-c100-4158-baa8-1d9218c39aa7
 md"""
@@ -222,11 +228,11 @@ gridplot!(p3dgrid,g3; xplane=gxplane,yplane=gyplane,zplane=gzplane,show=true)
 
 # ╔═╡ 4121e791-8785-472e-a706-7b9cefd36fd6
 md"""
-## 3D Vector plot
+## 2D Vector plot
 """
 
 # ╔═╡ e656dac5-466e-4c07-acfa-0478ad000cb2
-function qv2d(;Plotter=nothing,n=20,stream=false,kwargs...)
+function qv2d(;n=20,stream=false,kwargs...)
 	
     X=0.0:10/(n-1):10
 
@@ -242,14 +248,34 @@ function qv2d(;Plotter=nothing,n=20,stream=false,kwargs...)
     v=map(f,grid)
     ∇v=vcat(map(fx,grid)',map(fy,grid)')
 
-    gvis=GridVisualizer(Plotter=Plotter,resolution=(400,400))
+    gvis=GridVisualizer(resolution=(400,400))
     scalarplot!(gvis,grid,v,colormap=:summer,levels=7)
   	vectorplot!(gvis,grid,∇v;clear=false, show=true,kwargs...)
 	reveal(gvis)
 end
 
 # ╔═╡ 812af347-7606-4c54-b155-88322d20d921
-qv2d(Plotter=PlutoVista,n=50,spacing=0.5)
+qv2d(n=50,spacing=0.5)
+
+# ╔═╡ ba5111b8-0dca-42d2-970f-1e88f5392324
+html"""<hr>"""
+
+# ╔═╡ 92bfccf7-abf1-47d5-8d8b-9ae9003ad1ac
+md"""
+## Appendix
+"""
+
+# ╔═╡ a98fae2c-9c3a-41c6-96f3-93d147f79e7b
+md"""
+begin
+   using Pkg
+   Pkg.activate(".testenv")
+   Pkg.add("Revise")
+   using Revise
+   Pkg.add(["PlutoUI","PlutoVista","ExtendableGrids"])
+   Pkg.develop("GridVisualize")
+end
+"""
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -260,17 +286,17 @@ PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 PlutoVista = "646e1f28-b900-46d7-9d87-d554eb38a413"
 
 [compat]
-ExtendableGrids = "~0.8.3"
-GridVisualize = "~0.3.6"
+ExtendableGrids = "~0.8.7"
+GridVisualize = "~0.3.9"
 PlutoUI = "~0.7.16"
-PlutoVista = "~0.8.2"
+PlutoVista = "~0.8.7"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.0-rc1"
+julia_version = "1.7.0-rc2"
 manifest_format = "2.0"
 
 [[deps.AbstractTrees]]
@@ -331,9 +357,9 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
-git-tree-sha1 = "a32185f5428d3986f47c2ab78b1f216d5e6cc96f"
+git-tree-sha1 = "b19534d1895d702889b219c382a6e18010797f0b"
 uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
-version = "0.8.5"
+version = "0.8.6"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "LibCURL", "NetworkOptions"]
@@ -353,9 +379,9 @@ version = "1.2.9"
 
 [[deps.ExtendableGrids]]
 deps = ["AbstractTrees", "Dates", "DocStringExtensions", "ElasticArrays", "InteractiveUtils", "LinearAlgebra", "Printf", "Random", "SparseArrays", "Test"]
-git-tree-sha1 = "85dbe70afc7153ad510577f158214b45be22593b"
+git-tree-sha1 = "1e8e50f054057f23e908fbd6935766dca6293cc2"
 uuid = "cfc395e8-590f-11e8-1f13-43a2532b2fa8"
-version = "0.8.3"
+version = "0.8.7"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -371,9 +397,9 @@ version = "0.4.1"
 
 [[deps.GridVisualize]]
 deps = ["ColorSchemes", "Colors", "DocStringExtensions", "ElasticArrays", "ExtendableGrids", "GeometryBasics", "LinearAlgebra", "Observables", "OrderedCollections", "PkgVersion", "Printf", "Requires", "StaticArrays"]
-git-tree-sha1 = "df7fe25b689ff995d29f5597161a9f95a1eb1171"
+git-tree-sha1 = "925ba2f11df005d894b113292d32fca9afe3f8c8"
 uuid = "5eed8a63-0fb0-45eb-886d-8d5a387d12b8"
-version = "0.3.6"
+version = "0.3.9"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -382,9 +408,9 @@ uuid = "47d2ed2b-36de-50cf-bf87-49c2cf4b8b91"
 version = "0.0.4"
 
 [[deps.HypertextLiteral]]
-git-tree-sha1 = "f6532909bf3d40b308a0f360b6a0e626c0e263a8"
+git-tree-sha1 = "5efcf53d798efede8fee5b2c8b09284be359bf24"
 uuid = "ac1192a8-f4b3-4bfe-ba22-af5b92cd3ab2"
-version = "0.9.1"
+version = "0.9.2"
 
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
@@ -477,9 +503,9 @@ version = "1.4.1"
 
 [[deps.Parsers]]
 deps = ["Dates"]
-git-tree-sha1 = "98f59ff3639b3d9485a03a72f3ab35bab9465720"
+git-tree-sha1 = "d911b6a12ba974dabe2291c6d450094a7226b372"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.0.6"
+version = "2.1.1"
 
 [[deps.Pkg]]
 deps = ["Artifacts", "Dates", "Downloads", "LibGit2", "Libdl", "Logging", "Markdown", "Printf", "REPL", "Random", "SHA", "Serialization", "TOML", "Tar", "UUIDs", "p7zip_jll"]
@@ -499,9 +525,9 @@ version = "0.7.16"
 
 [[deps.PlutoVista]]
 deps = ["ColorSchemes", "Colors", "DocStringExtensions", "GridVisualize", "UUIDs"]
-git-tree-sha1 = "ce59550b517ab41b5e687174f93f57c76f872b6d"
+git-tree-sha1 = "b99d4e38e7dba4535cee937e0444aed5912245d0"
 uuid = "646e1f28-b900-46d7-9d87-d554eb38a413"
-version = "0.8.2"
+version = "0.8.7"
 
 [[deps.Preferences]]
 deps = ["TOML"]
@@ -518,7 +544,7 @@ deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [[deps.Random]]
-deps = ["Serialization"]
+deps = ["SHA", "Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [[deps.Reexport]]
@@ -656,5 +682,8 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╟─4121e791-8785-472e-a706-7b9cefd36fd6
 # ╠═e656dac5-466e-4c07-acfa-0478ad000cb2
 # ╠═812af347-7606-4c54-b155-88322d20d921
+# ╟─ba5111b8-0dca-42d2-970f-1e88f5392324
+# ╟─92bfccf7-abf1-47d5-8d8b-9ae9003ad1ac
+# ╠═a98fae2c-9c3a-41c6-96f3-93d147f79e7b
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
