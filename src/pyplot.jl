@@ -172,6 +172,16 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid)
     end
     if ctx[:clear]
         ctx[:ax].cla()
+        ctx[:ax].set_title(ctx[:title])
+
+        xlimits=ctx[:xlimits]
+        ylimits=ctx[:ylimits]
+        if xlimits[1]<xlimits[2]
+            ctx[:ax].set_xlim(xlimits...)
+        end
+        if ylimits[1]<ylimits[2]
+            ctx[:ax].set_ylim(ylimits...)
+        end
     end
     ax=ctx[:ax]
     fig=ctx[:figure]
@@ -206,7 +216,6 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid)
     end
     
     ax.triplot(tridat...,color="k",linewidth=ctx[:linewidth])
-
 
     if nbfaceregions>0 
         cmap=bregion_cmap(nbfaceregions)
@@ -432,13 +441,21 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
         end
         ctx[:ax].remove()
         ctx[:ax]=ctx[:figure].add_subplot(ctx[:layout]...,ctx[:iplot])
+
+        xlimits=ctx[:xlimits]
+        ylimits=ctx[:ylimits]
+        if xlimits[1]<xlimits[2]
+            ctx[:ax].set_xlim(xlimits...)
+        end
+        if ylimits[1]<ylimits[2]
+            ctx[:ax].set_ylim(ylimits...)
+        end
     end
     
     ax=ctx[:ax]
     fig=ctx[:figure]
     ax.set_aspect(ctx[:aspect])
     ax.set_title(ctx[:title])
-
 
     isolines,crange=isolevels(ctx,func)
     colorlevels=collect(crange[1]:(crange[2]-crange[1])/(ctx[:colorlevels]-1):crange[2])
@@ -453,14 +470,20 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     end
     ax.tricontour(ctx[:tridata]...,func,colors="k",levels=isolines)
 
-
+    if ctx[:colorbarticks] == :default
+        ticks = isolines
+    elseif isa(ctx[:colorbarticks],Number)
+        ticks = collect(crange[1]:(crange[2]-crange[1])/(ctx[:colorbarticks]-1):crange[2])
+    else
+        ticks = ctx[:colorbarticks]
+    end
     
     if ctx[:colorbar]==:horizontal
-        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=isolines,boundaries=colorlevels, orientation="horizontal")
+        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=ticks,boundaries=colorlevels, orientation="horizontal")
     end
 
     if ctx[:colorbar]==:vertical
-        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=isolines,boundaries=colorlevels, orientation="vertical")
+        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=ticks,boundaries=colorlevels, orientation="vertical")
     end
 
     ax.set_xlabel(ctx[:xlabel])
@@ -540,6 +563,15 @@ function vectorplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
         end
         ctx[:ax].remove()
         ctx[:ax]=ctx[:figure].add_subplot(ctx[:layout]...,ctx[:iplot])
+
+        xlimits=ctx[:xlimits]
+        ylimits=ctx[:ylimits]
+        if xlimits[1]<xlimits[2]
+            ctx[:ax].set_xlim(xlimits...)
+        end
+        if ylimits[1]<ylimits[2]
+            ctx[:ax].set_ylim(ylimits...)
+        end
     end
     
     ax=ctx[:ax]
@@ -575,6 +607,15 @@ function streamplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     fig=ctx[:figure]
     ax.set_aspect(ctx[:aspect])
     ax.set_title(ctx[:title])
+
+    xlimits=ctx[:xlimits]
+    ylimits=ctx[:ylimits]
+    if xlimits[1]<xlimits[2]
+        ax.set_xlim(xlimits...)
+    end
+    if ylimits[1]<ylimits[2]
+        ax.set_ylim(ylimits...)
+    end
 
     # thx https://discourse.julialang.org/t/meshgrid-function-in-julia/48679/4?u=j-fu
     function meshgrid(rc)
