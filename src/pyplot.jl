@@ -403,7 +403,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}},grid, func::Abstr
                       )
             end                
         end
-        # points=[Point2f0(coord[1,i],func[i]) for i=1:length(func)]
+        # points=[Point2f(coord[1,i],func[i]) for i=1:length(func)]
         # Hard to get this robust, as we need to get axislimits
         # mpoints=markerpoints(points,ctx[:markers],Diagonal([1,1]))
         # ampoints=reshape(reinterpret(Float32,mpoints),(2,length(mpoints)))

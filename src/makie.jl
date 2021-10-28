@@ -154,12 +154,12 @@ scenekwargs(ctx)=Dict(:xticklabelsize => 0.5*ctx[:fontsize],
 function basemesh1d(grid)
     coord=vec(grid[Coordinates])
     ncoord=length(coord)
-    points=Vector{Point2f0}(undef,0)
+    points=Vector{Point2f}(undef,0)
     (xmin,xmax)=extrema(coord)
     h=(xmax-xmin)/40.0
     for i=1:ncoord
-        push!(points,Point2f0(coord[i],h))
-        push!(points,Point2f0(coord[i],-h))
+        push!(points,Point2f(coord[i],h))
+        push!(points,Point2f(coord[i],-h))
     end
     points
 end
@@ -168,14 +168,14 @@ end
 # Point list for intervals
 function regionmesh1d(grid,iregion)
     coord=vec(grid[Coordinates])
-    points=Vector{Point2f0}(undef,0)
+    points=Vector{Point2f}(undef,0)
     cn=grid[CellNodes]
     cr=grid[CellRegions]
     ncells=length(cr)
     for i=1:ncells
         if cr[i]==iregion
-            push!(points,Point2f0(coord[cn[1,i]],0))
-            push!(points,Point2f0(coord[cn[2,i]],0))
+            push!(points,Point2f(coord[cn[1,i]],0))
+            push!(points,Point2f(coord[cn[2,i]],0))
         end
     end
     points
@@ -187,13 +187,13 @@ function bregionmesh1d(grid,ibreg)
     bfacenodes=grid[BFaceNodes]
     bfaceregions=grid[BFaceRegions]
     coord=vec(grid[Coordinates])
-    points=Vector{Point2f0}(undef,0)
+    points=Vector{Point2f}(undef,0)
     (xmin,xmax)=extrema(coord)
     h=(xmax-xmin)/20.0
     for ibface=1:nbfaces
         if bfaceregions[ibface]==ibreg
-            push!(points,Point2f0(coord[bfacenodes[1,ibface]],h))
-            push!(points,Point2f0(coord[bfacenodes[1,ibface]],-h))
+            push!(points,Point2f(coord[bfacenodes[1,ibface]],h))
+            push!(points,Point2f(coord[bfacenodes[1,ibface]],-h))
         end
     end
     points
@@ -205,7 +205,7 @@ function scenecorners1d(grid)
     coord=vec(grid[Coordinates])
     (xmin,xmax)=extrema(coord)
     h=(xmax-xmin)/40.0
-    [Point2f0(xmin,-5*h),Point2f0(xmax,5*h)]
+    [Point2f(xmin,-5*h),Point2f(xmax,5*h)]
 end
 
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
@@ -286,7 +286,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 
     # ... keep this for the case we are unsorted
     function polysegs(grid,func)
-        points=Vector{Point2f0}(undef,0)
+        points=Vector{Point2f}(undef,0)
         cellnodes=grid[CellNodes]
         coord=grid[Coordinates]
         for icell=1:num_cells(grid)
@@ -294,15 +294,15 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
             i2=cellnodes[2,icell]
             x1=coord[1,i1]
             x2=coord[1,i2]
-            push!(points,Point2f0(x1,func[i1]))
-            push!(points,Point2f0(x2,func[i2]))
+            push!(points,Point2f(x1,func[i1]))
+            push!(points,Point2f(x2,func[i2]))
         end
         points
     end
 
     function polyline(grid,func)
         coord=grid[Coordinates]
-        points=[Point2f0(coord[1,i],func[i]) for i=1:length(func)]
+        points=[Point2f(coord[1,i],func[i]) for i=1:length(func)]
     end
     
     coord=grid[Coordinates]
@@ -382,7 +382,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
                                scenekwargs(ctx)...)
         # Plot size
         Makie.scatter!(ctx[:scene],
-                       [Point2f0(xmin,ymin),Point2f0(xmax,ymax)],
+                       [Point2f(xmin,ymin),Point2f(xmax,ymax)],
                        color=:white,
                        markersize=0.0,
                        strokewidth=0)
@@ -539,9 +539,9 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
         npoints=num_nodes(grid)
         cellnodes=grid[CellNodes]
         if elevation ≈ 0.0
-            points=[Point2f0(coord[1,i],coord[2,i]) for i=1:npoints]
+            points=[Point2f(coord[1,i],coord[2,i]) for i=1:npoints]
         else
-            points=[Point3f0(coord[1,i],coord[2,i],func[i]*elevation) for i=1:npoints]
+            points=[Point3f(coord[1,i],coord[2,i],func[i]*elevation) for i=1:npoints]
         end
         faces=[TriangleFace(cellnodes[1,i],cellnodes[2,i],cellnodes[3,i]) for i=1:size(cellnodes,2)]
         Mesh(points,faces)
@@ -747,7 +747,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                 d->extract_visible_cells3D(d.g,
                                            (d.x,d.y,d.z),
                                            primepoints=hcat(xyzmin,xyzmax),
-                                           Tp=Point3f0,
+                                           Tp=Point3f,
                                            Tf=GLTriangleFace),
                 ctx[:data])
 
@@ -777,7 +777,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
             d->extract_visible_bfaces3D(d.g,
                                         (d.x,d.y,d.z),
                                         primepoints=hcat(xyzmin,xyzmax),
-                                        Tp=Point3f0,
+                                        Tp=Point3f,
                                         Tf=GLTriangleFace),
             ctx[:data])
         
@@ -803,7 +803,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
             ctx[:outlinedata]=map(d->extract_visible_bfaces3D(d.g,
                                                               xyzmax,
                                                               primepoints=hcat(xyzmin,xyzmax),
-                                                              Tp=Point3f0,
+                                                              Tp=Point3f,
                                                               Tf=GLTriangleFace),
                                   ctx[:data])
             ctx[:outlinemeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
@@ -917,7 +917,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
             ctx[:outlinedata]=map(d->extract_visible_bfaces3D(d.g,
                                                               xyzmax,
                                                               primepoints=hcat(xyzmin,xyzmax),
-                                                              Tp=Point3f0,
+                                                              Tp=Point3f,
                                                               Tf=GLTriangleFace), ctx[:data])
             ctx[:facemeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
             bcmap=bregion_cmap(nbregions)
@@ -936,7 +936,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
                                             d.l,
                                             primepoints=hcat(xyzmin,xyzmax),
                                             primevalues=crange,
-                                            Tp=Point3f0,
+                                            Tp=Point3f,
                                             Tf=GLTriangleFace,
                                             Tv=Float32)...)
 

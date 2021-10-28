@@ -95,7 +95,7 @@ function gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}},grid)
         pts,fcs=extract_visible_cells3D(grid,
                                         xyzcut,
                                         primepoints=hcat(xyzmin,xyzmax),
-                                        Tp=Point3f0,
+                                        Tp=Point3f,
                                         Tf=GLTriangleFace)
         
         for i=1:nregions
@@ -110,7 +110,7 @@ function gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}},grid)
     pts,fcs=extract_visible_bfaces3D(grid,
                                      xyzcut,
                                      primepoints=hcat(xyzmin,xyzmax),
-                                     Tp=Point3f0,
+                                     Tp=Point3f,
                                      Tf=GLTriangleFace)
     
     for i=1:nbregions
@@ -160,7 +160,7 @@ function scalarplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}},grid,func)
                                             [ctx[:flevel]],
                                             primepoints=hcat(xyzmin,xyzmax),
                                             primevalues=fminmax,
-                                            Tp=Point3f0,
+                                            Tp=Point3f,
                                             Tf=GLTriangleFace,
                                             Tv=Float32
                                             )
@@ -180,7 +180,7 @@ function scalarplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}},grid,func)
         pts,fcs=extract_visible_bfaces3D(grid,
                                          xyzmax,
                                          primepoints=hcat(xyzmin,xyzmax),
-                                         Tp=Point3f0,
+                                         Tp=Point3f,
                                          Tf=GLTriangleFace)
         for i=1:nbregions
             mesh=Mesh(pts[i],fcs[i])

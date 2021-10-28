@@ -413,7 +413,7 @@ function marching_triangles(grid::ExtendableGrid,func,levels)
 end
 
 function marching_triangles(coord,cellnodes,func,levels)
-    points=Vector{Point2f0}(undef,0)
+    points=Vector{Point2f}(undef,0)
     function isect(nodes)
         (i1,i2,i3)=(1,2,3)
 
@@ -452,8 +452,8 @@ function marching_triangles(coord,cellnodes,func,levels)
 	            x2=coord[1,n2]+α*dx32
 	            y2=coord[2,n2]+α*dy32
                 end
-                push!(points,Point2f0(x1,y1))
-                push!(points,Point2f0(x2,y2))
+                push!(points,Point2f(x1,y1))
+                push!(points,Point2f(x2,y2))
             end
         end
     end
@@ -471,7 +471,7 @@ function regionmesh(grid,iregion)
     coord=grid[Coordinates]
     cn=grid[CellNodes]
     cr=grid[CellRegions]
-    @views points=[Point2f0(coord[:,i]) for i=1:size(coord,2)]
+    @views points=[Point2f(coord[:,i]) for i=1:size(coord,2)]
     faces=Vector{GLTriangleFace}(undef,0)
     for i=1:length(cr)
         if cr[i]==iregion
@@ -486,11 +486,11 @@ function bfacesegments(grid,ibreg)
     nbfaces=num_bfaces(grid)
     bfacenodes=grid[BFaceNodes]
     bfaceregions=grid[BFaceRegions]
-    points=Vector{Point2f0}(undef,0)
+    points=Vector{Point2f}(undef,0)
     for ibface=1:nbfaces
         if bfaceregions[ibface]==ibreg
-            push!(points,Point2f0(coord[1,bfacenodes[1,ibface]],coord[2,bfacenodes[1,ibface]]))
-            push!(points,Point2f0(coord[1,bfacenodes[2,ibface]],coord[2,bfacenodes[2,ibface]]))
+            push!(points,Point2f(coord[1,bfacenodes[1,ibface]],coord[2,bfacenodes[1,ibface]]))
+            push!(points,Point2f(coord[1,bfacenodes[2,ibface]],coord[2,bfacenodes[2,ibface]]))
         end
     end
     points
@@ -501,11 +501,11 @@ function bfacesegments3(grid,ibreg)
     nbfaces=num_bfaces(grid)
     bfacenodes=grid[BFaceNodes]
     bfaceregions=grid[BFaceRegions]
-    points=Vector{Point3f0}(undef,0)
+    points=Vector{Point3f}(undef,0)
     for ibface=1:nbfaces
         if bfaceregions[ibface]==ibreg
-            push!(points,Point3f0(coord[1,bfacenodes[1,ibface]],coord[2,bfacenodes[1,ibface]],0.0))
-            push!(points,Point3f0(coord[1,bfacenodes[2,ibface]],coord[2,bfacenodes[2,ibface]],0.0))
+            push!(points,Point3f(coord[1,bfacenodes[1,ibface]],coord[2,bfacenodes[1,ibface]],0.0))
+            push!(points,Point3f(coord[1,bfacenodes[2,ibface]],coord[2,bfacenodes[2,ibface]],0.0))
         end
     end
     points
@@ -548,7 +548,7 @@ function markerpoints(points,nmarkers,transform)
         
         while lnext <=l+d &&  length(mpoints)<nmarkers-1
             α=(lnext-l)/d
-            push!(mpoints,Point2f0(α*points[i]+ (1-α)*points[i-1]))
+            push!(mpoints,Point2f(α*points[i]+ (1-α)*points[i-1]))
             lnext=lnext+mdist
         end
     end
