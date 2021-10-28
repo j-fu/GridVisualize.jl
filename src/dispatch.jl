@@ -1,3 +1,5 @@
+global default_backend=nothing
+
 """
     default_plotter()
 
