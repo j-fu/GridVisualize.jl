@@ -308,6 +308,7 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :colorlevels => Pair(51,"2D/3D contour plot: number of color levels"),
     :colormap => Pair(:viridis,"2D/3D contour plot color map (any from [ColorSchemes.jl](https://juliagraphics.github.io/ColorSchemes.jl/stable/basics/#Pre-defined-schemes))"),
     :colorbar => Pair(:vertical,"2D/3D plot colorbar. One of [:none, :vertical, :horizontal]"),
+    :colorbarticks => Pair(:default,"number of ticks in colorbar (:default sets it equal to levels)"),
     :outlinealpha => Pair(0.05,"3D outline surface alpha value"),
     :levelalpha => Pair(0.25,"3D isolevel alpha"),
     :planealpha => Pair(1.0,"3D plane section alpha"),
