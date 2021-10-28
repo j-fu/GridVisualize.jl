@@ -457,7 +457,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     ax.set_aspect(ctx[:aspect])
     ax.set_title(ctx[:title])
 
-    isolines,crange=isolevels(ctx,func)
+    levels,crange,colorbarticks=isolevels(ctx,func)
     colorlevels=collect(crange[1]:(crange[2]-crange[1])/(ctx[:colorlevels]-1):crange[2])
 
     if !haskey(ctx,:grid) || !seemingly_equal(ctx[:grid],grid)
@@ -468,22 +468,14 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     for c in cnt.collections
         c.set_edgecolor("face")
     end
-    ax.tricontour(ctx[:tridata]...,func,colors="k",levels=isolines)
-
-    if ctx[:colorbarticks] == :default
-        ticks = isolines
-    elseif isa(ctx[:colorbarticks],Number)
-        ticks = collect(crange[1]:(crange[2]-crange[1])/(ctx[:colorbarticks]-1):crange[2])
-    else
-        ticks = ctx[:colorbarticks]
-    end
-    
+    ax.tricontour(ctx[:tridata]...,func,colors="k",levels=levels)
+   
     if ctx[:colorbar]==:horizontal
-        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=ticks,boundaries=colorlevels, orientation="horizontal")
+        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=colorbarticks,boundaries=colorlevels, orientation="horizontal")
     end
 
     if ctx[:colorbar]==:vertical
-        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=ticks,boundaries=colorlevels, orientation="vertical")
+        ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=colorbarticks,boundaries=colorlevels, orientation="vertical")
     end
 
     ax.set_xlabel(ctx[:xlabel])

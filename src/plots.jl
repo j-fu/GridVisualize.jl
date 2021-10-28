@@ -268,9 +268,11 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}},grid, func)
     end
     p=ctx[:ax]
 
-    levels,crange=isolevels(ctx,func)
+    levels,crange,colorbarticks=isolevels(ctx,func)
+    colorlevels=collect(crange[1]:(crange[2]-crange[1])/(ctx[:colorlevels]-1):crange[2])
 
-    Plots.contourf!(p,rdata...,aspect_ratio=ctx[:aspect],fill=ctx[:colormap],c=:black,levels=levels)
+    Plots.contourf!(p,rdata...,aspect_ratio=ctx[:aspect],fill=ctx[:colormap],linewidth=0,levels=colorlevels,colorbar_ticks=colorbarticks)
+    Plots.contour!(p,rdata...,aspect_ratio=ctx[:aspect],c=:black,levels=levels)
     reveal(ctx,TP)
 end
 

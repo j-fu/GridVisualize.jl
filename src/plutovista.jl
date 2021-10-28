@@ -134,7 +134,9 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)
                            func,
                            colormap=ctx[:colormap],
                            levels=ctx[:levels],
-                           limits=ctx[:limits]
+                           colorbarticks=ctx[:colorbarticks],
+                           limits=ctx[:limits],
+                           backend=ctx[:backend]
                            )
     reveal(ctx,TP)
 end

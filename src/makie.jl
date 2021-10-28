@@ -441,9 +441,9 @@ function makescene2d(ctx,key)
     GL=Makie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
     if ctx[:colorbar]==:vertical
-        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=10,ticks=ctx[:cbarticks], textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
     elseif ctx[:colorbar]==:horizontal
-        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[key],height=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],vertical=false)
+        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[key],height=10,ticks=ctx[:cbarticks],textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],vertical=false)
     end
     GL
 end
@@ -547,8 +547,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
         Mesh(points,faces)
     end
 
-    levels,crange=isolevels(ctx,func)
-        
+    levels,crange,ctx[:cbarticks]=isolevels(ctx,func)
+    
     set_plot_data!(ctx,Makie,:contourdata,(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=levels,c=crange))
     
     if !haskey(ctx,:contourplot)
