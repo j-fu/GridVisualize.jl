@@ -2,7 +2,7 @@ using Test, ExtendableGrids, GridVisualize, Pkg
 import PyPlot
 
 
-if !Sys.isapple()
+if !Sys.isapple() && !Sys.iswindows()
     plotting=joinpath(@__DIR__,"..","examples","plotting.jl")
     include(plotting)
     include("../docs/makeplots.jl")
