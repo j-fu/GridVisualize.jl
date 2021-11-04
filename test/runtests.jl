@@ -1,7 +1,7 @@
 using Test, ExtendableGrids, GridVisualize, Pkg
 import PyPlot
 
-@test true
+
 if !Sys.isapple()
     plotting=joinpath(@__DIR__,"..","examples","plotting.jl")
     include(plotting)
@@ -42,10 +42,10 @@ end
 
 
 @testset "notebooks" begin
-    notebooks=["plutovista.jl"]
-    for notebook in notebooks
-        input=joinpath(@__DIR__,"..","examples",notebook)
-        @info "notebook: $(input)"
-        @test testnotebook(input)
-    end
+    # notebooks=["plutovista.jl"]
+    # for notebook in notebooks
+    #     input=joinpath(@__DIR__,"..","examples",notebook)
+    #     @info "notebook: $(input)"
+    #     @test testnotebook(input)
+    # end
 end
