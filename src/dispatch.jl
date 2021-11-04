@@ -244,7 +244,7 @@ end
 
 function Base.show(io::IO, mime::MIME"text/html", p::GridVisualizer)
     if isplutovista(p.Plotter)
-        show(io,mime,p.context[:scene])
+        show(io,mime,p.subplots[1][:figure])
     else
         output="""<code>GridVisualizer(Plotter=$(p.Plotter))</code>"""
         write(io,output)
