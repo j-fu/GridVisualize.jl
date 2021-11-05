@@ -20,7 +20,7 @@ begin
    Pkg.activate(".testenv")
    Pkg.add("Revise")
    using Revise
-   Pkg.add(["PlutoUI","ExtendableGrids"])
+   Pkg.add(["PlutoUI","ExtendableGrids","HypertextLiteral"])
    Pkg.develop(["GridVisualize","PlutoVista"])
 end
 
@@ -30,6 +30,7 @@ using PlutoVista
 using GridVisualize
 using ExtendableGrids
 using PlutoUI
+using HypertextLiteral
 	GridVisualize.default_plotter!(PlutoVista)
 end
 
@@ -37,7 +38,7 @@ end
 let
 if isfile("plotting.jl")
 include("plotting.jl")
-plotting_multiscene(Plotter=PlutoVista,resolution=(650,350))
+plotting_multiscene(Plotter=PlutoVista,resolution=(650,300))
 end
 end
 
@@ -285,12 +286,38 @@ md"""
 let vis=GridVisualizer(resolution=(600,600),layout=(2,2))
 	g2=simplexgrid(X,X)
 	g3=simplexgrid(X,X,X)
-	scalarplot!(vis[1,1],X,sin.(2*X))
-	scalarplot!(vis[1,2],g2,(x,y)->sin(x)*cos(y))
-	scalarplot!(vis[2,1],g2,(x,y)->sin(x)*cos(y),colormap=:hot)
-	scalarplot!(vis[2,2],g2,(x,y)->sin(x)*cos(y),colormap=:hot, backend=:plotly)
+		scalarplot!(vis[1,1],X,sin.(2*X))
+		scalarplot!(vis[1,2],g2,(x,y)->sin(x)*cos(y))
+		scalarplot!(vis[2,1],g2,(x,y)->sin(x)*cos(y),colormap=:hot)
+		scalarplot!(vis[2,2],g2,(x,y)->sin(x)*cos(y),colormap=:hot, backend=:plotly)
 	reveal(vis)
 end
+
+# ╔═╡ 6915cc3e-ad9b-4721-9933-884cfc68a25a
+md"""
+It is also possible to directly arrange plots using HypertextLiteral:
+"""
+
+# ╔═╡ 49db8b25-50ce-4fb4-bea2-de8abfb53c56
+X0=0:0.25:10
+
+# ╔═╡ 15f4eeb3-c42e-449c-9161-f1df66de6cef
+htl"""
+<div style= "width: 800px; display: inline-block; white-space:nowrap;">
+<div style= "display: inline-block;">
+$(scalarplot(X0,X0,X0, (x,y,z)->(sin(x)*sin(y)*sin(z)*sqrt(x*y*z)),resolution=(200,200),colormap=:rainbow))
+</div>
+<div style= "display: inline-block;">
+$(scalarplot(X0,X0,X0, (x,y,z)->(sin(0.1*x*y)*sin(z)),resolution=(200,200),colormap=:hot,backend=:plotly))
+</div>
+<div style= "display: inline-block;">
+$(scalarplot(X0,X0, (x,y)->sin(0.1*x*y),resolution=(200,200),colormap=:summer))
+</div>
+<div style= "display: inline-block;">
+$(scalarplot(X0, (x)->x*sin(2x),color=:red,resolution=(200,200),colormap=:summer))
+</div>
+</div>
+"""
 
 # ╔═╡ ba5111b8-0dca-42d2-970f-1e88f5392324
 html"""<hr>"""
@@ -347,9 +374,12 @@ md"""
 # ╟─4121e791-8785-472e-a706-7b9cefd36fd6
 # ╠═e656dac5-466e-4c07-acfa-0478ad000cb2
 # ╠═812af347-7606-4c54-b155-88322d20d921
-# ╠═09998521-68b6-45b4-8c1d-ae73bbd431ad
+# ╟─09998521-68b6-45b4-8c1d-ae73bbd431ad
 # ╠═2d31f310-0d59-4ceb-9daf-61f447de3bb0
 # ╠═f6205299-d097-4e78-8488-b088475191f6
+# ╟─6915cc3e-ad9b-4721-9933-884cfc68a25a
+# ╟─49db8b25-50ce-4fb4-bea2-de8abfb53c56
+# ╠═15f4eeb3-c42e-449c-9161-f1df66de6cef
 # ╟─ba5111b8-0dca-42d2-970f-1e88f5392324
 # ╟─92bfccf7-abf1-47d5-8d8b-9ae9003ad1ac
 # ╠═a98fae2c-9c3a-41c6-96f3-93d147f79e7b

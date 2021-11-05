@@ -34,7 +34,7 @@ Plot appearance can be tweaked by a number of
 [keyword arguments](https://j-fu.github.io/GridVisualize.jl/dev/api/#GridVisualize.available_kwargs).
 
 ### Plotters
-Plotters can be e.g. Plots, GLMakie, PlutoVista - we pass the module exported
+Plotters can be e.g. Plots, PyPlot, GLMakie, PlutoVista - we pass the module exported
 by the package. Different plotters can be used at the same time.
 
 ### Multiple plots in one plotting window
@@ -44,7 +44,6 @@ gridplot!(vis[1,1],grid)
 scalarplot!(vis[1,2],grid,function)
 reveal(vis)
 ````
-(not supported by PlutoVista)
 
 ### Transient plots
 
@@ -77,8 +76,6 @@ gridplot!(vis[1,1],grid)
 scalarplot!(vis[1,2],grid,function)
 ```
 
-When the package is loaded, the default plotter is determined by the installed
-plotting package (using Requires.jl).
 
 
 ### Switching off plotting

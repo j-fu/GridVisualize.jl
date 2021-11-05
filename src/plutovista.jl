@@ -3,7 +3,7 @@ using HypertextLiteral
 function initialize!(p::GridVisualizer,::Type{PlutoVistaType})
     PlutoVista=p.context[:Plotter]
     layout=p.context[:layout]
-    figres=(0.9*p.context[:resolution][1]/layout[2],0.9*p.context[:resolution][2]/layout[1])
+    figres=(p.context[:resolution][1]/layout[2],p.context[:resolution][2]/layout[1])
     for I in CartesianIndices(layout)
         ctx=p.subplots[I] 
         ctx[:figure]=PlutoVista.PlutoVistaPlot(resolution=figres)
@@ -25,25 +25,25 @@ function reveal(p::GridVisualizer,::Type{PlutoVistaType})
     if l==1
         subplots[1][:figure]
     elseif l==2
-        @htl("""<div><div style= "width: $(p.context[:resolution][1])px; display: inline-block;">
+        @htl("""<div><div style=" display: inline-block;">
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[1][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[2][:figure])</div>
         </div>""")
     elseif l==3
-        @htl("""<div><div style= "width: $(p.context[:resolution][1])px; display: inline-block;">
+        @htl("""<div><div style=" display: inline-block;">
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[1][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[2][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[3][:figure])</div>
         </div>""")
     elseif l==4
-        @htl("""<div><div style= "width: $(p.context[:resolution][1])px; display: inline-block;">
+        @htl("""<div><div style=" display: inline-block;">
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[1][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[2][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[3][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[4][:figure])</div>
         </div>""")
     elseif l==5
-        @htl("""<div><div style= "width: $(p.context[:resolution][1])px; display: inline-block;">
+        @htl("""<div><div style=" display: inline-block;">
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[1][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[2][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[3][:figure])</div>
@@ -51,7 +51,7 @@ function reveal(p::GridVisualizer,::Type{PlutoVistaType})
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[5][:figure])</div>
         </div>""")
     elseif l==6
-        @htl("""<div><div style= "width: $(p.context[:resolution][1])px; display: inline-block;">
+        @htl("""<div><div style=" display: inline-block;">
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[1][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[2][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[3][:figure])</div>
@@ -60,7 +60,7 @@ function reveal(p::GridVisualizer,::Type{PlutoVistaType})
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[6][:figure])</div>
         </div>""")
     elseif l==7
-        @htl("""<div><div style= "width: $(p.context[:resolution][1])px; display: inline-block;">
+        @htl("""<div><div style=" display: inline-block;">
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[1][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[2][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[3][:figure])</div>
@@ -70,7 +70,7 @@ function reveal(p::GridVisualizer,::Type{PlutoVistaType})
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[7][:figure])</div>
         </div>""")
     elseif l==8
-        @htl("""<div><div style= "width: $(p.context[:resolution][1])px; display: inline-block;">
+        @htl("""<div><div style=" display: inline-block;">
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[1][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[2][:figure])</div>
         <div style= "width: $(figwidth)px;  display: inline-block;">$(subplots[3][:figure])</div>
