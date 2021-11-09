@@ -1,7 +1,8 @@
 """
 $(SIGNATURES)
 
-Create customized distinguishable colormap for interior regions
+Create customized distinguishable colormap for interior regions.
+For this we use a kind of pastel colors.
 """
 region_cmap(n)=distinguishable_colors(max(5,n),
                                       [RGB(0.85,0.6,0.6), RGB(0.6,0.85,0.6),RGB(0.6,0.6,0.85)],
@@ -13,7 +14,9 @@ region_cmap(n)=distinguishable_colors(max(5,n),
 """
 $(SIGNATURES)
 
-Create customized distinguishable colormap for boundary regions
+Create customized distinguishable colormap for boundary regions.
+
+These use fully saturated colors.
 """
 bregion_cmap(n)=distinguishable_colors(max(5,n),
                                       [RGB(1.0,0.0,0.0), RGB(0.0,1.0,0.0), RGB(0.0,0.0,1.0)],
@@ -23,14 +26,46 @@ bregion_cmap(n)=distinguishable_colors(max(5,n),
                                       )
 
 
+
+"""
+$(SIGNATURES)
+
+Create RGB color from color name string.
+"""
 function Colors.RGB(c::String)
     c64=Colors.color_names[c]
     RGB(c64[1]/255,c64[2]/255, c64[3]/255)
 end
 
+
+"""
+$(SIGNATURES)
+
+Create RGB color from color name symbol.
+"""
 Colors.RGB(c::Symbol)=Colors.RGB(String(c))
+
+"""
+$(SIGNATURES)
+
+Create RGB color from tuple
+"""
 Colors.RGB(c::Tuple)=Colors.RGB(c...)
+
+
+"""
+$(SIGNATURES)
+
+Create color tuple from  color description (e.g. string)
+"""
 rgbtuple(c)=rgbtuple(Colors.RGB(c))
+
+
+"""
+$(SIGNATURES)
+
+Create color tuple from  RGB color.
+"""
 rgbtuple(c::RGB)=(red(c),green(c),blue(c))
 
 
@@ -54,6 +89,15 @@ function extract_visible_cells3D(grid::ExtendableGrid,xyzcut; primepoints=zeros(
 end
 
 
+"""
+$(SIGNATURES)
+
+Extract visible tetrahedra - those intersecting with the planes
+`x=xyzcut[1]` or `y=xyzcut[2]`  or `z=xyzcut[3]`. 
+
+Return corresponding points and facets for each region for drawing as mesh (Makie,MeshCat)
+or trisurf (pyplot)
+"""
 function extract_visible_cells3D(coord,cellnodes,cellregions,nregions,xyzcut;
                                  primepoints=zeros(0,0),Tp=SVector{3,Float32},Tf=SVector{3,Int32})
     
@@ -106,6 +150,15 @@ function extract_visible_cells3D(coord,cellnodes,cellregions,nregions,xyzcut;
     points,faces
 end
 
+"""
+$(SIGNATURES)
+
+Extract visible boundary faces - those not cut off by the planes
+`x=xyzcut[1]` or `y=xyzcut[2]`  or `z=xyzcut[3]`. 
+
+Return corresponding points and facets for each region for drawing as mesh (Makie,MeshCat)
+or trisurf (pyplot)
+"""
 function extract_visible_bfaces3D(grid::ExtendableGrid,xyzcut; primepoints=zeros(0,0), Tp=SVector{3,Float32},Tf=SVector{3,Int32})
     coord=grid[Coordinates]
     bfacenodes=grid[BFaceNodes]
@@ -116,6 +169,15 @@ function extract_visible_bfaces3D(grid::ExtendableGrid,xyzcut; primepoints=zeros
                              primepoints=primepoints,Tp=Tp,Tf=Tf)
 end
 
+"""
+$(SIGNATURES)
+
+Extract visible boundary faces - those not cut off by the planes
+`x=xyzcut[1]` or `y=xyzcut[2]`  or `z=xyzcut[3]`. 
+
+Return corresponding points and facets for each region for drawing as mesh (Makie,MeshCat)
+or trisurf (pyplot)
+"""
 function extract_visible_bfaces3D(coord,bfacenodes,bfaceregions, nbregions, xyzcut;
                                   primepoints=zeros(0,0), Tp=SVector{3,Float32},Tf=SVector{3,Int32})
 
@@ -305,17 +367,45 @@ end
 """
    $(SIGNATURES)
 
-
+Extract isosurfaces and plane interpolation for function on 3D tetrahedral mesh.
+See [`marching_tetrahedra(coord,cellnodes,func,planes,flevels;tol, primepoints, primevalues, Tv, Tp, Tf)`](@ref)
 """
 function marching_tetrahedra(grid::ExtendableGrid,func,planes,flevels; kwargs...)
     coord=grid[Coordinates]
     cellnodes=grid[CellNodes]
-    marching_tetrahedra(coord,cellnodes,func,planes,flevels;kwargs...)
+    marching_tetrahedra(coord,cellnodes,func,planes,flevels; kwargs...)
 end
 
 """
-   $(SIGNATURES)
+$(SIGNATURES)
 
+Extract isosurfaces and plane interpolation for function on 3D tetrahedral mesh.
+
+The basic observation is that locally on a tetrahedron, cuts with planes and isosurfaces
+of P1 functions look the same. This method calculates data for several plane cuts and several
+isosurfaces at once. 
+
+Input parameters:
+- `coord`: 3 x n_points matrix of point coordinates
+- `cellnodes`: 4 x n_cells matrix of point numbers per tetrahedron
+- `func`: n_points vector of piecewise linear function values
+- `planes`: vector of plane equations `ax+by+cz+d=0`,each  stored as vector [a,b,c,d]
+- `flevels`: vector of function isolevels
+
+Keyword arguments:
+- `tol`: tolerance for tet x plane intersection
+- `primepoints`:  3 x n_prime matrix of "corner points" of domain to be plotted. These are not in the mesh but are used to calculate the axis size e.g. by Makie
+- `primevalues`:  n_prime vector of function values in corner points. These can be used to calculate function limits e.g. by Makie
+- `Tv`:  type of function values returned
+- `Tp`:  type of points returned
+- `Tf`:  type of facets returned
+
+Return values: (points, tris, values)
+- `points`: vector of points (Tp)
+- `tris`: vector of triangles (Tf)
+- `values`: vector of function values (Tv)
+
+These can be readily turned into a mesh with function values on it.
 
 """
 function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
@@ -325,6 +415,7 @@ function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
                              Tv=Float32,
                              Tp=SVector{3,Float32},
                              Tf=SVector{3,Int32})
+
     # We could rewrite this for Meshing.jl
     # CellNodes::Vector{Ttet}, Coord::Vector{Tpt}
     nplanes=length(planes)
@@ -334,12 +425,13 @@ function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
 
     all_planeq=Vector{Float32}(undef,nnodes)
 
-
+    # Create output vectors
     all_ixfaces=Vector{Tf}(undef,0)
     all_ixcoord=Vector{Tp}(undef,0)
     all_ixvalues=Vector{Tv}(undef,0)
 
     @assert(length(primevalues)==size(primepoints,2))
+
     for iprime=1:size(primepoints,2)
         @views push!(all_ixcoord,primepoints[:,iprime])
         @views push!(all_ixvalues,primevalues[iprime])
@@ -350,7 +442,8 @@ function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
     ixvalues=zeros(6)
     cn=zeros(4)
     node_indices=zeros(Int32,4)
-   
+
+    # Function to evaluate plane equation
     @inbounds @fastmath plane_equation(plane,coord)= coord[1]*plane[1]+coord[2]*plane[2]+coord[3]*plane[3]+plane[4]
     
     function pushtris(ns,ixcoord,ixvalues)
@@ -401,17 +494,19 @@ end
 """
     $(SIGNATURES)
 
-    Collect isoline snippets on triangles ready for linesegments!
-
+Collect isoline snippets on triangles ready for linesegments!
 """
-
-
 function marching_triangles(grid::ExtendableGrid,func,levels)
     coord::Matrix{Float64}=grid[Coordinates]
     cellnodes::Matrix{Int32}=grid[CellNodes]
     marching_triangles(coord,cellnodes,func,levels)
 end
 
+"""
+    $(SIGNATURES)
+
+Collect isoline snippets on triangles ready for linesegments!
+"""
 function marching_triangles(coord,cellnodes,func,levels)
     points=Vector{Point2f}(undef,0)
     function isect(nodes)

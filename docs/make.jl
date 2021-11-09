@@ -29,8 +29,11 @@ example_md_dir  = joinpath(@__DIR__,"src","examples")
 function mkdocs()
     
     Literate.markdown(plotting, example_md_dir, documenter=false,info=false)
-    rendernotebook("plutovista")
-    makeplots(example_md_dir, Plotter=PyPlot)
+
+    if true
+        rendernotebook("plutovista")
+        makeplots(example_md_dir, Plotter=PyPlot)
+    end
     generated_examples=joinpath.("examples",filter(x->endswith(x, ".md"),readdir(example_md_dir)))
     makedocs(sitename="GridVisualize.jl",
              modules = [GridVisualize],
