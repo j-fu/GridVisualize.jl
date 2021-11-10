@@ -320,6 +320,7 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :xplanes => Pair([prevfloat(Inf)],"3D x plane positions or number thereof"),
     :yplanes => Pair([prevfloat(Inf)],"3D y plane positions or number thereof"),
     :zplanes => Pair([prevfloat(Inf)],"3D z plane positions or number thereof"),
+    :zoom => Pair(1.0,"Zoom level"),
     :azim => Pair(-60,"3D azimuth angle  (in degrees)"),
     :elev => Pair(30,"3D elevation angle  (in degrees)"),
     :perspectiveness => Pair(0.25,"3D perspective A number between 0 and 1, where 0 is orthographic, and 1 full perspective"),

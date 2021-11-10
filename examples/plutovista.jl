@@ -216,7 +216,7 @@ scalarplot!(p3d,g3,f3;levels=[flevel],xplanes=[xplane],yplanes=[yplane],zplanes=
 X4=-1:0.1:1; g4=simplexgrid(X4,X4,X4)
 
 # ╔═╡ 57ed5eea-bc1c-45eb-b4d3-dc63088db21a
-scalarplot(g4,map( (x,y,z)-> 0.01*exp(-10*(x^2+y^2+z^2)),g4),levels=5)
+scalarplot(g4,map( (x,y,z)-> 0.01*exp(-10*(x^2+y^2+z^2)),g4),levels=10)
 
 # ╔═╡ 4b9113d2-10bd-4f7a-a2b8-22092656c6b3
 md"""

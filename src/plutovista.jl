@@ -204,7 +204,8 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)
                            levels=ctx[:levels],
                            colorbarticks=ctx[:colorbarticks],
                            limits=ctx[:limits],
-                           backend=ctx[:backend]
+                           backend=ctx[:backend],
+                           zoom=ctx[:zoom]
                            )
     reveal(ctx,TP)
 end
@@ -268,7 +269,8 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid,func)
                            facemarkers=grid[BFaceRegions],
                            facecolormap=bcmap,
                            outlinealpha=ctx[:outlinealpha],
-                           levelalpha=ctx[:levelalpha]
+                           levelalpha=ctx[:levelalpha],
+                           zoom=ctx[:zoom]
                            )
     reveal(ctx,TP)
 end
