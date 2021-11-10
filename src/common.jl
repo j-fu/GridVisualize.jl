@@ -407,6 +407,8 @@ Return values: (points, tris, values)
 
 These can be readily turned into a mesh with function values on it.
 
+Caveat: points with similar coordinates are not identified, e.g. an intersection of a plane and an edge will generate as many edge intersection points as there are tetrahedra adjacent to that edge. As a consequence, normal calculations for visualization alway will end up with facet normals, not point normals, and the visual impression of a rendered isosurface will show its piecewise linear genealogy.
+
 """
 function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
                              tol=1.0e-12,
