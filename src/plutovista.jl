@@ -187,7 +187,8 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid)
     
     PlutoVista.backend!(ctx[:figure],backend=ctx[:backend],datadim=2)
     PlutoVista.trimesh!(ctx[:figure],pts,tris,
-                        markers=markers,colormap=cmap,
+                        zoom=ctx[:zoom],
+                        markers=markers,colormap=cmap,gridscale=ctx[:gridscale],
                         edges=edges,edgemarkers=edgemarkers,edgecolormap=bcmap)
     reveal(ctx,TP)
 end
@@ -205,7 +206,8 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)
                            colorbarticks=ctx[:colorbarticks],
                            limits=ctx[:limits],
                            backend=ctx[:backend],
-                           zoom=ctx[:zoom]
+                           zoom=ctx[:zoom],
+                           gridscale=ctx[:gridscale]
                            )
     reveal(ctx,TP)
 end
@@ -244,6 +246,7 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)
                         xplanes=ctx[:xplanes],
                         yplanes=ctx[:yplanes],
                         zplanes=ctx[:zplanes],
+                        zoom=ctx[:zoom],
                         markers=markers,colormap=cmap,
                         faces=faces,facemarkers=facemarkers,facecolormap=bcmap,
                         outlinealpha=ctx[:outlinealpha])
