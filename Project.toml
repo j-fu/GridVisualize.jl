@@ -16,7 +16,6 @@ Observables = "510215fc-4207-5dde-b226-833fc4488ee2"
 OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 PkgVersion = "eebad327-c553-4316-9ea0-9fa01ccd7688"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
-PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 
 [compat]
