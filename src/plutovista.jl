@@ -163,7 +163,7 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid,func)
                      linewidth=ctx[:linewidth],
                      legend=ctx[:legend],
                      xlimits=ctx[:xlimits],
-                     ylimits=ctx[:limits],
+                     limits=ctx[:limits],
                      clear=ctx[:clear],
                      title=ctx[:title],
                      xscale=ctx[:xscale],
