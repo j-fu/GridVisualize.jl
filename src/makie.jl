@@ -430,24 +430,6 @@ end
 #######################################################################################
 # 2D grid
 
-"""
-   makescene2d(ctx)
-
-Complete scene with title and status line showing interaction state.
-This uses a gridlayout and its  protrusion capabilities.
-"""
-function makescene2d(ctx,key)
-    Makie=ctx[:Plotter]
-    GL=Makie.GridLayout(ctx[:figure])
-    GL[1,1]=ctx[:scene]
-    if ctx[:colorbar]==:vertical
-        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=10,ticks=ctx[:cbarticks], textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
-    elseif ctx[:colorbar]==:horizontal
-        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[key],height=10,ticks=ctx[:cbarticks],textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],vertical=false)
-    end
-    GL
-end
-
 function makescene2d_grid(ctx)
     Makie=ctx[:Plotter]
     GL=Makie.GridLayout(ctx[:figure])
@@ -527,6 +509,25 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
 end
 
 
+"""
+   makescene2d(ctx)
+
+Complete scene with title and status line showing interaction state.
+This uses a gridlayout and its  protrusion capabilities.
+"""
+function makescene2d(ctx,key)
+    Makie=ctx[:Plotter]
+    GL=Makie.GridLayout(ctx[:figure])
+    GL[1,1]=ctx[:scene]
+
+    if ctx[:colorbar]==:vertical
+        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=10,ticks=unique(ctx[:cbarticks]), textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+    elseif ctx[:colorbar]==:horizontal
+        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[key],height=10,ticks=ctx[:cbarticks],textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],vertical=false)
+    end
+    GL
+end
+
 # 2D function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
     Makie=ctx[:Plotter]
@@ -548,6 +549,13 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
     end
 
     levels,crange,ctx[:cbarticks]=isolevels(ctx,func)
+    eps=1.0e-1
+    if crange[1]==crange[2]
+        crange=(crange[1]-eps,crange[1]+eps)
+    end
+
+
+
     
     set_plot_data!(ctx,Makie,:contourdata,(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=levels,c=crange))
     

@@ -220,12 +220,12 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid)
     if nbfaceregions>0 
         cmap=bregion_cmap(nbfaceregions)
         # see https://gist.github.com/gizmaa/7214002
-        xc=[coord[:,bfacenodes[1,i]] for i=1:num_sources(bfacenodes)]
-        yc=[coord[:,bfacenodes[2,i]] for i=1:num_sources(bfacenodes)]
+        c1=[coord[:,bfacenodes[1,i]] for i=1:num_sources(bfacenodes)]
+        c2=[coord[:,bfacenodes[2,i]] for i=1:num_sources(bfacenodes)]
         rgb=[rgbtuple(cmap[bfaceregions[i]]) for i=1:length(bfaceregions)]
-        ax.add_collection(PyPlot.matplotlib.collections.LineCollection(collect(zip(xc,yc)),colors=rgb,linewidth=3))
+        ax.add_collection(PyPlot.matplotlib.collections.LineCollection(collect(zip(c1,c2)),colors=rgb,linewidth=3))
         for i=1:nbfaceregions
-            ax.plot(coord[:,1], coord[:,1],label="$(i)", color=rgbtuple(cmap[i]))
+            ax.plot(coord[1,1:1], coord[2,1:1],label="$(i)", color=rgbtuple(cmap[i]))
         end
     end
     if ctx[:legend]!=:none
@@ -458,8 +458,15 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     ax.set_title(ctx[:title])
 
     levels,crange,colorbarticks=isolevels(ctx,func)
-    colorlevels=collect(crange[1]:(crange[2]-crange[1])/(ctx[:colorlevels]-1):crange[2])
+    eps=1.0e-5
+    if crange[1]==crange[2]
+        crange=(crange[1]-eps,crange[1]+eps)
+        colorlevels=collect(crange[1]:(crange[2]-crange[1])/(1):crange[2])
+    else
+        colorlevels=collect(crange[1]:(crange[2]-crange[1])/(ctx[:colorlevels]-1):crange[2])
+    end
 
+    
     if !haskey(ctx,:grid) || !seemingly_equal(ctx[:grid],grid)
         ctx[:grid]=grid
         ctx[:tridata]=tridata(grid)
@@ -473,7 +480,6 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}},grid, func)
     if ctx[:colorbar]==:horizontal
         ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=colorbarticks,boundaries=colorlevels, orientation="horizontal")
     end
-
     if ctx[:colorbar]==:vertical
         ctx[:cbar]=fig.colorbar(cnt,ax=ax,ticks=colorbarticks,boundaries=colorlevels, orientation="vertical")
     end

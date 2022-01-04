@@ -714,7 +714,9 @@ function isolevels(ctx,func)
     end
     
     
-    map(t->round(t,sigdigits=4),levels),crange,map(t->round(t,sigdigits=4),colorbarticks)
+    #    map(t->round(t,sigdigits=4),levels),crange,map(t->round(t,sigdigits=4),colorbarticks)
+    levels,crange,colorbarticks
+
 end
 
 
