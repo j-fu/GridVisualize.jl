@@ -27,7 +27,7 @@ function reveal(p::GridVisualizer,::Type{PlotsType})
             end
         end
     end
-    p=Plots.plot(subplots...,layout=p.context[:layout],size=p.context[:resolution])
+    p=Plots.plot(subplots...,layout=p.context[:layout],size=p.context[:size])
     Plots.gui(p)
     p
 end

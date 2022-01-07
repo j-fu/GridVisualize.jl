@@ -2,7 +2,8 @@ function initialize!(p, ::Type{PyPlotType})
     PyPlot=p.context[:Plotter]
     PyPlot.PyObject(PyPlot.axes3D)# see https://github.com/JuliaPy/PyPlot.jl/issues/351
     if !haskey(p.context,:figure)
-        res=p.context[:resolution]
+        res=p.context[:size]
+        @show res
         p.context[:figure]=PyPlot.figure(p.context[:fignumber],dpi=100)
         p.context[:figure].set_size_inches(res[1]/100,res[2]/100,forward=true)
         for ctx in p.subplots

@@ -3,7 +3,7 @@ using HypertextLiteral
 function initialize!(p::GridVisualizer,::Type{PlutoVistaType})
     PlutoVista=p.context[:Plotter]
     layout=p.context[:layout]
-    figres=(p.context[:resolution][1]/layout[2],p.context[:resolution][2]/layout[1])
+    figres=(p.context[:size][1]/layout[2],p.context[:size][2]/layout[1])
     for I in CartesianIndices(layout)
         ctx=p.subplots[I] 
         ctx[:figure]=PlutoVista.PlutoVistaPlot(resolution=figres)
@@ -14,7 +14,7 @@ end
 
 function reveal(p::GridVisualizer,::Type{PlutoVistaType})
     layout=p.context[:layout]
-    figwidth=0.95*p.context[:resolution][1]/layout[2]
+    figwidth=0.95*p.context[:size][1]/layout[2]
     l=layout[1]*layout[2]
     subplots=[]
     for i in 1:layout[1]

@@ -154,6 +154,7 @@ function _update_context!(ctx::SubVisualizer,kwargs)
         ctx[Symbol(k)]=v
     end
     
+    haskey(ctx,:resolution) ?  ctx[:size] = ctx[:resolution] : nothing
     haskey(ctx,:flevel) ?  ctx[:levels] = [ctx[:flevel]] : nothing
     haskey(ctx,:flimits) ? ctx[:limits] = ctx[:flimits] : nothing
     haskey(ctx,:xplane) ? ctx[:xplanes] = [ctx[:xplane]] : nothing
@@ -281,7 +282,7 @@ default_plot_kwargs()=OrderedDict{Symbol,Pair{Any,String}}(
     :reveal => Pair(false,"Show plot immediately (same as :show)"),
     :clear => Pair(true,"Clear plot before adding new content"),
     :layout => Pair((1,1),"Layout of plots in window"),
-    :resolution => Pair((500,500),"Plot window resolution"),
+    :size => Pair((500,500),"Plot window resolution"),
     :legend => Pair(:none,"Legend (position): one of [:none, :best, :lt, :ct, :rt, :lc, :rc, :lb, :cb, :rb]"),    
     :title => Pair("","Plot title"),
     :xlabel => Pair("","x axis label"),
@@ -409,6 +410,9 @@ scalarplot!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...) = scalarplo
 scalarplot!(ctx::SubVisualizer,grid::ExtendableGrid,func::Function; kwargs...)=scalarplot!(ctx,grid,map(func,grid);kwargs...)
 
 "$(TYPEDSIGNATURES)"
+scalarplot!(ctx::SubVisualizer,func::AbstractVector; kwargs...)=scalarplot!(ctx,simplexgrid(X),1:length(func),func;kwargs...)
+
+"$(TYPEDSIGNATURES)"
 scalarplot!(ctx::SubVisualizer,X::AbstractVector,func; kwargs...)=scalarplot!(ctx,simplexgrid(X),func;kwargs...)
 
 "$(TYPEDSIGNATURES)"
@@ -434,6 +438,10 @@ If instead of the grid,  vectors for coordinates are given, a grid is created au
 For keyword arguments, see [`available_kwargs`](@ref)
 """
 scalarplot(grid::ExtendableGrid,func ;Plotter=default_plotter(),kwargs...) = scalarplot!(GridVisualizer(Plotter=Plotter; kwargs...),grid,func,show=true)
+
+
+"$(TYPEDSIGNATURES)"
+scalarplot(func::AbstractVector ;kwargs...)=scalarplot(1:length(func),func;kwargs...)
 
 "$(TYPEDSIGNATURES)"
 scalarplot(X::AbstractVector,func ;kwargs...)=scalarplot(simplexgrid(X),func;kwargs...)

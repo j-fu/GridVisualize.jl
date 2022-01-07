@@ -13,7 +13,7 @@ function initialize!(p::GridVisualizer,::Type{VTKViewType})
         ctx[:frame]=frame
     end
     VTKView.layout!(frame,tlayout...)
-    VTKView.size!(frame,pctx[:resolution]...)
+    VTKView.size!(frame,pctx[:size]...)
     pctx
 end
 

@@ -27,7 +27,7 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
 
     layout=p.context[:layout]
 
-    parent,flayout=FlippableLayout.flayoutscene(resolution=p.context[:resolution])
+    parent,flayout=FlippableLayout.flayoutscene(resolution=p.context[:size])
 
     p.context[:figure]=parent
     p.context[:flayout]=flayout
@@ -470,9 +470,13 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
     if !haskey(ctx,:gridplot)
         
         if !haskey(ctx,:scene)
+            coord=grid[Coordinates]
+            ex=extrema(coord,dims=(2))
+            data_aspect=(ex[2][2]-ex[2][1])/(ex[1][2]-ex[1][1])
+            makie_aspect=1.0/(data_aspect*ctx[:aspect])
             ctx[:scene]=Makie.Axis(ctx[:figure];
                                    title=ctx[:title],
-                                   aspect=Makie.DataAspect(),
+                                   aspect=Makie.makie_aspect,
                                    scenekwargs(ctx)...)
         end
 
@@ -558,14 +562,17 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
 
     
     set_plot_data!(ctx,Makie,:contourdata,(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=levels,c=crange))
-    
-    if !haskey(ctx,:contourplot)
 
+    if !haskey(ctx,:contourplot)
         if !haskey(ctx,:scene)
-            # would need to switch to Axis3 for supporting elevtion
+            coord=grid[Coordinates]
+            ex=extrema(coord,dims=(2))
+            data_aspect=(ex[2][2]-ex[2][1])/(ex[1][2]-ex[1][1])
+            makie_aspect=1.0/(data_aspect*ctx[:aspect])
+            # would need to switch to Axis3 for supporting elevation
             ctx[:scene]=Makie.Axis(ctx[:figure];
                                    title=map(data->data.t,ctx[:contourdata]),
-                                   aspect=Makie.DataAspect(),
+                                   aspect=makie_aspect,
                                    scenekwargs(ctx)...)
         end
         
