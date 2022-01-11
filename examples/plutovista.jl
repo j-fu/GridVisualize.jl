@@ -20,8 +20,8 @@ begin
     Pkg.activate(".testenv")
     Pkg.add("Revise")
     using Revise
-    Pkg.add(["PlutoUI","ExtendableGrids","HypertextLiteral","PlutoVista"])
-    Pkg.develop(["GridVisualize"])
+    Pkg.add(["PlutoUI","ExtendableGrids","HypertextLiteral"])
+    Pkg.develop(["GridVisualize","PlutoVista"])
     end
 
 # ╔═╡ 9701cbe0-d048-11eb-151b-67dda7b72b71
@@ -208,7 +208,7 @@ end
 g3,f3=func3d(n=31)
 
 # ╔═╡ c0a0ea34-6fc3-4409-934e-086a1a36f94e
-p3d=GridVisualizer(resolution=(500,500),dim=3);p3d
+p3d=GridVisualizer(resolution=(500,500),dim=3)
 
 # ╔═╡ 35be5ef4-0664-4196-8f10-cf71ec7cb371
 md"""
@@ -319,14 +319,35 @@ $(scalarplot(X0, (x)->x*sin(2x),color=:red,resolution=(200,200),colormap=:summer
 </div>
 """
 
+# ╔═╡ 75ffcd09-dfa8-42df-a3cd-a7e68786e73c
+md"""
+## Misc functionality + tests
+"""
+
+# ╔═╡ cf592b99-d596-4511-adbf-001145a59983
+md"""
+### Plotting of constants
+"""
+
 # ╔═╡ bc1c6d12-8d06-4f57-9044-8b5e86fd1c13
 scalarplot(ones(10),size=(500,200))
 
+# ╔═╡ b9c9e4c8-9f4c-481c-bab6-f1baea33c108
+md"""
+### Aspect ratio handling
+"""
+
 # ╔═╡ 6a3b2356-e8a1-45f8-8648-2eca09a7b258
-XX=0:1; YY=0:10;
+XX=0:0.1:1; YY=0:0.1:10;
 
 # ╔═╡ 608a5704-a84c-4c55-8642-ecddb275dc1b
-scalarplot(XX,YY, (x,y)->sin(x)*y,aspect=0.1)
+scalarplot(XX,YY, (x,y)->sin(4x)*10*y,aspect=0.1,xlabel="aaa",size=(300,300))
+
+# ╔═╡ 3efbeb11-eaa4-4fc5-bd5f-b3bdb63e7772
+scalarplot(XX,YY, (x,y)->sin(4x)*10*y,aspect=0.1,xlabel="aaa",size=(300,300),backend=:plotly)
+
+# ╔═╡ ccd274d2-68c0-40e0-8ba7-b8421f5ec9d3
+gridplot(simplexgrid(XX,YY),aspect=0.1)
 
 # ╔═╡ ba5111b8-0dca-42d2-970f-1e88f5392324
 html"""<hr>"""
@@ -389,9 +410,14 @@ md"""
 # ╟─6915cc3e-ad9b-4721-9933-884cfc68a25a
 # ╟─49db8b25-50ce-4fb4-bea2-de8abfb53c56
 # ╠═15f4eeb3-c42e-449c-9161-f1df66de6cef
+# ╟─75ffcd09-dfa8-42df-a3cd-a7e68786e73c
+# ╟─cf592b99-d596-4511-adbf-001145a59983
 # ╠═bc1c6d12-8d06-4f57-9044-8b5e86fd1c13
+# ╟─b9c9e4c8-9f4c-481c-bab6-f1baea33c108
 # ╠═6a3b2356-e8a1-45f8-8648-2eca09a7b258
 # ╠═608a5704-a84c-4c55-8642-ecddb275dc1b
+# ╠═3efbeb11-eaa4-4fc5-bd5f-b3bdb63e7772
+# ╠═ccd274d2-68c0-40e0-8ba7-b8421f5ec9d3
 # ╟─ba5111b8-0dca-42d2-970f-1e88f5392324
 # ╟─92bfccf7-abf1-47d5-8d8b-9ae9003ad1ac
 # ╠═a98fae2c-9c3a-41c6-96f3-93d147f79e7b

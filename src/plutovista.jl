@@ -189,7 +189,12 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid)
     PlutoVista.trimesh!(ctx[:figure],pts,tris,
                         zoom=ctx[:zoom],
                         markers=markers,colormap=cmap,gridscale=ctx[:gridscale],
-                        edges=edges,edgemarkers=edgemarkers,edgecolormap=bcmap)
+                        edges=edges,edgemarkers=edgemarkers,edgecolormap=bcmap,
+                        aspect=ctx[:aspect],
+                        xlabel=ctx[:xlabel],
+                        ylabel=ctx[:ylabel],
+                        zlabel=ctx[:zlabel]
+                        )
     reveal(ctx,TP)
 end
 
@@ -207,7 +212,11 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid,func)
                            limits=ctx[:limits],
                            backend=ctx[:backend],
                            zoom=ctx[:zoom],
-                           gridscale=ctx[:gridscale]
+                           gridscale=ctx[:gridscale],
+                           aspect=ctx[:aspect],
+                           xlabel=ctx[:xlabel],
+                           ylabel=ctx[:ylabel],
+                           zlabel=ctx[:zlabel]
                            )
     reveal(ctx,TP)
 end
@@ -273,7 +282,11 @@ function scalarplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid,func)
                            facecolormap=bcmap,
                            outlinealpha=ctx[:outlinealpha],
                            levelalpha=ctx[:levelalpha],
-                           zoom=ctx[:zoom]
+                           zoom=ctx[:zoom],
+                           aspect=ctx[:aspect],
+                           xlabel=ctx[:xlabel],
+                           ylabel=ctx[:ylabel],
+                           zlabel=ctx[:zlabel]
                            )
     reveal(ctx,TP)
 end
