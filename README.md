@@ -89,23 +89,19 @@ and all plotting functions will do nothing.
 - '(y)': availability only on rectangular grids
 - 'p':  planned
 
-|----------------|--------|---------|------------|-------|---------|
 |                | PyPlot | GLMakie | PlutoVista | Plots | VTKView |
 |----------------|--------|---------|------------|-------|---------|
 | scalarplot, 1D | y      | y       | y,i        | y     | y       |
 | vectorplot, 1D | y      | y       | y          | y     | y       |
 | gridplot, 1D   | y      | y       | y          | y     |         |
-|----------------|--------|---------|------------|-------|---------|
 | scalarplot, 2D | y      | y       | y          | (y)   | y,i     |
 | vectorplot, 2D | y      | y       | y          | y     |         |
 | streamplot, 2D | y      | p       | p          |       |         |
 | gridplot, 2D   | y      | y,i     | y          | (y)   | y,i     |
-|----------------|--------|---------|------------|-------|---------|
 | scalarplot, 3D | y      | y,i     | y,i        |       | y,i     |
 | gridplot, 3D   | y      | y,i     | y,i        |       | y,i     |
 | vectorplot, 3D | p      | p       | p          |       |         |
 | streamplot, 3D |        | p       | p          |       |         |
-|----------------|--------|---------|------------|-------|---------|
 
 
 
