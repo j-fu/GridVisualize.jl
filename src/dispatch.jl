@@ -466,6 +466,11 @@ function vectorplot!(ctx::SubVisualizer,grid::ExtendableGrid,func; kwargs...)
     vectorplot!(ctx,plottertype(ctx[:Plotter]),Val{dim_space(grid)},grid,func)
 end
 
+vectorplot!(ctx,ptype,::Type{Val{1}},grid,func::Matrix)=scalarplot!(ctx,ptype,Val{1},grid,func[1,:])
+vectorplot!(ctx,ptype,::Type{Val{1}},grid,func::Vector)=scalarplot!(ctx,ptype,Val{1},grid,func)
+
+
+
 "$(TYPEDSIGNATURES)"
 vectorplot!(p::GridVisualizer,grid::ExtendableGrid, func; kwargs...) = vectorplot!(p[1,1],grid,func; kwargs...)
 "$(TYPEDSIGNATURES)"
