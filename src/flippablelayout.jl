@@ -13,6 +13,7 @@ As a consequence, we can't use Makie types at compile time.
 """
 module FlippableLayout
 using DocStringExtensions
+using Observables
 
 
 Makie=nothing
@@ -138,10 +139,10 @@ function flayoutscene(;blocked=false,
     
     flayout=FLayout(layout,blocked=blocked)
 
-    gallery_view=Makie.Node(true)
+    gallery_view=Observable(true)
 
     # Watch mouse position
-    mouseposition=Makie.Node((0.0,0.0))
+    mouseposition=Observable((0.0,0.0))
 
     Makie.on(parent.events.mouseposition) do m
         mouseposition[]=m

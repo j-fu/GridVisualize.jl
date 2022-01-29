@@ -9,8 +9,8 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
     Makie=p.context[:Plotter]
     
     # Check for version compatibility
-    version_min=v"0.15"
-    version_max=v"0.15.99"
+    version_min=v"0.16"
+    version_max=v"0.16.99"
     
     version_installed=PkgVersion.Version(Makie.Makie)
     
@@ -91,10 +91,10 @@ function scene_interaction(update_scene,scene,Makie,switchkeys::Vector{Symbol}=[
     end
 
     # Initial active switch key is the first in the vector passed
-    activeswitch=Makie.Node(switchkeys[1])
+    activeswitch=Observable(switchkeys[1])
 
     # Handle mouse position within scene
-    mouseposition=Makie.Node((0.0,0.0))
+    mouseposition=Observable((0.0,0.0))
 
 
     Makie.on(scene.events.mouseposition) do m
@@ -221,7 +221,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
                                title=ctx[:title],
                                scenekwargs(ctx)...)
         
-        ctx[:grid]=Makie.Node(grid)
+        ctx[:grid]=Observable(grid)
         cmap=region_cmap(nregions)
         bcmap=bregion_cmap(nbregions)
 
@@ -372,7 +372,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
     
     if !haskey(ctx,:scene)
 
-        ctx[:xtitle]=Makie.Node(ctx[:title])
+        ctx[:xtitle]=Observable(ctx[:title])
 
         # Axis
         ctx[:scene]=Makie.Axis(ctx[:figure];
@@ -390,7 +390,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 
         # ctx[:lines]  is an array of lines to draw
         # Here, we start just with the first one.
-        ctx[:lines]=[Makie.Node(polyline(grid,func))]
+        ctx[:lines]=[Observable(polyline(grid,func))]
 
         update_lines(ctx)
         
@@ -415,7 +415,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
         if ctx[:nlines]<=length(ctx[:lines])
             ctx[:lines][ctx[:nlines]][]=p
         else
-            push!(ctx[:lines],Makie.Node(p))
+            push!(ctx[:lines],Observable(p))
             update_lines(ctx)
         end
 
@@ -452,7 +452,7 @@ end
 
 
 # Put all data which could be updated in to one plot.
-set_plot_data!(ctx,m,key,data) = haskey(ctx,key) ?  ctx[key][]=data : ctx[key]=m.Node(data) 
+set_plot_data!(ctx,key,data) = haskey(ctx,key) ?  ctx[key][]=data : ctx[key]=Observable(data) 
     
 
 
@@ -465,7 +465,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
 
     nbregions=num_bfaceregions(grid)
 
-    set_plot_data!(ctx,Makie,:grid,grid)
+    set_plot_data!(ctx,:grid,grid)
 
     if !haskey(ctx,:gridplot)
         
@@ -476,7 +476,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
             makie_aspect=1.0/(data_aspect*ctx[:aspect])
             ctx[:scene]=Makie.Axis(ctx[:figure];
                                    title=ctx[:title],
-                                   aspect=Makie.makie_aspect,
+                                   aspect=makie_aspect,
                                    scenekwargs(ctx)...)
         end
 
@@ -561,7 +561,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
 
 
     
-    set_plot_data!(ctx,Makie,:contourdata,(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=levels,c=crange))
+    set_plot_data!(ctx,:contourdata,(g=grid,f=func,e=ctx[:elevation],t=ctx[:title],l=levels,c=crange))
 
     if !haskey(ctx,:contourplot)
         if !haskey(ctx,:scene)
@@ -604,7 +604,7 @@ function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
     qc,qv=quiverdata(rc,rv;vscale=ctx[:vscale],vnormalize=ctx[:vnormalize])
 
     
-    set_plot_data!(ctx,Makie,:arrowdata,(qc=qc,qv=qv))
+    set_plot_data!(ctx,:arrowdata,(qc=qc,qv=qv))
 
     if !haskey(ctx,:arrowplot)
         if !haskey(ctx,:scene)
@@ -750,7 +750,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
 
     if !haskey(ctx,:scene)
 
-        ctx[:data]=Makie.Node((g=grid,x=ctx[:xplanes][1],y=ctx[:yplanes][1],z=ctx[:zplanes][1],t=ctx[:title]))
+        ctx[:data]=Observable((g=grid,x=ctx[:xplanes][1],y=ctx[:yplanes][1],z=ctx[:zplanes][1],t=ctx[:title]))
 
         ctx[:scene]=makeaxis3d(ctx)
         
@@ -851,7 +851,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
             ctx[:data][]=(g=grid,x=ctx[:xplanes][1],y=ctx[:yplanes][1],z=ctx[:zplanes][1],t=ctx[:title])
         end
 
-        ctx[:status]=Makie.Node(" ")
+        ctx[:status]=Observable(" ")
 
         add_scene!(ctx,makescene3d(ctx))
         
@@ -923,7 +923,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     
     if !haskey(ctx,:scene)
 
-        ctx[:data]=Makie.Node((g=grid,f=func,x=ctx[:xplanes],y=ctx[:yplanes],z=ctx[:zplanes],l=ctx[:levels],t=ctx[:title]))
+        ctx[:data]=Observable((g=grid,f=func,x=ctx[:xplanes],y=ctx[:yplanes],z=ctx[:zplanes],l=ctx[:levels],t=ctx[:title]))
 
         ctx[:scene]=makeaxis3d(ctx)
         
@@ -980,7 +980,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
 #            adjust_planes()
             ctx[:data][]=(g=grid,f=func,x=ctx[:xplanes],y=ctx[:yplanes],z=ctx[:zplanes],l=ctx[:levels],t=ctx[:title])
         end
-        ctx[:status]=Makie.Node(" ")
+        ctx[:status]=Observable(" ")
         add_scene!(ctx,makescene3d(ctx))
     else
         ctx[:data][]=(g=grid,f=func,x=ctx[:xplanes],y=ctx[:yplanes],z=ctx[:zplanes],l=ctx[:levels],t=ctx[:title])
