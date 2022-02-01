@@ -662,7 +662,7 @@ function makeaxis3d(ctx)
         # "New" Axis3 with prospective new stuff by Julius.
         Makie.Axis3(ctx[:figure];
                     aspect=:data,
-                    viewmode=:fitzoom,
+                    viewmode=:fit,
                     elevation=ctx[:elev]*π/180,
                     azimuth=ctx[:azim]*π/180,
                     perspectiveness=ctx[:perspectiveness],
@@ -867,7 +867,8 @@ end
 # 3d function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
 
-
+    levels,crange=isolevels(ctx,func)
+ 
     make_mesh(pts,fcs)=Mesh(pts,fcs)
     
     function make_mesh(pts,fcs,vals)
@@ -887,7 +888,6 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     xyzmin,xyzmax=xyzminmax(grid)
     xyzstep=(xyzmax-xyzmin)/100
     
-    levels,crange=isolevels(ctx,func)
     
     fstep=(crange[2]-crange[1])/100
     if fstep≈0
