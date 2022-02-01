@@ -316,7 +316,7 @@ end
 function tet_x_plane!(ixcoord,ixvalues,pointlist,node_indices,planeq_values,function_values; tol=0.0)
 
     # If all nodes lie on one side of the plane, no intersection
-    if (mapreduce(a->a< -tol,*,planeq_values) || mapreduce(a->a>tol,*,planeq_values))
+    @fastmath if (mapreduce(a->a< -tol,*,planeq_values) || mapreduce(a->a>tol,*,planeq_values))
         return 0
     end
     # Interpolate coordinates and function_values according to
@@ -326,7 +326,7 @@ function tet_x_plane!(ixcoord,ixvalues,pointlist,node_indices,planeq_values,func
         N1=node_indices[n1]
         @inbounds @fastmath @simd for n2=n1+1:4
             N2=node_indices[n2]
-            if planeq_values[n1]*planeq_values[n2]<tol
+            if planeq_values[n1]!=planeq_values[n2] && planeq_values[n1]*planeq_values[n2]<tol
                 nxs+=1
                 t= planeq_values[n1]/(planeq_values[n1]-planeq_values[n2])
                 ixcoord[1,nxs]=pointlist[1,N1]+t*(pointlist[1,N2]-pointlist[1,N1])
@@ -454,7 +454,7 @@ function marching_tetrahedra(coord,cellnodes,func,planes,flevels;
             last_i=length(all_ixvalues)
             for is=1:ns
                 @views push!(all_ixcoord,ixcoord[:,is])
-                push!(all_ixvalues,ixvalues[is])
+                push!(all_ixvalues,ixvalues[is]) # todo consider nan_replacement here
             end
             push!(all_ixfaces,(last_i+1,last_i+2,last_i+3))
             if ns==4
