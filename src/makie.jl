@@ -868,15 +868,19 @@ end
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
 
     levels,crange=isolevels(ctx,func)
- 
+    nan_replacement=0.5*(crange[1]+crange[2])
     make_mesh(pts,fcs)=Mesh(pts,fcs)
     
     function make_mesh(pts,fcs,vals)
-        colors = Makie.Makie.interpolated_getindex.((cmap,), vals, (crange,))
-        if ctx[:levelalpha]>0
-            colors= [ RGBA(colors[i].r,colors[i].g,colors[i].b,Float32(ctx[:levelalpha])) for i=1:length(colors)]
+        if length(fcs)>0
+            colors = Makie.Makie.interpolated_getindex.((cmap,), vals, (crange,))
+            if ctx[:levelalpha]>0
+                colors= [ RGBA(colors[i].r,colors[i].g,colors[i].b,Float32(ctx[:levelalpha])) for i=1:length(colors)]
+            end
+            GeometryBasics.Mesh(meta(pts, color=colors, normals=normals(pts, fcs)), fcs)
+        else
+            GeometryBasics.Mesh(pts,fcs)
         end
-        GeometryBasics.Mesh(meta(pts, color=colors, normals=normals(pts, fcs)), fcs)
     end
     
     
