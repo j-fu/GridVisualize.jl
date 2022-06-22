@@ -124,6 +124,9 @@ and all plotting functions will do nothing.
 ### [VTKView](https://github.com/j-fu/VTKView.jl):
 ![](https://github.com/j-fu/GridVisualize.jl/blob/main/docs/src/assets/multiscene_vtkview.png?raw=true")
 
+## vscode
+It is possible to plot into the plot pane of Visual Studio Code.
+
 
 ## Notebooks
 

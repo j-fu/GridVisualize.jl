@@ -151,8 +151,7 @@ end
 # The ',' key for GLMakie and the '*' key for VTKView allow to
 # switch between gallery view (default) and focused view of only
 # one subscene.
-function plotting_multiscene(;Plotter=default_plotter(),resolution=(1000,500))
-    p=GridVisualizer(;Plotter=Plotter,layout=(2,4),clear=true,resolution=resolution)
+function plotting_multiscene!(p)
     gridplot!(p[1,1],grid1d(), title="1D grid")
     scalarplot!(p[2,1],grid1d(), sin, title="1D grid function", label="sin",markershape=:diamond,color=:red,legend=:rb)
     scalarplot!(p[2,1],grid1d(), cos, title="1D grid function", label="cos",linestyle=:dash,markershape=:none,color=:green,clear=false)
@@ -163,6 +162,10 @@ function plotting_multiscene(;Plotter=default_plotter(),resolution=(1000,500))
     vectorplot!(p[1,4],vec2d()...,title="2D quiver")
     GridVisualize.streamplot!(p[2,4],vec2d()...,title="2D stream")
     reveal(p)
+end
+
+function plotting_multiscene(;Plotter=default_plotter(),resolution=(1000,500))
+    plotting_multiscene!(GridVisualizer(;Plotter=Plotter,layout=(2,4),clear=true,resolution=resolution))
 end
 # ![](plotting_multiscene.svg)
 
