@@ -28,7 +28,7 @@ end
 function plotting_grid1d(;Plotter=default_plotter(), kwargs...)
     gridplot(grid1d(); Plotter=Plotter, resolution=(500,200),kwargs...)
 end
-# ![](plotting_grid1d.svg)
+# ![](plotting_grid1d.png)
 
 
 # ### 2D grids
@@ -41,7 +41,7 @@ end
 function plotting_grid2d(;Plotter=default_plotter(), kwargs...)
     gridplot(grid2d(); Plotter=Plotter, kwargs...)
 end
-# ![](plotting_grid2d.svg)
+# ![](plotting_grid2d.png)
 
 
 # ### 3D grids
@@ -60,7 +60,7 @@ end
 function plotting_grid3d(;Plotter=default_plotter(), kwargs...)
     gridplot(grid3d(); Plotter=Plotter, kwargs...)
 end
-# ![](plotting_grid3d.svg)
+# ![](plotting_grid3d.png)
 
 
 # ## Function plots
@@ -76,7 +76,7 @@ function plotting_func1d(;Plotter=default_plotter(), kwargs...)
     g,f=func1d()
     scalarplot(g,f; Plotter=Plotter,resolution=(500,300),kwargs...)
 end
-# ![](plotting_func1d.svg)
+# ![](plotting_func1d.png)
 
 
 # ### Function on 2D grid
@@ -90,7 +90,7 @@ function plotting_func2d(;Plotter=default_plotter(), kwargs...)
     g,f=func2d()
     scalarplot(g,f; Plotter=Plotter,levels=10, kwargs...)
 end
-# ![](plotting_func2d.svg)
+# ![](plotting_func2d.png)
 
 
 
@@ -114,7 +114,7 @@ function plotting_func3d(;Plotter=default_plotter(), kwargs...)
     g,f=func3d()
     scalarplot(g,f; Plotter=Plotter, zplane=0.49,xplane=0.49,flevel=0.25, kwargs...)
 end
-# ![](plotting_func3d.svg)
+# ![](plotting_func3d.png)
 
 # ## Vector and stream plots
 # ### 2D vector
@@ -128,7 +128,7 @@ function plotting_vec2d(;Plotter=default_plotter(), kwargs...)
     g,f=vec2d()
     vectorplot(g,f; Plotter=Plotter,kwargs...)
 end
-# ![](plotting_vec2d.svg)
+# ![](plotting_vec2d.png)
 
 
 # ### 2D stream
@@ -137,7 +137,7 @@ function plotting_stream2d(;Plotter=default_plotter(), kwargs...)
     g,f=vec2d()
     streamplot(g,f; Plotter=Plotter,spacing=0.05,kwargs...)
 end
-# ![](plotting_stream2d.svg)
+# ![](plotting_stream2d.png)
 
 
 
@@ -167,6 +167,6 @@ end
 function plotting_multiscene(;Plotter=default_plotter(),resolution=(1000,500))
     plotting_multiscene!(GridVisualizer(;Plotter=Plotter,layout=(2,4),clear=true,resolution=resolution))
 end
-# ![](plotting_multiscene.svg)
+# ![](plotting_multiscene.png)
 
 

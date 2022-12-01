@@ -1,7 +1,6 @@
-ENV["MPLBACKEND"]="agg"
 using Documenter, ExtendableGrids, Literate, GridVisualize,Pluto
 using GridVisualize.FlippableLayout
-import PyPlot
+import GLMakie
 using Test
 
 
@@ -32,7 +31,7 @@ function mkdocs()
 
     if true
         rendernotebook("plutovista")
-        makeplots(example_md_dir, Plotter=PyPlot)
+        makeplots(example_md_dir, Plotter=GLMakie)
     end
     generated_examples=joinpath.("examples",filter(x->endswith(x, ".md"),readdir(example_md_dir)))
     makedocs(sitename="GridVisualize.jl",

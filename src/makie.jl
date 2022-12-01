@@ -9,8 +9,8 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
     Makie=p.context[:Plotter]
     
     # Check for version compatibility
-    version_min=v"0.16"
-    version_max=v"0.16.99"
+    version_min=v"0.18"
+    version_max=v"0.18.99"
     
     version_installed=PkgVersion.Version(Makie.Makie)
     
@@ -145,6 +145,8 @@ scenekwargs(ctx)=Dict(:xticklabelsize => 0.5*ctx[:fontsize],
                       :ylabeloffset => 20,
                       :zlabeloffset => 20,
                       :titlesize => ctx[:fontsize])
+
+scenekwargs(ctx)=()
 
 ############################################################################################################
 #1D grid
@@ -365,7 +367,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 
         if ctx[:legend]!=:none
             pos=ctx[:legend]==:best ? :rt : ctx[:legend]
-            Makie.axislegend(ctx[:scene],position=pos,labelsize=0.5*ctx[:fontsize],backgroundcolor=:transparent)
+            Makie.axislegend(ctx[:scene],position=pos,labelsize=0.5*ctx[:fontsize])
+            # ,backgroundcolor=:transparent
         end
         
     end
@@ -435,16 +438,17 @@ function makescene2d_grid(ctx)
     GL=Makie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
     ncol=length(ctx[:cmap])
+    # textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
     if ctx[:colorbar]==:vertical
         GL[1,2]=Makie.Colorbar(ctx[:figure],
                                colormap=Makie.cgrad(ctx[:cmap],categorical=true),
                                limits=(1,ncol),
-                               width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+                               width=15)
     elseif ctx[:colorbar]==:horizontal
         GL[2,1]=Makie.Colorbar(ctx[:figure],
                                colormap=Makie.cgrad(ctx[:cmap],categorical=true),
                                limits=(1,ncol),
-                               heigth=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],
+                               heigth=15,
                                vertical=false)
     end        
     GL
@@ -524,10 +528,11 @@ function makescene2d(ctx,key)
     GL=Makie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
 
+    # , textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
     if ctx[:colorbar]==:vertical
-        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=10,ticks=unique(ctx[:cbarticks]), textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=10,ticks=unique(ctx[:cbarticks]))
     elseif ctx[:colorbar]==:horizontal
-        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[key],height=10,ticks=ctx[:cbarticks],textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],vertical=false)
+        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[key],height=10,ticks=ctx[:cbarticks],vertical=false)
     end
     GL
 end

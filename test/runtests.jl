@@ -1,15 +1,14 @@
 using Test, ExtendableGrids, GridVisualize, Pkg
-import PyPlot
+import CairoMakie
 
 
-if !Sys.isapple() && !Sys.iswindows()
-    plotting=joinpath(@__DIR__,"..","examples","plotting.jl")
-    include(plotting)
-    include("../docs/makeplots.jl")
-    @testset "makeplots - PyPlot" begin
-        makeplots(mktempdir(),Plotter=PyPlot)
-    end
+plotting=joinpath(@__DIR__,"..","examples","plotting.jl")
+include(plotting)
+include("../docs/makeplots.jl")
+@testset "makeplots - CairoMakie" begin
+    makeplots(mktempdir(),Plotter=CairoMakie)
 end
+
 
 function testnotebook(input)
     # de-markdown eventual cells with Pkg.develop and write
