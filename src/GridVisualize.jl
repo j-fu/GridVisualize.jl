@@ -12,9 +12,8 @@ using ColorSchemes
 using GeometryBasics
 using PkgVersion
 
+using GridVisualizeTools
 using ExtendableGrids
-
-
 
 include("dispatch.jl")
 include("common.jl")
