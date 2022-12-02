@@ -135,18 +135,19 @@ function scene_interaction(update_scene,scene,Makie,switchkeys::Vector{Symbol}=[
 end
 
 # Standard kwargs for Makie scenes
-scenekwargs(ctx)=Dict(:xticklabelsize => 0.5*ctx[:fontsize],
-                      :yticklabelsize => 0.5*ctx[:fontsize],
-                      :zticklabelsize => 0.5*ctx[:fontsize],
-                      :xlabelsize => 0.5*ctx[:fontsize],
-                      :ylabelsize => 0.5*ctx[:fontsize],
-                      :zlabelsize => 0.5*ctx[:fontsize],
-                      :xlabeloffset => 20,
-                      :ylabeloffset => 20,
-                      :zlabeloffset => 20,
-                      :titlesize => ctx[:fontsize])
+scenekwargs(ctx)=Dict(
+    #:xticklabelsize => 0.5*ctx[:fontsize],
+    #:yticklabelsize => 0.5*ctx[:fontsize],
+    #:zticklabelsize => 0.5*ctx[:fontsize],
+    #:xlabelsize => 0.5*ctx[:fontsize],
+    #:ylabelsize => 0.5*ctx[:fontsize],
+    #:zlabelsize => 0.5*ctx[:fontsize],
+    #:xlabeloffset => 20,
+    #:ylabeloffset => 20,
+    #:zlabeloffset => 20,
+    :titlesize => ctx[:fontsize])
 
-scenekwargs(ctx)=()
+#scenekwargs(ctx)=()
 
 ############################################################################################################
 #1D grid
@@ -438,11 +439,16 @@ function makescene2d_grid(ctx)
     GL=Makie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
     ncol=length(ctx[:cmap])
+    nbcol=length(ctx[:cmap])
     # textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
     if ctx[:colorbar]==:vertical
         GL[1,2]=Makie.Colorbar(ctx[:figure],
                                colormap=Makie.cgrad(ctx[:cmap],categorical=true),
                                limits=(1,ncol),
+                               width=15)
+        GL[1,3]=Makie.Colorbar(ctx[:figure],
+                               colormap=Makie.cgrad(ctx[:bcmap],categorical=true),
+                               limits=(1,nbcol),
                                width=15)
     elseif ctx[:colorbar]==:horizontal
         GL[2,1]=Makie.Colorbar(ctx[:figure],
@@ -496,6 +502,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
 
         # Draw boundary lines
         bcmap=bregion_cmap(nbregions)
+        ctx[:bcmap]=bcmap
         for i=1:nbregions
             lp=Makie.linesegments!(ctx[:scene],
                                    map(g->bfacesegments(g,i),ctx[:grid]),
