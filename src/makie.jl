@@ -497,11 +497,12 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
         # Draw boundary lines
         bcmap=bregion_cmap(nbregions)
         for i=1:nbregions
-            Makie.linesegments!(ctx[:scene],
-                                map(g->bfacesegments(g,i),ctx[:grid]),
-                                label="$(i)",
-                                color=bcmap[i],
-                                linewidth=4)
+            lp=Makie.linesegments!(ctx[:scene],
+                                   map(g->bfacesegments(g,i),ctx[:grid]),
+                                   label="$(i)",
+                                   color=bcmap[i],
+                                   linewidth=4)
+            Makie.translate!(lp,0,0,0.1)
         end
         # Describe legend
         if ctx[:legend]!=:none
