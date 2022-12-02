@@ -6,7 +6,7 @@ plotting=joinpath(@__DIR__,"..","examples","plotting.jl")
 include(plotting)
 include("../docs/makeplots.jl")
 @testset "makeplots - CairoMakie" begin
-    makeplots(mktempdir(),Plotter=CairoMakie)
+    makeplots(mktempdir(),Plotter=CairoMakie, extension=".svg")
 end
 
 
