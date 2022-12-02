@@ -268,7 +268,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
                              labelsize=0.5*ctx[:fontsize],
                              nbanks=5)
         end
-        
+        Makie.reset_limits!(ctx[:scene])
         add_scene!(ctx, ctx[:scene])
     else
         ctx[:grid][]=grid
@@ -402,6 +402,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 
         ctx[:nlines]=1
 
+        Makie.reset_limits!(ctx[:scene])
         add_scene!(ctx,ctx[:scene])
 
     else
@@ -454,6 +455,11 @@ function makescene2d_grid(ctx)
         GL[2,1]=Makie.Colorbar(ctx[:figure],
                                colormap=Makie.cgrad(ctx[:cmap],categorical=true),
                                limits=(1,ncol),
+                               heigth=15,
+                               vertical=false)
+        GL[3,1]=Makie.Colorbar(ctx[:figure],
+                               colormap=Makie.cgrad(ctx[:bcmap],categorical=true),
+                               limits=(1,nbcol),
                                heigth=15,
                                vertical=false)
     end        
@@ -511,6 +517,8 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
                                    linewidth=4)
             Makie.translate!(lp,0,0,0.1)
         end
+        Makie.reset_limits!(ctx[:scene])
+
         # Describe legend
         if ctx[:legend]!=:none
             pos=ctx[:legend]==:best ? :rt : ctx[:legend]
@@ -602,6 +610,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
                             color=:black,
                             linewidth=ctx[:linewidth])
 
+        Makie.reset_limits!(ctx[:scene])
         add_scene!(ctx,makescene2d(ctx,:contourplot))
     end
     reveal(ctx,TP)
@@ -635,6 +644,7 @@ function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
                                       map(data->data.qv[2,:],ctx[:arrowdata]),
                                       color=:black,
                                       linewidth=ctx[:linewidth])
+        Makie.reset_limits!(ctx[:scene])
     end
     reveal(ctx,TP)
 end
