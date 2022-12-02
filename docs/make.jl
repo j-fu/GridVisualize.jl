@@ -1,6 +1,6 @@
 using Documenter, ExtendableGrids, Literate, GridVisualize,Pluto
 using GridVisualize.FlippableLayout
-import GLMakie
+import CairoMakie
 using Test
 
 
@@ -31,7 +31,7 @@ function mkdocs()
 
     if true
         rendernotebook("plutovista")
-        makeplots(example_md_dir, Plotter=GLMakie)
+        makeplots(example_md_dir, Plotter=CairoMakie, extension="svg")
     end
     generated_examples=joinpath.("examples",filter(x->endswith(x, ".md"),readdir(example_md_dir)))
     makedocs(sitename="GridVisualize.jl",
