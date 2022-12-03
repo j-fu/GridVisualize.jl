@@ -9,8 +9,8 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
     Makie=p.context[:Plotter]
     
     # Check for version compatibility
-    version_min=v"0.16"
-    version_max=v"0.16.99"
+    version_min=v"0.19"
+    version_max=v"0.19.99"
     
     version_installed=PkgVersion.Version(Makie.Makie)
     
@@ -135,16 +135,19 @@ function scene_interaction(update_scene,scene,Makie,switchkeys::Vector{Symbol}=[
 end
 
 # Standard kwargs for Makie scenes
-scenekwargs(ctx)=Dict(:xticklabelsize => 0.5*ctx[:fontsize],
-                      :yticklabelsize => 0.5*ctx[:fontsize],
-                      :zticklabelsize => 0.5*ctx[:fontsize],
-                      :xlabelsize => 0.5*ctx[:fontsize],
-                      :ylabelsize => 0.5*ctx[:fontsize],
-                      :zlabelsize => 0.5*ctx[:fontsize],
-                      :xlabeloffset => 20,
-                      :ylabeloffset => 20,
-                      :zlabeloffset => 20,
-                      :titlesize => ctx[:fontsize])
+scenekwargs(ctx)=Dict(
+    #:xticklabelsize => 0.5*ctx[:fontsize],
+    #:yticklabelsize => 0.5*ctx[:fontsize],
+    #:zticklabelsize => 0.5*ctx[:fontsize],
+    #:xlabelsize => 0.5*ctx[:fontsize],
+    #:ylabelsize => 0.5*ctx[:fontsize],
+    #:zlabelsize => 0.5*ctx[:fontsize],
+    #:xlabeloffset => 20,
+    #:ylabeloffset => 20,
+    #:zlabeloffset => 20,
+    :titlesize => ctx[:fontsize])
+
+#scenekwargs(ctx)=()
 
 ############################################################################################################
 #1D grid
@@ -265,7 +268,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
                              labelsize=0.5*ctx[:fontsize],
                              nbanks=5)
         end
-        
+        Makie.reset_limits!(ctx[:scene])
         add_scene!(ctx, ctx[:scene])
     else
         ctx[:grid][]=grid
@@ -365,7 +368,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 
         if ctx[:legend]!=:none
             pos=ctx[:legend]==:best ? :rt : ctx[:legend]
-            Makie.axislegend(ctx[:scene],position=pos,labelsize=0.5*ctx[:fontsize],backgroundcolor=:transparent)
+            Makie.axislegend(ctx[:scene],position=pos,labelsize=0.5*ctx[:fontsize])
+            # ,backgroundcolor=:transparent
         end
         
     end
@@ -398,6 +402,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 
         ctx[:nlines]=1
 
+        Makie.reset_limits!(ctx[:scene])
         add_scene!(ctx,ctx[:scene])
 
     else
@@ -435,16 +440,27 @@ function makescene2d_grid(ctx)
     GL=Makie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
     ncol=length(ctx[:cmap])
+    nbcol=length(ctx[:cmap])
+    # fontsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
     if ctx[:colorbar]==:vertical
         GL[1,2]=Makie.Colorbar(ctx[:figure],
                                colormap=Makie.cgrad(ctx[:cmap],categorical=true),
                                limits=(1,ncol),
-                               width=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+                               width=15)
+        GL[1,3]=Makie.Colorbar(ctx[:figure],
+                               colormap=Makie.cgrad(ctx[:bcmap],categorical=true),
+                               limits=(1,nbcol),
+                               width=15)
     elseif ctx[:colorbar]==:horizontal
         GL[2,1]=Makie.Colorbar(ctx[:figure],
                                colormap=Makie.cgrad(ctx[:cmap],categorical=true),
                                limits=(1,ncol),
-                               heigth=15, textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],
+                               heigth=15,
+                               vertical=false)
+        GL[3,1]=Makie.Colorbar(ctx[:figure],
+                               colormap=Makie.cgrad(ctx[:bcmap],categorical=true),
+                               limits=(1,nbcol),
+                               heigth=15,
                                vertical=false)
     end        
     GL
@@ -492,13 +508,17 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
 
         # Draw boundary lines
         bcmap=bregion_cmap(nbregions)
+        ctx[:bcmap]=bcmap
         for i=1:nbregions
-            Makie.linesegments!(ctx[:scene],
-                                map(g->bfacesegments(g,i),ctx[:grid]),
-                                label="$(i)",
-                                color=bcmap[i],
-                                linewidth=4)
+            lp=Makie.linesegments!(ctx[:scene],
+                                   map(g->bfacesegments(g,i),ctx[:grid]),
+                                   label="$(i)",
+                                   color=bcmap[i],
+                                   linewidth=4)
+            Makie.translate!(lp,0,0,0.1)
         end
+        Makie.reset_limits!(ctx[:scene])
+
         # Describe legend
         if ctx[:legend]!=:none
             pos=ctx[:legend]==:best ? :rt : ctx[:legend]
@@ -524,10 +544,11 @@ function makescene2d(ctx,key)
     GL=Makie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
 
+    # , fontsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
     if ctx[:colorbar]==:vertical
-        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=10,ticks=unique(ctx[:cbarticks]), textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize])
+        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=10,ticks=unique(ctx[:cbarticks]))
     elseif ctx[:colorbar]==:horizontal
-        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[key],height=10,ticks=ctx[:cbarticks],textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize],vertical=false)
+        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[key],height=10,ticks=ctx[:cbarticks],vertical=false)
     end
     GL
 end
@@ -589,6 +610,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
                             color=:black,
                             linewidth=ctx[:linewidth])
 
+        Makie.reset_limits!(ctx[:scene])
         add_scene!(ctx,makescene2d(ctx,:contourplot))
     end
     reveal(ctx,TP)
@@ -622,6 +644,7 @@ function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
                                       map(data->data.qv[2,:],ctx[:arrowdata]),
                                       color=:black,
                                       linewidth=ctx[:linewidth])
+        Makie.reset_limits!(ctx[:scene])
     end
     reveal(ctx,TP)
 end
@@ -687,7 +710,7 @@ function makescene3d(ctx)
                                         " $(map(data->data.t,ctx[:data])) ",
                                         tellwidth=false,
                                         height=30,
-                                        textsize=ctx[:fontsize])
+                                        fontsize=ctx[:fontsize])
     end
     GL[1,1]=ctx[:scene]
     # Horizontal or vertical colorbar
@@ -696,13 +719,13 @@ function makescene3d(ctx)
             GL[1,2]=Makie.Colorbar(ctx[:figure],
                                    ctx[:mesh],
                                    width=15,
-                                   textsize=0.5*ctx[:fontsize],
+                                   fontsize=0.5*ctx[:fontsize],
                                    ticklabelsize=0.5*ctx[:fontsize])
         elseif ctx[:colorbar]==:horizontal
             GL[2,1]=Makie.Colorbar(ctx[:figure],
                                    ctx[:mesh],
                                    height=15,
-                                   textsize=0.5*ctx[:fontsize],
+                                   fontsize=0.5*ctx[:fontsize],
                                    ticklabelsize=0.5*ctx[:fontsize],
                                    vertical=false)
         end
@@ -712,7 +735,7 @@ function makescene3d(ctx)
                                        ctx[:status],
                                        tellwidth=false,
                                        height=30,
-                                       textsize=0.5*ctx[:fontsize])
+                                       fontsize=0.5*ctx[:fontsize])
     GL
 end
 
