@@ -9,8 +9,8 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
     Makie=p.context[:Plotter]
     
     # Check for version compatibility
-    version_min=v"0.18"
-    version_max=v"0.18.99"
+    version_min=v"0.19"
+    version_max=v"0.19.99"
     
     version_installed=PkgVersion.Version(Makie.Makie)
     
@@ -441,7 +441,7 @@ function makescene2d_grid(ctx)
     GL[1,1]=ctx[:scene]
     ncol=length(ctx[:cmap])
     nbcol=length(ctx[:cmap])
-    # textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
+    # fontsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
     if ctx[:colorbar]==:vertical
         GL[1,2]=Makie.Colorbar(ctx[:figure],
                                colormap=Makie.cgrad(ctx[:cmap],categorical=true),
@@ -544,7 +544,7 @@ function makescene2d(ctx,key)
     GL=Makie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
 
-    # , textsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
+    # , fontsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
     if ctx[:colorbar]==:vertical
         GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=10,ticks=unique(ctx[:cbarticks]))
     elseif ctx[:colorbar]==:horizontal
@@ -710,7 +710,7 @@ function makescene3d(ctx)
                                         " $(map(data->data.t,ctx[:data])) ",
                                         tellwidth=false,
                                         height=30,
-                                        textsize=ctx[:fontsize])
+                                        fontsize=ctx[:fontsize])
     end
     GL[1,1]=ctx[:scene]
     # Horizontal or vertical colorbar
@@ -719,13 +719,13 @@ function makescene3d(ctx)
             GL[1,2]=Makie.Colorbar(ctx[:figure],
                                    ctx[:mesh],
                                    width=15,
-                                   textsize=0.5*ctx[:fontsize],
+                                   fontsize=0.5*ctx[:fontsize],
                                    ticklabelsize=0.5*ctx[:fontsize])
         elseif ctx[:colorbar]==:horizontal
             GL[2,1]=Makie.Colorbar(ctx[:figure],
                                    ctx[:mesh],
                                    height=15,
-                                   textsize=0.5*ctx[:fontsize],
+                                   fontsize=0.5*ctx[:fontsize],
                                    ticklabelsize=0.5*ctx[:fontsize],
                                    vertical=false)
         end
@@ -735,7 +735,7 @@ function makescene3d(ctx)
                                        ctx[:status],
                                        tellwidth=false,
                                        height=30,
-                                       textsize=0.5*ctx[:fontsize])
+                                       fontsize=0.5*ctx[:fontsize])
     GL
 end
 
