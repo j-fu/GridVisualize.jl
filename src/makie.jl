@@ -6,24 +6,24 @@ include("flippablelayout.jl")
 
 function initialize!(p::GridVisualizer,::Type{MakieType})
 
-    Makie=p.context[:Plotter]
+    XMakie=p.context[:Plotter]
     
     # Check for version compatibility
     version_min=v"0.19"
     version_max=v"0.19.99"
     
-    version_installed=PkgVersion.Version(Makie.Makie)
+    version_installed=PkgVersion.Version(XMakie.Makie)
     
     if version_installed<version_min
-        error("Outdated version $(version_installed) of Makie. Please upgrade to at least $(version_min)")
+        error("Outdated version $(version_installed) of XMakie. Please upgrade to at least $(version_min)")
     end
     
     if version_installed>version_max
-        @warn("Possibly breaking version $(version_installed) of Makie.")
+        @warn("Possibly breaking version $(version_installed) of XMakie.")
     end
 
     # Prepare flippable layout
-    FlippableLayout.setmakie!(Makie)
+    FlippableLayout.setmakie!(XMakie.Makie)
 
     layout=p.context[:layout]
 
@@ -41,7 +41,7 @@ function initialize!(p::GridVisualizer,::Type{MakieType})
 
     # Don't call display on pluto
     if !isdefined(Main, :PlutoRunner) 
-        Makie.display(parent)
+        XMakie.display(parent)
     end
         
     parent
@@ -63,7 +63,7 @@ function reveal(ctx::SubVisualizer,TP::Type{MakieType})
 end
 
 save(fname,p::GridVisualizer,::Type{MakieType})= p.context[:Plotter].save(fname, p.context[:figure])
-save(fname,scene,Makie,::Type{MakieType})= isnothing(scene) ? nothing :  Makie.save(fname, scene)
+save(fname,scene,XMakie,::Type{MakieType})= isnothing(scene) ? nothing :  XMakie.save(fname, scene)
 
 
 """
@@ -79,7 +79,7 @@ by triggering change values via up/down (± 1)  resp. page_up/page_down (±10) k
 
 The update_scene callback gets passed the change value and the symbol.
 """
-function scene_interaction(update_scene,scene,Makie,switchkeys::Vector{Symbol}=[:nothing])
+function scene_interaction(update_scene,scene,XMakie,switchkeys::Vector{Symbol}=[:nothing])
 
     # Check if pixel position pos sits within the scene
     function _inscene(scene,pos)
@@ -97,18 +97,18 @@ function scene_interaction(update_scene,scene,Makie,switchkeys::Vector{Symbol}=[
     mouseposition=Observable((0.0,0.0))
 
 
-    Makie.on(scene.events.mouseposition) do m
+    XMakie.on(scene.events.mouseposition) do m
         mouseposition[]=m
         false
     end
 
 
     # Set keyboard event callback
-    Makie.on(scene.events.keyboardbutton) do buttons
+    XMakie.on(scene.events.keyboardbutton) do buttons
         if _inscene(scene,mouseposition[])
             # On pressing a switch key, pass control
             for i=1:length(switchkeys)
-                if switchkeys[i]!=:nothing && Makie.ispressed(scene,getproperty(Makie.Keyboard,switchkeys[i]))
+                if switchkeys[i]!=:nothing && XMakie.ispressed(scene,getproperty(XMakie.Keyboard,switchkeys[i]))
                     activeswitch[]=switchkeys[i]
                     update_scene(0,switchkeys[i])
                     return true
@@ -116,16 +116,16 @@ function scene_interaction(update_scene,scene,Makie,switchkeys::Vector{Symbol}=[
             end
             
             # Handle change values via up/down control
-            if Makie.ispressed(scene, Makie.Keyboard.up)
+            if XMakie.ispressed(scene, XMakie.Keyboard.up)
                 update_scene(1,activeswitch[])
                 return true
-            elseif Makie.ispressed(scene, Makie.Keyboard.down)
+            elseif XMakie.ispressed(scene, XMakie.Keyboard.down)
                 update_scene(-1,activeswitch[])
                 return true
-            elseif Makie.ispressed(scene, Makie.Keyboard.page_up)
+            elseif XMakie.ispressed(scene, XMakie.Keyboard.page_up)
                 update_scene(10,activeswitch[])
                 return true
-            elseif Makie.ispressed(scene, Makie.Keyboard.page_down)
+            elseif XMakie.ispressed(scene, XMakie.Keyboard.page_down)
                 update_scene(-10,activeswitch[])
                 return true
             end
@@ -213,12 +213,12 @@ end
 
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
     
-    Makie=ctx[:Plotter]
+    XMakie=ctx[:Plotter]
     nregions=num_cellregions(grid)
     nbregions=num_bfaceregions(grid)
     
     if !haskey(ctx,:scene)
-        ctx[:scene]=Makie.Axis(ctx[:figure];
+        ctx[:scene]=XMakie.Axis(ctx[:figure];
                                yticklabelsvisible=false,
                                yticksvisible=false,
                                title=ctx[:title],
@@ -230,21 +230,21 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
 
 
         # Set scene size with invisible markers
-        Makie.scatter!(ctx[:scene],
+        XMakie.scatter!(ctx[:scene],
                        map(g->scenecorners1d(grid),ctx[:grid]),
                        color=:white,
                        markersize=0.0,
                        strokewidth=0)
 
         # Draw node markers
-        Makie.linesegments!(ctx[:scene],
+        XMakie.linesegments!(ctx[:scene],
                             map(g->basemesh1d(g),ctx[:grid]),
                             color=:black)
 
         
         # Colored cell regions
         for i=1:nregions
-            Makie.linesegments!(ctx[:scene],
+            XMakie.linesegments!(ctx[:scene],
                                 map(g->regionmesh1d(g,i), ctx[:grid]),
                                 color=cmap[i],
                                 linewidth=4,
@@ -253,7 +253,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
 
         # Colored boundary grid
         for i=1:nbregions
-            Makie.linesegments!(ctx[:scene],
+            XMakie.linesegments!(ctx[:scene],
                                 map(g->bregionmesh1d(g,i),ctx[:grid]),
                                 color=bcmap[i],
                                 linewidth=4,
@@ -263,12 +263,12 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
         # Legende
         if ctx[:legend]!=:none
             pos=ctx[:legend]==:best ? :rt : ctx[:legend]
-            Makie.axislegend(ctx[:scene],
+            XMakie.axislegend(ctx[:scene],
                              position=pos,
                              labelsize=0.5*ctx[:fontsize],
                              nbanks=5)
         end
-        Makie.reset_limits!(ctx[:scene])
+        XMakie.reset_limits!(ctx[:scene])
         add_scene!(ctx, ctx[:scene])
     else
         ctx[:grid][]=grid
@@ -281,7 +281,7 @@ end
 # 1D function
 
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
-    Makie=ctx[:Plotter]
+    XMakie=ctx[:Plotter]
 
     if ctx[:title]==""
         ctx[:title]=" "
@@ -327,7 +327,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
     function update_lines(ctx)
         if ctx[:markershape]==:none
             #line without marker
-            Makie.lines!(ctx[:scene],map(a->a, ctx[:lines][end]),
+            XMakie.lines!(ctx[:scene],map(a->a, ctx[:lines][end]),
                          linestyle=ctx[:linestyle],
                          linewidth=ctx[:linewidth],
                          color=RGB(ctx[:color]),
@@ -336,14 +336,14 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
             # line with markers separated by markevery
 
             # draw plain line without the label
-            Makie.lines!(ctx[:scene],map(a->a, ctx[:lines][end]),
+            XMakie.lines!(ctx[:scene],map(a->a, ctx[:lines][end]),
                          linestyle=ctx[:linestyle],
                          color=RGB(ctx[:color]),
                          linewidth=ctx[:linewidth])
             
             
             # draw markers without label
-            Makie.scatter!(ctx[:scene],
+            XMakie.scatter!(ctx[:scene],
                            map(a->a[1:ctx[:markevery]:end],ctx[:lines][end]),
                            color=RGB(ctx[:color]),
                            marker=ctx[:markershape],
@@ -354,7 +354,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
             # marker position already drawn in order to
             # get the proper legend entry
             if ctx[:label]!=""
-                Makie.scatterlines!(ctx[:scene],
+                XMakie.scatterlines!(ctx[:scene],
                                     map(a->a[1:1], ctx[:lines][end]),
                                     linestyle=ctx[:linestyle],
                                     linewidth=ctx[:linewidth],
@@ -368,7 +368,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 
         if ctx[:legend]!=:none
             pos=ctx[:legend]==:best ? :rt : ctx[:legend]
-            Makie.axislegend(ctx[:scene],position=pos,labelsize=0.5*ctx[:fontsize])
+            XMakie.axislegend(ctx[:scene],position=pos,labelsize=0.5*ctx[:fontsize])
             # ,backgroundcolor=:transparent
         end
         
@@ -379,13 +379,13 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
         ctx[:xtitle]=Observable(ctx[:title])
 
         # Axis
-        ctx[:scene]=Makie.Axis(ctx[:figure];
+        ctx[:scene]=XMakie.Axis(ctx[:figure];
                                title=map(a->a,ctx[:xtitle]),
                                xscale = ctx[:xscale]==:log ? log10 : identity,
                                yscale = ctx[:yscale]==:log ? log10 : identity,
                                scenekwargs(ctx)...)
         # Plot size
-        Makie.scatter!(ctx[:scene],
+        XMakie.scatter!(ctx[:scene],
                        [Point2f(xmin,ymin),Point2f(xmax,ymax)],
                        color=:white,
                        markersize=0.0,
@@ -398,11 +398,11 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
 
         update_lines(ctx)
         
-        Makie.reset_limits!(ctx[:scene])
+        XMakie.reset_limits!(ctx[:scene])
 
         ctx[:nlines]=1
 
-        Makie.reset_limits!(ctx[:scene])
+        XMakie.reset_limits!(ctx[:scene])
         add_scene!(ctx,ctx[:scene])
 
     else
@@ -424,7 +424,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid,func)
             update_lines(ctx)
         end
 
-        Makie.reset_limits!(ctx[:scene])
+        XMakie.reset_limits!(ctx[:scene])
 
         ctx[:xtitle][]=ctx[:title]
 
@@ -436,29 +436,29 @@ end
 # 2D grid
 
 function makescene2d_grid(ctx)
-    Makie=ctx[:Plotter]
-    GL=Makie.GridLayout(ctx[:figure])
+    XMakie=ctx[:Plotter]
+    GL=XMakie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
     ncol=length(ctx[:cmap])
     nbcol=length(ctx[:cmap])
     # fontsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
     if ctx[:colorbar]==:vertical
-        GL[1,2]=Makie.Colorbar(ctx[:figure],
-                               colormap=Makie.cgrad(ctx[:cmap],categorical=true),
+        GL[1,2]=XMakie.Colorbar(ctx[:figure],
+                               colormap=XMakie.cgrad(ctx[:cmap],categorical=true),
                                limits=(1,ncol),
                                width=15)
-        GL[1,3]=Makie.Colorbar(ctx[:figure],
-                               colormap=Makie.cgrad(ctx[:bcmap],categorical=true),
+        GL[1,3]=XMakie.Colorbar(ctx[:figure],
+                               colormap=XMakie.cgrad(ctx[:bcmap],categorical=true),
                                limits=(1,nbcol),
                                width=15)
     elseif ctx[:colorbar]==:horizontal
-        GL[2,1]=Makie.Colorbar(ctx[:figure],
-                               colormap=Makie.cgrad(ctx[:cmap],categorical=true),
+        GL[2,1]=XMakie.Colorbar(ctx[:figure],
+                               colormap=XMakie.cgrad(ctx[:cmap],categorical=true),
                                limits=(1,ncol),
                                heigth=15,
                                vertical=false)
-        GL[3,1]=Makie.Colorbar(ctx[:figure],
-                               colormap=Makie.cgrad(ctx[:bcmap],categorical=true),
+        GL[3,1]=XMakie.Colorbar(ctx[:figure],
+                               colormap=XMakie.cgrad(ctx[:bcmap],categorical=true),
                                limits=(1,nbcol),
                                heigth=15,
                                vertical=false)
@@ -475,7 +475,7 @@ set_plot_data!(ctx,key,data) = haskey(ctx,key) ?  ctx[key][]=data : ctx[key]=Obs
 
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
     
-    Makie=ctx[:Plotter]
+    XMakie=ctx[:Plotter]
 
     nregions=num_cellregions(grid)
 
@@ -490,7 +490,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
             ex=extrema(coord,dims=(2))
             data_aspect=(ex[2][2]-ex[2][1])/(ex[1][2]-ex[1][1])
             makie_aspect=1.0/(data_aspect*ctx[:aspect])
-            ctx[:scene]=Makie.Axis(ctx[:figure];
+            ctx[:scene]=XMakie.Axis(ctx[:figure];
                                    title=ctx[:title],
                                    aspect=makie_aspect,
                                    scenekwargs(ctx)...)
@@ -500,7 +500,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
         cmap=region_cmap(nregions)
         ctx[:cmap]=cmap
         for i=1:nregions
-            Makie.poly!(ctx[:scene],map(g->regionmesh(g,i), ctx[:grid]) ,
+            XMakie.poly!(ctx[:scene],map(g->regionmesh(g,i), ctx[:grid]) ,
                         color=cmap[i],
                         strokecolor=:black,
                         strokewidth=ctx[:linewidth])
@@ -510,19 +510,19 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
         bcmap=bregion_cmap(nbregions)
         ctx[:bcmap]=bcmap
         for i=1:nbregions
-            lp=Makie.linesegments!(ctx[:scene],
+            lp=XMakie.linesegments!(ctx[:scene],
                                    map(g->bfacesegments(g,i),ctx[:grid]),
                                    label="$(i)",
                                    color=bcmap[i],
                                    linewidth=4)
-            Makie.translate!(lp,0,0,0.1)
+            XMakie.translate!(lp,0,0,0.1)
         end
-        Makie.reset_limits!(ctx[:scene])
+        XMakie.reset_limits!(ctx[:scene])
 
         # Describe legend
         if ctx[:legend]!=:none
             pos=ctx[:legend]==:best ? :rt : ctx[:legend]
-            Makie.axislegend(ctx[:scene],
+            XMakie.axislegend(ctx[:scene],
                              position=pos,
                              labelsize=0.5*ctx[:fontsize],
                              backgroundcolor=:transparent)
@@ -540,22 +540,22 @@ Complete scene with title and status line showing interaction state.
 This uses a gridlayout and its  protrusion capabilities.
 """
 function makescene2d(ctx,key)
-    Makie=ctx[:Plotter]
-    GL=Makie.GridLayout(ctx[:figure])
+    XMakie=ctx[:Plotter]
+    GL=XMakie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
 
     # , fontsize=0.5*ctx[:fontsize],ticklabelsize=0.5*ctx[:fontsize]
     if ctx[:colorbar]==:vertical
-        GL[1,2]=Makie.Colorbar(ctx[:figure],ctx[key],width=10,ticks=unique(ctx[:cbarticks]))
+        GL[1,2]=XMakie.Colorbar(ctx[:figure],ctx[key],width=10,ticks=unique(ctx[:cbarticks]))
     elseif ctx[:colorbar]==:horizontal
-        GL[2,1]=Makie.Colorbar(ctx[:figure],ctx[key],height=10,ticks=ctx[:cbarticks],vertical=false)
+        GL[2,1]=XMakie.Colorbar(ctx[:figure],ctx[key],height=10,ticks=ctx[:cbarticks],vertical=false)
     end
     GL
 end
 
 # 2D function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
-    Makie=ctx[:Plotter]
+    XMakie=ctx[:Plotter]
 
 
     
@@ -591,26 +591,26 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
             data_aspect=(ex[2][2]-ex[2][1])/(ex[1][2]-ex[1][1])
             makie_aspect=1.0/(data_aspect*ctx[:aspect])
             # would need to switch to Axis3 for supporting elevation
-            ctx[:scene]=Makie.Axis(ctx[:figure];
+            ctx[:scene]=XMakie.Axis(ctx[:figure];
                                    title=map(data->data.t,ctx[:contourdata]),
                                    aspect=makie_aspect,
                                    scenekwargs(ctx)...)
         end
         
         # Draw the mesh for the cells
-        ctx[:contourplot]=Makie.poly!(ctx[:scene],
+        ctx[:contourplot]=XMakie.poly!(ctx[:scene],
                                       map(data->make_mesh(data.g,data.f,data.e),ctx[:contourdata]),
                                       color=map(data->data.f,ctx[:contourdata]),
                                       colorrange=map(data->data.c,ctx[:contourdata]),
                                       colormap=ctx[:colormap])
         
         # draw the isolines via marching triangles
-        Makie.linesegments!(ctx[:scene],
+        XMakie.linesegments!(ctx[:scene],
                             map(data->marching_triangles(data.g,data.f,data.l),ctx[:contourdata]),
                             color=:black,
                             linewidth=ctx[:linewidth])
 
-        Makie.reset_limits!(ctx[:scene])
+        XMakie.reset_limits!(ctx[:scene])
         add_scene!(ctx,makescene2d(ctx,:contourplot))
     end
     reveal(ctx,TP)
@@ -620,7 +620,7 @@ end
 
 # 2D vector
 function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
-    Makie=ctx[:Plotter]
+    XMakie=ctx[:Plotter]
 
     rc,rv=vectorsample(grid,func,spacing=ctx[:spacing], offset=ctx[:offset])
     qc,qv=quiverdata(rc,rv;vscale=ctx[:vscale],vnormalize=ctx[:vnormalize])
@@ -630,21 +630,21 @@ function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid, func)
 
     if !haskey(ctx,:arrowplot)
         if !haskey(ctx,:scene)
-            ctx[:scene]=Makie.Axis(ctx[:figure];
+            ctx[:scene]=XMakie.Axis(ctx[:figure];
                                    title=ctx[:title],
-                                   aspect=Makie.DataAspect(),
+                                   aspect=XMakie.DataAspect(),
                                    scenekwargs(ctx)...)
             add_scene!(ctx,ctx[:scene])
         end
     
-        ctx[:arrowplot]=Makie.arrows!(ctx[:scene],
+        ctx[:arrowplot]=XMakie.arrows!(ctx[:scene],
                                       map(data->data.qc[1,:],ctx[:arrowdata]),
                                       map(data->data.qc[2,:],ctx[:arrowdata]),
                                       map(data->data.qv[1,:],ctx[:arrowdata]),
                                       map(data->data.qv[2,:],ctx[:arrowdata]),
                                       color=:black,
                                       linewidth=ctx[:linewidth])
-        Makie.reset_limits!(ctx[:scene])
+        XMakie.reset_limits!(ctx[:scene])
     end
     reveal(ctx,TP)
 end
@@ -677,13 +677,13 @@ Dispatch between LScene and new Axis3. Axis3 does not allow zoom, so we
 support LScene in addition.
 """
 function makeaxis3d(ctx)
-    Makie=ctx[:Plotter]
+    XMakie=ctx[:Plotter]
     if ctx[:scene3d]=="LScene"
         # "Old" LScene with zoom-in functionality
-        Makie.LScene(ctx[:figure])
+        XMakie.LScene(ctx[:figure])
     else
         # "New" Axis3 with prospective new stuff by Julius.
-        Makie.Axis3(ctx[:figure];
+        XMakie.Axis3(ctx[:figure];
                     aspect=:data,
                     viewmode=:fit,
                     elevation=ctx[:elev]*π/180,
@@ -702,11 +702,11 @@ This uses a gridlayout and its  protrusion capabilities.
 """
 
 function makescene3d(ctx)
-    Makie=ctx[:Plotter]
-    GL=Makie.GridLayout(ctx[:figure];default_rowgap=0)
+    XMakie=ctx[:Plotter]
+    GL=XMakie.GridLayout(ctx[:figure];default_rowgap=0)
     if ctx[:scene3d]=="LScene"
         # LScene has no title, put the title into protrusion space on top  of the scene
-        GL[1,1,Makie.Top()]=Makie.Label(ctx[:figure],
+        GL[1,1,XMakie.Top()]=XMakie.Label(ctx[:figure],
                                         " $(map(data->data.t,ctx[:data])) ",
                                         tellwidth=false,
                                         height=30,
@@ -716,13 +716,13 @@ function makescene3d(ctx)
     # Horizontal or vertical colorbar
     if haskey(ctx,:mesh)
         if ctx[:colorbar]==:vertical
-            GL[1,2]=Makie.Colorbar(ctx[:figure],
+            GL[1,2]=XMakie.Colorbar(ctx[:figure],
                                    ctx[:mesh],
                                    width=15,
                                    fontsize=0.5*ctx[:fontsize],
                                    ticklabelsize=0.5*ctx[:fontsize])
         elseif ctx[:colorbar]==:horizontal
-            GL[2,1]=Makie.Colorbar(ctx[:figure],
+            GL[2,1]=XMakie.Colorbar(ctx[:figure],
                                    ctx[:mesh],
                                    height=15,
                                    fontsize=0.5*ctx[:fontsize],
@@ -731,7 +731,7 @@ function makescene3d(ctx)
         end
     end
     # Put the status label into protrusion space on the bottom of the scene
-    GL[1,1,Makie.Bottom()]=Makie.Label(ctx[:figure],
+    GL[1,1,XMakie.Bottom()]=XMakie.Label(ctx[:figure],
                                        ctx[:status],
                                        tellwidth=false,
                                        height=30,
@@ -759,7 +759,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
     nregions=num_cellregions(grid)
     nbregions=num_bfaceregions(grid)
     
-    Makie=ctx[:Plotter]
+    XMakie=ctx[:Plotter]
     xyzmin,xyzmax=xyzminmax(grid)
     xyzstep=(xyzmax-xyzmin)/100
     
@@ -792,13 +792,13 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
             ctx[:cellmeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nregions], ctx[:celldata])
             
             for i=1:nregions
-                Makie.mesh!(ctx[:scene],map(d->d[i], ctx[:cellmeshes]),
+                XMakie.mesh!(ctx[:scene],map(d->d[i], ctx[:cellmeshes]),
                             color=cmap[i],
                             backlight=1f0
                             )
 
                 if ctx[:linewidth]>0 
-                    Makie.wireframe!(ctx[:scene],map(d->d[i], ctx[:cellmeshes]),
+                    XMakie.wireframe!(ctx[:scene],map(d->d[i], ctx[:cellmeshes]),
                                      color=:black,
                                      strokecolor=:black,
                                      strokewidth=ctx[:linewidth],
@@ -822,12 +822,12 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         ctx[:facemeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:facedata])
         
         for i=1:nbregions
-            Makie.mesh!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
+            XMakie.mesh!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
                         color=bcmap[i],
                         backlight=1f0
                         )
             if ctx[:linewidth]>0
-                Makie.wireframe!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
+                XMakie.wireframe!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
                                  color=:black,
                                  strokecolor=:black,
                                  linewidth=ctx[:linewidth])
@@ -847,7 +847,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
             ctx[:outlinemeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
 
             for i=1:nbregions
-                Makie.mesh!(ctx[:scene],map(d->d[i], ctx[:outlinemeshes]),
+                XMakie.mesh!(ctx[:scene],map(d->d[i], ctx[:outlinemeshes]),
                             color=(bcmap[i],ctx[:outlinealpha]),
                             transparency=true,
                             backlight=1f0
@@ -856,7 +856,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         end
         
         ##### Interaction
-        scene_interaction(ctx[:scene].scene,Makie,[:z,:y,:x,:q]) do delta,key
+        scene_interaction(ctx[:scene].scene,XMakie,[:z,:y,:x,:q]) do delta,key
             if key==:x
                 ctx[:xplanes][1]+=delta*xyzstep[1]
                 ctx[:status][]=@sprintf("x=%.3g",ctx[:xplanes][1])
@@ -896,7 +896,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     
     function make_mesh(pts,fcs,vals)
         if length(fcs)>0
-            colors = Makie.Makie.interpolated_getindex.((cmap,), vals, (crange,))
+            colors = XMakie.Makie.interpolated_getindex.((cmap,), vals, (crange,))
             if ctx[:levelalpha]>0
                 colors= [ RGBA(colors[i].r,colors[i].g,colors[i].b,Float32(ctx[:levelalpha])) for i=1:length(colors)]
             end
@@ -910,8 +910,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     nregions=num_cellregions(grid)
     nbregions=num_bfaceregions(grid)
     
-    Makie=ctx[:Plotter]
-    cmap = Makie.to_colormap(ctx[:colormap])
+    XMakie=ctx[:Plotter]
+    cmap = XMakie.to_colormap(ctx[:colormap])
     xyzmin,xyzmax=xyzminmax(grid)
     xyzstep=(xyzmax-xyzmin)/100
     
@@ -964,7 +964,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
             ctx[:facemeshes]=map(d->[make_mesh(d[1][i],d[2][i]) for i=1:nbregions], ctx[:outlinedata])
             bcmap=bregion_cmap(nbregions)
             for i=1:nbregions
-                Makie.mesh!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
+                XMakie.mesh!(ctx[:scene],map(d->d[i], ctx[:facemeshes]),
                             color=(bcmap[i],ctx[:outlinealpha]),
                             transparency=true,
                             backlight=1f0
@@ -985,10 +985,10 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
 
         
         #### Plane sections and isosurfaces
-        Makie.mesh!(ctx[:scene], map(f,ctx[:data]), backlight=1f0, transparency= ctx[:levelalpha]<1.0)
+        XMakie.mesh!(ctx[:scene], map(f,ctx[:data]), backlight=1f0, transparency= ctx[:levelalpha]<1.0)
 
         #### Interactions
-        scene_interaction(ctx[:scene].scene,Makie,[:z,:y,:x,:l,:q]) do delta,key
+        scene_interaction(ctx[:scene].scene,XMakie,[:z,:y,:x,:l,:q]) do delta,key
             if key==:x
                 ctx[:xplanes].+=delta*xyzstep[1]
                 ctx[:status][]= "x=["*mapreduce(x->@sprintf("%.3g,",x),*,ctx[:xplanes])*"]"
@@ -1022,9 +1022,9 @@ end
 
         # TODO: allow aspect scaling
         # if ctx[:aspect]>1.0
-        #     Makie.scale!(ctx[:scene],ctx[:aspect],1.0)
+        #     XMakie.scale!(ctx[:scene],ctx[:aspect],1.0)
         # else
-        #     Makie.scale!(ctx[:scene],1.0,1.0/ctx[:aspect])
+        #     XMakie.scale!(ctx[:scene],1.0,1.0/ctx[:aspect])
         # end
 
         # TODO: use distinguishable colors
@@ -1035,7 +1035,7 @@ end
 # azim=ctx[:azim]
 # elev=ctx[:elev]
 # arr = normalize([cosd(azim/2), 0, sind(azim/2), -sind(azim/2)])
-# Makie.rotate!(rect, Makie.Quaternionf0(arr...))
+# XMakie.rotate!(rect, XMakie.Quaternionf0(arr...))
 
   
 # 3 replies

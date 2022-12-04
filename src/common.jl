@@ -279,32 +279,11 @@ function vectorsample(grid::ExtendableGrid{Tv,Ti},v; offset=:default, spacing=:d
 end
 
 # Calculate isolevel values and function limits
-function isolevels(ctx,func)
-    
-    crange=ctx[:limits]
-    if crange==:auto || crange[1]>crange[2] 
-        crange=extrema(func)
-    end
-    
-    if isa(ctx[:levels],Number)
-        levels=collect(LinRange(crange[1],crange[2],ctx[:levels]+2))
-    else
-        levels=ctx[:levels]
-    end
+isolevels(ctx,func) = makeisolevels(func,
+                                    ctx[:levels],
+                                    ctx[:limits] == :auto ? (1,-1) : ctx[:limits] ,
+                                    ctx[:colorbarticks]== :default ? nothing : ctx[:colorbarticks])
 
-    if ctx[:colorbarticks] == :default
-        colorbarticks = levels
-    elseif isa(ctx[:colorbarticks],Number)
-        colorbarticks = collect(crange[1]:(crange[2]-crange[1])/(ctx[:colorbarticks]-1):crange[2])
-    else
-        colorbarticks = ctx[:colorbarticks]
-    end
-    
-    
-    #    map(t->round(t,sigdigits=4),levels),crange,map(t->round(t,sigdigits=4),colorbarticks)
-    levels,crange,colorbarticks
-
-end
 
 
 """

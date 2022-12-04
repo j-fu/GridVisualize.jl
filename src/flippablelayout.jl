@@ -46,7 +46,7 @@ mutable struct FLayout
     """
     Layoutables attached to layout
     """
-    layoutables::Dict{Tuple{Int64,Int64},Any} # Union{Makie.MakieLayout.Block,Makie.GridLayout}
+    layoutables::Dict{Tuple{Int64,Int64},Any} # Union{Makie.Block,Makie.GridLayout}
 
     """
     Condition variable working together with the blocked field.
@@ -65,7 +65,7 @@ function Base.setindex!(flayout::FLayout,layoutable,i,j)
     if isnothing(layoutable)
         flayout.offscreen[1, 1] = flayout.layoutables[(i,j)]
         delete!(flayout.layoutables,(i,j)) 
-    elseif !isa(layoutable,Union{Makie.MakieLayout.Block,Makie.GridLayout})
+    elseif !isa(layoutable,Union{Makie.Block,Makie.GridLayout})
         error("can only set layoutables")
     else
         flayout.layoutables[(i,j)]=layoutable
@@ -97,7 +97,7 @@ function _inarea(area,pos)
 end
 
 function _inscene(l,pos)
-    if isa(l,Makie.MakieLayout.Block)
+    if isa(l,Makie.Block)
         _inarea(l.scene.px_area[],pos)
     elseif isa(l,Makie.GridLayout)
         _inarea(l.layoutobservables.computedbbox[],pos)
