@@ -1,4 +1,4 @@
-function makeplots(picdir; Plotter=PyPlot, extension="svg")
+function makeplots(picdir; Plotter=GLMakie, extension="png")
 
     p=plotting_multiscene(Plotter=Plotter)
 
