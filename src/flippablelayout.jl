@@ -15,8 +15,7 @@ module FlippableLayout
 using DocStringExtensions
 using Observables
 
-
-Makie=nothing
+Makie = nothing
 
 """
 $(TYPEDEF)
@@ -32,11 +31,11 @@ mutable struct FLayout
     """
     Visible GridLayout
     """
-    visible #::GridLayout
+    visible::Any #::GridLayout
     """
     Hidden GridLayot
     """
-    offscreen #::GridLayout
+    offscreen::Any #::GridLayout
 
     """
     Has the layout been blocked by the block key ?
@@ -46,64 +45,61 @@ mutable struct FLayout
     """
     Layoutables attached to layout
     """
-    layoutables::Dict{Tuple{Int64,Int64},Any} # Union{Makie.Block,Makie.GridLayout}
+    layoutables::Dict{Tuple{Int64, Int64}, Any} # Union{Makie.Block,Makie.GridLayout}
 
     """
     Condition variable working together with the blocked field.
     """
     condition::Condition
 
-    FLayout(visible;blocked=false)=new(visible,
-                                       Makie.GridLayout(bbox = Makie.BBox(-500, -400, -500, -400)),
-                                       blocked,
-                                       Dict{Tuple{Int64,Int64},Any}(),
-                                       Condition())
+    function FLayout(visible; blocked = false)
+        new(visible,
+            Makie.GridLayout(; bbox = Makie.BBox(-500, -400, -500, -400)),
+            blocked,
+            Dict{Tuple{Int64, Int64}, Any}(),
+            Condition())
+    end
 end
 
-
-function Base.setindex!(flayout::FLayout,layoutable,i,j)
+function Base.setindex!(flayout::FLayout, layoutable, i, j)
     if isnothing(layoutable)
-        flayout.offscreen[1, 1] = flayout.layoutables[(i,j)]
-        delete!(flayout.layoutables,(i,j)) 
-    elseif !isa(layoutable,Union{Makie.Block,Makie.GridLayout})
+        flayout.offscreen[1, 1] = flayout.layoutables[(i, j)]
+        delete!(flayout.layoutables, (i, j))
+    elseif !isa(layoutable, Union{Makie.Block, Makie.GridLayout})
         error("can only set layoutables")
     else
-        flayout.layoutables[(i,j)]=layoutable
+        flayout.layoutables[(i, j)] = layoutable
         _showall(flayout)
         yield()
     end
 end
 
-
-Base.getindex(flayout::FLayout,i,j)=flayout.layoutables[(i,j)]
-
+Base.getindex(flayout::FLayout, i, j) = flayout.layoutables[(i, j)]
 
 function _showall(flayout::FLayout)
     for (pos, layoutable) in flayout.layoutables
-        flayout.visible[pos...]=layoutable
+        flayout.visible[pos...] = layoutable
     end
     Makie.trim!(flayout.visible)
 end
 
-
 #
 # Check if mouse position is  within pixel area of scene
 #
-function _inarea(area,pos)
-    pos[1]>area.origin[1] &&
-        pos[1] < area.origin[1]+area.widths[1] &&
-        pos[2]>area.origin[2] &&
-        pos[2] < area.origin[2]+area.widths[2]
+function _inarea(area, pos)
+    pos[1] > area.origin[1] &&
+        pos[1] < area.origin[1] + area.widths[1] &&
+        pos[2] > area.origin[2] &&
+        pos[2] < area.origin[2] + area.widths[2]
 end
 
-function _inscene(l,pos)
-    if isa(l,Makie.Block)
-        _inarea(l.scene.px_area[],pos)
-    elseif isa(l,Makie.GridLayout)
-        _inarea(l.layoutobservables.computedbbox[],pos)
+function _inscene(l, pos)
+    if isa(l, Makie.Block)
+        _inarea(l.scene.px_area[], pos)
+    elseif isa(l, Makie.GridLayout)
+        _inarea(l.layoutobservables.computedbbox[], pos)
     end
 end
-
 
 """
     flayoutscene(;blocked=false, kwargs...)
@@ -125,34 +121,32 @@ The `kwargs...` are the same as of `AbstractPlotting.layoutscene`.
 The idea is that this can work in some cases as a drop-in replacement
 of `layoutscene`.     
 """
-function flayoutscene(;blocked=false,
-                      focuskey=Makie.Keyboard.comma,
-                      blockingkey=Makie.Keyboard.space,
+function flayoutscene(; blocked = false,
+                      focuskey = Makie.Keyboard.comma,
+                      blockingkey = Makie.Keyboard.space,
                       kwargs...)
-
     parent = Makie.Scene(; camera = Makie.campixel!, kwargs...)
-    layout = Makie.GridLayout(parent,alignmode = Makie.Outside(5))
-    
-    
-    Makie.rowgap!(layout,Makie.Relative(0.0))
-    Makie.colgap!(layout,Makie.Relative(0.0))
-    
-    flayout=FLayout(layout,blocked=blocked)
+    layout = Makie.GridLayout(parent; alignmode = Makie.Outside(5))
 
-    gallery_view=Observable(true)
+    Makie.rowgap!(layout, Makie.Relative(0.0))
+    Makie.colgap!(layout, Makie.Relative(0.0))
+
+    flayout = FLayout(layout; blocked = blocked)
+
+    gallery_view = Observable(true)
 
     # Watch mouse position
-    mouseposition=Observable((0.0,0.0))
+    mouseposition = Observable((0.0, 0.0))
 
     Makie.on(parent.events.mouseposition) do m
-        mouseposition[]=m
+        mouseposition[] = m
         false
     end
 
     # Switch focus to subscene  at pos
     function _focus(focus)
-        for (key,layoutable) in flayout.layoutables
-            if key==focus
+        for (key, layoutable) in flayout.layoutables
+            if key == focus
                 flayout.visible[1, 1] = layoutable
             else
                 flayout.offscreen[1, 1] = layoutable
@@ -161,40 +155,39 @@ function flayoutscene(;blocked=false,
         Makie.trim!(flayout.visible)
     end
 
-
     # Figure out to which subscene the mouse position
     # corresponds
     function _subscene(mouseposition)
-        for (key,layoutable) in flayout.layoutables
-            if _inscene(layoutable,mouseposition)
+        for (key, layoutable) in flayout.layoutables
+            if _inscene(layoutable, mouseposition)
                 return key
             end
         end
         return nothing
     end
-    
+
     function _toggle_block(flayout::FLayout)
         if flayout.blocked
-            flayout.blocked=false
+            flayout.blocked = false
             notify(flayout.condition)
         else
-            flayout.blocked=true
+            flayout.blocked = true
         end
     end
-    
+
     # Handle global key events for `,` (focus/gallery view)
     # and space (toggle blocking)
     Makie.on(parent.events.keyboardbutton) do buttons
         if Makie.ispressed(parent, focuskey)
             if gallery_view[]
-                pos=_subscene(mouseposition[])
+                pos = _subscene(mouseposition[])
                 if !isnothing(pos)
                     _focus(pos)
                 end
-                gallery_view[]=false
+                gallery_view[] = false
             else
                 _showall(flayout)
-                gallery_view[]=true
+                gallery_view[] = true
             end
             return true
         end
@@ -204,7 +197,7 @@ function flayoutscene(;blocked=false,
         end
         return false
     end
-    parent,flayout
+    parent, flayout
 end
 
 """
@@ -225,8 +218,6 @@ end
 Set the Makie module.
 This Makie can be GLMakie,WGLMakie,CairoMakie
 """
-setmakie!(MyMakie) = global Makie=MyMakie
-
-
+setmakie!(MyMakie) = global Makie = MyMakie
 
 end
