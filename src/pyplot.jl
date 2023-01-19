@@ -306,10 +306,6 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid)
         end
     end
     
-
-
-
-    
     if ctx[:legend]!=:none
         ax.legend(loc=leglocs[ctx[:legend]])
     end
@@ -511,8 +507,15 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid,func)
         xyzmax[idim]=maximum(coord[idim,:])
     end
     xyzcut=[ctx[:xplanes],ctx[:yplanes],ctx[:zplanes]]
-    
-    levels,crange=isolevels(ctx,func)
+    levels,crange,colorbarticks=isolevels(ctx,func)
+    eps=1.0e-5
+    if crange[1]==crange[2]
+        crange=(crange[1]-eps,crange[1]+eps)
+        colorlevels=collect(crange[1]:(crange[2]-crange[1])/(1):crange[2])
+    else
+        colorlevels=collect(crange[1]:(crange[2]-crange[1])/(ctx[:colorlevels]-1):crange[2])
+    end
+ 
 
     planes=makeplanes(xyzmin,xyzmax,ctx[:xplanes],ctx[:yplanes],ctx[:zplanes])
 
@@ -541,6 +544,12 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}},grid,func)
     ax.set_zlim3d(xyzmin[3],xyzmax[3])
     ax.view_init(ctx[:elev],ctx[:azim])
     
+    if ctx[:colorbar]==:horizontal
+        ctx[:cbar]=fig.colorbar(collec,ax=ax,ticks=colorbarticks,boundaries=colorlevels, orientation="horizontal")
+    end
+    if ctx[:colorbar]==:vertical
+        ctx[:cbar]=fig.colorbar(collec,ax=ax,ticks=colorbarticks,boundaries=colorlevels, orientation="vertical")
+    end
     ax.set_title(ctx[:title])
     
     if ctx[:legend]!=:none
