@@ -110,9 +110,9 @@ function func3d(;n=15)
     g, map((x,y,z)->sinpi(2*x)*sinpi(3.5*y)*sinpi(1.5*z),g)
 end    
 
-function plotting_func3d(;Plotter=default_plotter(), kwargs...)
+function plotting_func3d(;Plotter=default_plotter(), zplane=0.49,xplane=0.49,levels=[0.25], kwargs...)
     g,f=func3d()
-    scalarplot(g,f; Plotter=Plotter, zplane=0.49,xplane=0.49,flevel=0.25, kwargs...)
+    scalarplot(g,f; Plotter=Plotter, zplane,xplane,levels,kwargs...)
 end
 # ![](plotting_func3d.svg)
 

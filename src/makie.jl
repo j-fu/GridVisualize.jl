@@ -435,7 +435,7 @@ end
 #######################################################################################
 # 2D grid
 
-function makescene2d_grid(ctx)
+function makescene_grid(ctx)
     XMakie=ctx[:Plotter]
     GL=XMakie.GridLayout(ctx[:figure])
     GL[1,1]=ctx[:scene]
@@ -527,7 +527,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}},grid)
                              labelsize=0.5*ctx[:fontsize],
                              backgroundcolor=:transparent)
         end
-        add_scene!(ctx, makescene2d_grid(ctx))
+        add_scene!(ctx, makescene_grid(ctx))
     end
     reveal(ctx,TP)
 end
@@ -678,7 +678,7 @@ support LScene in addition.
 """
 function makeaxis3d(ctx)
     XMakie=ctx[:Plotter]
-    if ctx[:scene3d]=="LScene"
+    if ctx[:scene3d]==:LScene
         # "Old" LScene with zoom-in functionality
         XMakie.LScene(ctx[:figure])
     else
@@ -700,7 +700,6 @@ end
 Complete scene with title and status line showing interaction state.
 This uses a gridlayout and its  protrusion capabilities.
 """
-
 function makescene3d(ctx)
     XMakie=ctx[:Plotter]
     GL=XMakie.GridLayout(ctx[:figure];default_rowgap=0)
@@ -714,30 +713,38 @@ function makescene3d(ctx)
     end
     GL[1,1]=ctx[:scene]
     # Horizontal or vertical colorbar
-    if haskey(ctx,:mesh)
+    if haskey(ctx,:crange)
+
         if ctx[:colorbar]==:vertical
             GL[1,2]=XMakie.Colorbar(ctx[:figure],
-                                   ctx[:mesh],
-                                   width=15,
-                                   fontsize=0.5*ctx[:fontsize],
-                                   ticklabelsize=0.5*ctx[:fontsize])
+                                    colormap=ctx[:colormap],
+                                    colorrange=ctx[:crange],
+                                    ticks=ctx[:levels],
+                                    width=15,
+                                    ticklabelsize=0.5*ctx[:fontsize])
         elseif ctx[:colorbar]==:horizontal
             GL[2,1]=XMakie.Colorbar(ctx[:figure],
-                                   ctx[:mesh],
-                                   height=15,
-                                   fontsize=0.5*ctx[:fontsize],
-                                   ticklabelsize=0.5*ctx[:fontsize],
-                                   vertical=false)
+                                    colormap=ctx[:colormap],
+                                    colorrange=ctx[:crange],
+                                    ticks=ctx[:levels],
+                                    height=15,
+                                    ticklabelsize=0.5*ctx[:fontsize],
+                                    vertical=false)
         end
     end
+    
     # Put the status label into protrusion space on the bottom of the scene
     GL[1,1,XMakie.Bottom()]=XMakie.Label(ctx[:figure],
-                                       ctx[:status],
-                                       tellwidth=false,
-                                       height=30,
-                                       fontsize=0.5*ctx[:fontsize])
+                                         ctx[:status],
+                                         tellwidth=false,
+                                         height=30,
+                                         fontsize=0.5*ctx[:fontsize])
     GL
 end
+
+
+
+
 
 const keyboardhelp=
 """
@@ -776,11 +783,16 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         ctx[:data]=Observable((g=grid,x=ctx[:xplanes][1],y=ctx[:yplanes][1],z=ctx[:zplanes][1],t=ctx[:title]))
 
         ctx[:scene]=makeaxis3d(ctx)
+        cmap=region_cmap(nregions)
+        ctx[:cmap]=cmap
+        bcmap=bregion_cmap(nbregions)
+        ctx[:bcmap]=bcmap
+
         
         ############# Interior cuts
         # We draw a mesh for each color.
         if ctx[:interior]
-            cmap=region_cmap(nregions)
+            
             ctx[:celldata]=map(
                 d->extract_visible_cells3D(d.g,
                                            (d.x,d.y,d.z),
@@ -809,8 +821,6 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         end
         
         ############# Visible boundary faces
-        bcmap=bregion_cmap(nbregions)
-
         ctx[:facedata]=map(
             d->extract_visible_bfaces3D(d.g,
                                         (d.x,d.y,d.z),
@@ -876,7 +886,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
 
         ctx[:status]=Observable(" ")
 
-        add_scene!(ctx,makescene3d(ctx))
+        add_scene!(ctx,makescene_grid(ctx))
         
     else
         ctx[:data][]=(g=grid,x=ctx[:xplanes][1],y=ctx[:yplanes][1],z=ctx[:zplanes][1],t=ctx[:title])
@@ -889,8 +899,9 @@ end
 
 # 3d function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
-
     levels,crange=isolevels(ctx,func)
+    ctx[:crange]=crange
+
     nan_replacement=0.5*(crange[1]+crange[2])
     make_mesh(pts,fcs)=Mesh(pts,fcs)
     
@@ -929,27 +940,27 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
     # end
     
     # adjust_planes()
-
+    
     x=ctx[:xplanes]
     y=ctx[:yplanes]
     z=ctx[:zplanes]    
-
+    
     ε=1.0e-5*(xyzmax.-xyzmin)
     
     ctx[:xplanes]=isa(x,Number) ? collect(range(xyzmin[1]+ε[1],xyzmax[1]-ε[1],length=ceil(x))) : x
     ctx[:yplanes]=isa(y,Number) ? collect(range(xyzmin[2]+ε[2],xyzmax[2]-ε[2],length=ceil(y))) : y
     ctx[:zplanes]=isa(z,Number) ? collect(range(xyzmin[3]+ε[3],xyzmax[3]-ε[3],length=ceil(z))) : z
-
+    
     ctx[:xplanes][1]=min(xyzmax[1],ctx[:xplanes][1])
     ctx[:yplanes][1]=min(xyzmax[2],ctx[:yplanes][1])
     ctx[:zplanes][1]=min(xyzmax[3],ctx[:zplanes][1])
-
-
+    
+    
 
     ctx[:levels]=levels
     
     if !haskey(ctx,:scene)
-
+        
         ctx[:data]=Observable((g=grid,f=func,x=ctx[:xplanes],y=ctx[:yplanes],z=ctx[:zplanes],l=ctx[:levels],t=ctx[:title]))
 
         ctx[:scene]=makeaxis3d(ctx)
@@ -981,12 +992,11 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid , func)
                                             Tp=Point3f,
                                             Tf=GLTriangleFace,
                                             Tv=Float32)...)
-
+        
 
         
         #### Plane sections and isosurfaces
-        XMakie.mesh!(ctx[:scene], map(f,ctx[:data]), backlight=1f0, transparency= ctx[:levelalpha]<1.0)
-
+        ctx[:mesh]=XMakie.mesh!(ctx[:scene], map(f,ctx[:data]), backlight=1f0, transparency= ctx[:levelalpha]<1.0)
         #### Interactions
         scene_interaction(ctx[:scene].scene,XMakie,[:z,:y,:x,:l,:q]) do delta,key
             if key==:x
