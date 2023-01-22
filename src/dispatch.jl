@@ -333,6 +333,7 @@ function default_plot_kwargs()
                                            :levelalpha => Pair(0.25, "3D isolevel alpha"),
                                            :planealpha => Pair(1.0,
                                                                "3D plane section alpha"),
+                                           :tetxplane_tol => Pair(0.0, "tolerance for tet-plane intersection in 3D"),
                                            :spacing => Pair(:default,
                                                             "Spacing of quiver points in vector plot"),
                                            :offset => Pair(:default,

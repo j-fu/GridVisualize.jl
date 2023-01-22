@@ -505,7 +505,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}}, grid, func)
 
     planes = makeplanes(xyzmin, xyzmax, ctx[:xplanes], ctx[:yplanes], ctx[:zplanes])
 
-    ccoord0, faces0, values = marching_tetrahedra(grid, func, planes, levels)
+    ccoord0, faces0, values = marching_tetrahedra(grid, func, planes, levels, tol = ctx[:tetxplane_tol])
 
     faces = reshape(reinterpret(Int32, faces0), (3, length(faces0)))
     ccoord = reshape(reinterpret(Float32, ccoord0), (3, length(ccoord0)))

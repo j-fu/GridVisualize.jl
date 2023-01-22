@@ -960,6 +960,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid, func)
                                                d.l;
                                                primepoints = hcat(xyzmin, xyzmax),
                                                primevalues = crange,
+                                               tol = ctx[:tetxplane_tol],
                                                Tp = Point3f,
                                                Tf = GLTriangleFace,
                                                Tv = Float32)...)
