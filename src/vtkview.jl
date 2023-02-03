@@ -68,7 +68,9 @@ end
 gridplot!(ctx, T::Type{VTKViewType}, ::Type{Val{2}}, grid) = gridplot!(ctx, T, grid)
 gridplot!(ctx, T::Type{VTKViewType}, ::Type{Val{3}}, grid) = gridplot!(ctx, T, grid)
 
-function scalarplot!(ctx, TP::Type{VTKViewType}, grid, func)
+function scalarplot!(ctx, TP::Type{VTKViewType}, grids, parentgrid, funcs)
+    grid = parentgrid
+    func = funcs[1]
     VTKView = ctx[:Plotter]
     frame = ctx[:frame]
     if !haskey(ctx, :dataset)
@@ -94,15 +96,17 @@ function scalarplot!(ctx, TP::Type{VTKViewType}, grid, func)
     reveal(ctx, TP)
 end
 
-function scalarplot!(ctx, T::Type{VTKViewType}, ::Type{Val{2}}, grid, func)
-    scalarplot!(ctx, T, grid, func)
+function scalarplot!(ctx, T::Type{VTKViewType}, ::Type{Val{2}}, grids, parentgrid, funcs)
+    scalarplot!(ctx, T, grids, parentgrid, funcs)
 end
-function scalarplot!(ctx, T::Type{VTKViewType}, ::Type{Val{3}}, grid, func)
-    scalarplot!(ctx, T, grid, func)
+function scalarplot!(ctx, T::Type{VTKViewType}, ::Type{Val{3}}, grids, parentgrid, funcs)
+    scalarplot!(ctx, T, grids, parentgrid, funcs)
 end
 gridplot!(ctx, T::Type{VTKViewType}, ::Type{Val{1}}, grid) = nothing
 
-function scalarplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}}, grid, func)
+function scalarplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}}, grids, parentgrid, funcs)
+    grid = parentgrid
+    func = funcs[1]
     VTKView = ctx[:Plotter]
     frame = ctx[:frame]
     if !haskey(ctx, :plot)
@@ -127,3 +131,13 @@ function scalarplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}}, grid, func)
     VTKView.addplot!(plot, collect(grid[Coordinates][1, :]), collect(func))
     reveal(ctx, TP)
 end
+
+
+vectorplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}}, grid, func) = nothing
+vectorplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{2}}, grid, func) = nothing
+vectorplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{3}}, grid, func) = nothing
+
+
+streamplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}}, grid, func) = nothing
+streamplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{2}}, grid, func) = nothing
+streamplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{3}}, grid, func) = nothing

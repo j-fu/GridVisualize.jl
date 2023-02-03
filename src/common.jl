@@ -68,6 +68,14 @@ function GridVisualizeTools.marching_triangles(grid::ExtendableGrid, func, level
     marching_triangles(coord, cellnodes, func, levels)
 end
 
+
+function GridVisualizeTools.marching_triangles(grids::Vector{ExtendableGrid{Tv,Ti}}, funcs, levels) where {Tv,Ti}
+    coords = [grid[Coordinates] for grid in grids]
+    cellnodes = [ grid[CellNodes] for grid in grids]
+    marching_triangles(coords, cellnodes, funcs, levels)
+end
+
+
 ##############################################
 # Create meshes from grid data
 function regionmesh(grid, iregion)
@@ -280,8 +288,8 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
 end
 
 # Calculate isolevel values and function limits
-function isolevels(ctx, func)
-    makeisolevels(func,
+function isolevels(ctx, funcs)
+    makeisolevels(funcs,
                   ctx[:levels],
                   ctx[:limits] == :auto ? (1, -1) : ctx[:limits],
                   ctx[:colorbarticks] == :default ? nothing : ctx[:colorbarticks])

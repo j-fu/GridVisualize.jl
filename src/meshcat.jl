@@ -1,11 +1,13 @@
 function initialize!(p::GridVisualizer, ::Type{MeshCatType})
     MeshCat = p.context[:Plotter]
     layout = p.context[:layout]
-    @assert(layout==(1, 1))
+    @assert(layout == (1, 1))
     vis = MeshCat.Visualizer()
     MeshCat.send(vis.core, MeshCat.SetProperty(MeshCat.Path(["Grid"]), "visible", false))
-    MeshCat.send(vis.core,
-                 MeshCat.SetProperty(MeshCat.Path(["Background"]), "visible", false))
+    MeshCat.send(
+        vis.core,
+        MeshCat.SetProperty(MeshCat.Path(["Background"]), "visible", false),
+    )
     p.context[:scene] = vis
     for I in CartesianIndices(layout)
         ctx = p.subplots[I]
@@ -25,7 +27,7 @@ function reveal(ctx::SubVisualizer, TP::Type{MeshCatType})
 end
 
 gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{1}}, grid) = nothing
-scalarplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{1}}, grid, func) = nothing
+scalarplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{1}}, grids, parentgrid, funcs) = nothing
 
 # 2D grid
 function gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{2}}, grid)
@@ -39,15 +41,19 @@ function gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{2}}, grid)
     bcmap = bregion_cmap(nbregions)
     for i = 1:nregions
         mesh = regionmesh(grid, i)
-        MeshCat.setobject!(vis["interior"]["r$(i)"],
-                           mesh,
-                           MeshCat.MeshLambertMaterial(;
-                                                       color = RGBA{Float32}(cmap[i], 1.0)))
-        MeshCat.setobject!(vis["interior"]["r$(i)_edges"], mesh,
-                           MeshCat.MeshPhongMaterial(;
-                                                     color = RGBA{Float32}(0.0, 0.0, 0.0,
-                                                                           1.0),
-                                                     wireframe = true))
+        MeshCat.setobject!(
+            vis["interior"]["r$(i)"],
+            mesh,
+            MeshCat.MeshLambertMaterial(; color = RGBA{Float32}(cmap[i], 1.0)),
+        )
+        MeshCat.setobject!(
+            vis["interior"]["r$(i)_edges"],
+            mesh,
+            MeshCat.MeshPhongMaterial(;
+                color = RGBA{Float32}(0.0, 0.0, 0.0, 1.0),
+                wireframe = true,
+            ),
+        )
     end
 
     for i = 1:nbregions
@@ -85,50 +91,63 @@ function gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}}, grid)
     xyzcut = [ctx[:xplane], ctx[:yplane], ctx[:zplane]]
 
     if ctx[:interior]
-        pts, fcs = extract_visible_cells3D(grid,
-                                           xyzcut;
-                                           primepoints = hcat(xyzmin, xyzmax),
-                                           Tp = Point3f,
-                                           Tf = GLTriangleFace)
+        pts, fcs = extract_visible_cells3D(
+            grid,
+            xyzcut;
+            primepoints = hcat(xyzmin, xyzmax),
+            Tp = Point3f,
+            Tf = GLTriangleFace,
+        )
 
         for i = 1:nregions
             mesh = Mesh(pts[i], fcs[i])
-            MeshCat.setobject!(vis["r$(i)"],
-                               mesh,
-                               MeshCat.MeshLambertMaterial(;
-                                                           color = RGBA{Float32}(cmap[i],
-                                                                                 1.0)))
-            MeshCat.setobject!(vis["r$(i)_edges"], mesh,
-                               MeshCat.MeshPhongMaterial(;
-                                                         color = RGBA{Float32}(0.0, 0.0,
-                                                                               0.0, 1.0),
-                                                         wireframe = true))
+            MeshCat.setobject!(
+                vis["r$(i)"],
+                mesh,
+                MeshCat.MeshLambertMaterial(; color = RGBA{Float32}(cmap[i], 1.0)),
+            )
+            MeshCat.setobject!(
+                vis["r$(i)_edges"],
+                mesh,
+                MeshCat.MeshPhongMaterial(;
+                    color = RGBA{Float32}(0.0, 0.0, 0.0, 1.0),
+                    wireframe = true,
+                ),
+            )
         end
     end
 
-    pts, fcs = extract_visible_bfaces3D(grid,
-                                        xyzcut;
-                                        primepoints = hcat(xyzmin, xyzmax),
-                                        Tp = Point3f,
-                                        Tf = GLTriangleFace)
+    pts, fcs = extract_visible_bfaces3D(
+        grid,
+        xyzcut;
+        primepoints = hcat(xyzmin, xyzmax),
+        Tp = Point3f,
+        Tf = GLTriangleFace,
+    )
 
     for i = 1:nbregions
         mesh = Mesh(pts[i], fcs[i])
-        MeshCat.setobject!(vis["b$(i)"],
-                           mesh,
-                           MeshCat.MeshLambertMaterial(;
-                                                       color = RGBA{Float32}(bcmap[i], 1.0)))
-        MeshCat.setobject!(vis["b$(i)_edges"], mesh,
-                           MeshCat.MeshPhongMaterial(;
-                                                     color = RGBA{Float32}(0.0, 0.0, 0.0,
-                                                                           1.0),
-                                                     wireframe = true))
+        MeshCat.setobject!(
+            vis["b$(i)"],
+            mesh,
+            MeshCat.MeshLambertMaterial(; color = RGBA{Float32}(bcmap[i], 1.0)),
+        )
+        MeshCat.setobject!(
+            vis["b$(i)_edges"],
+            mesh,
+            MeshCat.MeshPhongMaterial(;
+                color = RGBA{Float32}(0.0, 0.0, 0.0, 1.0),
+                wireframe = true,
+            ),
+        )
     end
 
     reveal(ctx, TP)
 end
 
-function scalarplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}}, grid, func)
+function scalarplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}}, grids, parentgrid, funcs)
+    grid = parentgrid
+    func = funcs[1]
     MeshCat = ctx[:Plotter]
     vis = ctx[:figure]
 
@@ -150,20 +169,19 @@ function scalarplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}}, grid, func)
     ctx[:zplane] = max(xyzmin[3], min(xyzmax[3], ctx[:zplane]))
     ctx[:flevel] = max(fminmax[1], min(fminmax[2], ctx[:flevel]))
 
-    makeplanes(x, y, z) = [[1, 0, 0, -x],
-        [0, 1, 0, -y],
-        [0, 0, 1, -z]]
+    makeplanes(x, y, z) = [[1, 0, 0, -x], [0, 1, 0, -y], [0, 0, 1, -z]]
 
-    ccoord, faces, values = marching_tetrahedra(grid,
-                                                func,
-                                                makeplanes(ctx[:xplane], ctx[:yplane],
-                                                           ctx[:zplane]),
-                                                [ctx[:flevel]];
-                                                primepoints = hcat(xyzmin, xyzmax),
-                                                primevalues = fminmax,
-                                                Tp = Point3f,
-                                                Tf = GLTriangleFace,
-                                                Tv = Float32)
+    ccoord, faces, values = marching_tetrahedra(
+        grid,
+        func,
+        makeplanes(ctx[:xplane], ctx[:yplane], ctx[:zplane]),
+        [ctx[:flevel]];
+        primepoints = hcat(xyzmin, xyzmax),
+        primevalues = fminmax,
+        Tp = Point3f,
+        Tf = GLTriangleFace,
+        Tv = Float32,
+    )
     mesh = Mesh(ccoord, faces)
 
     to01(v) = (v - fminmax[1]) / (fminmax[2] - fminmax[1])
@@ -176,18 +194,22 @@ function scalarplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}}, grid, func)
     MeshCat.setobject!(vis[:marching_tets], mesh_meta, material)
 
     if ctx[:outline]
-        pts, fcs = extract_visible_bfaces3D(grid,
-                                            xyzmax;
-                                            primepoints = hcat(xyzmin, xyzmax),
-                                            Tp = Point3f,
-                                            Tf = GLTriangleFace)
+        pts, fcs = extract_visible_bfaces3D(
+            grid,
+            xyzmax;
+            primepoints = hcat(xyzmin, xyzmax),
+            Tp = Point3f,
+            Tf = GLTriangleFace,
+        )
         for i = 1:nbregions
             mesh = Mesh(pts[i], fcs[i])
-            MeshCat.setobject!(vis["b$(i)"],
-                               mesh,
-                               MeshCat.MeshLambertMaterial(;
-                                                           color = color = RGBA{Float32}(bcmap[i],
-                                                                                         0.35)))
+            MeshCat.setobject!(
+                vis["b$(i)"],
+                mesh,
+                MeshCat.MeshLambertMaterial(;
+                    color = color = RGBA{Float32}(bcmap[i], 0.35),
+                ),
+            )
         end
     end
     reveal(ctx, TP)
