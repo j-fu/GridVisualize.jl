@@ -57,6 +57,38 @@ for i=1:N
 end
 ````
 
+### Movies
+Currently, these can be recorded with Makie and Plots backends both from
+the REPL and Pluto notenooks. MP4 files and gifs can be created.
+PyPlot possibly will follow.
+
+This shows the animated graphic in the REPL (essentially the same as above)
+and creates an embedded video in a Pluto notebook.
+````
+vis=GridVisualizer(Plotter=GLMakie)
+movie(vis) do vis
+  for i=1:N
+     function=calculate(i)
+     scalarplot!(vis,grid,function)
+     reveal(vis)
+  end
+end
+````
+
+To save to a file, use
+````
+vis=GridVisualizer(Plotter=CairoMakie)
+movie(vis, file="video.mp4") do vis
+  for i=1:N
+     function=calculate(i)
+     scalarplot!(vis,grid,function)
+     reveal(vis)
+  end
+end
+````
+
+
+
 ### Setting a default plotter
 
 Instead  of  specifying  a  `Plotter` in  calls  to  `GridVisualizer`,

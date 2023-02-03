@@ -44,12 +44,21 @@ function initialize!(p::GridVisualizer, ::Type{MakieType})
     parent
 end
 
+
+
 # Adding a scene to the layout just adds to the
 # flippable layout.
 add_scene!(ctx, ax) = ctx[:flayout][ctx[:subplot]...] = ax
 
 # Revealing the  visualizer just returns the figure
-reveal(p::GridVisualizer, ::Type{MakieType}) = p.context[:figure]
+function reveal(p::GridVisualizer, ::Type{MakieType})
+    Plotter=p.context[:Plotter]
+    if haskey(p.context,:videostream)
+        Plotter.recordframe!(p.context[:videostream])
+    else
+        p.context[:figure]
+    end
+end
 
 function reveal(ctx::SubVisualizer, TP::Type{MakieType})
     FlippableLayout.yieldwait(ctx[:flayout])
@@ -64,6 +73,34 @@ end
 function save(fname, scene, XMakie, ::Type{MakieType})
     isnothing(scene) ? nothing : XMakie.save(fname, scene)
 end
+
+
+
+function movie(func, vis::GridVisualizer, ::Type{MakieType}; file=nothing, format="gif" ,kwargs...)
+    Plotter=vis.context[:Plotter]
+    if !isnothing(file)
+        format = lstrip(splitext(file)[2], '.')
+    end
+    
+    if isdefined(Main, :PlutoRunner) || !isnothing(file)
+        vis.context[:videostream] = Plotter.VideoStream(vis.context[:figure]; format=format, kwargs...)
+    end
+    
+    func(vis)
+    
+    if !isnothing(file)
+        Plotter.save(file,vis.context[:videostream])
+    elseif isdefined(Main, :PlutoRunner)
+        vis.context[:videostream]
+    else
+        nothing
+    end
+end
+
+
+
+
+
 
 """
 

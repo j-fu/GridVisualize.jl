@@ -62,54 +62,63 @@ Heuristically check if Plotter is PlutoVista
 """
 isplutovista(Plotter) = (typeof(Plotter) == Module) && isdefined(Plotter, :PlutoVistaPlot)
 
-"""
-$(TYPEDEF)
 
-Abstract type for dispatching on plotter
-"""
-abstract type PyPlotType end
 
 """
 $(TYPEDEF)
 
 Abstract type for dispatching on plotter
 """
-abstract type MakieType end
+abstract type AbstractPlotterType end
 
 """
 $(TYPEDEF)
 
 Abstract type for dispatching on plotter
 """
-abstract type PlotsType end
+abstract type PyPlotType <: AbstractPlotterType end
+
+"""
+$(TYPEDEF)
+
+Abstract type for dispatching on plotter
+"""
+abstract type MakieType <: AbstractPlotterType end
+
+"""
+$(TYPEDEF)
+
+Abstract type for dispatching on plotter
+"""
+abstract type PlotsType <: AbstractPlotterType end
 
 """
 $(TYPEDEF)
 
 Abstract type for dispatching on plotter. Experimental.
 """
-abstract type VTKViewType end
+abstract type VTKViewType <: AbstractPlotterType end
 
 """
 $(TYPEDEF)
 
 Abstract type for dispatching on plotter. Experimental.
 """
-abstract type MeshCatType end
+abstract type MeshCatType <: AbstractPlotterType end
 
 """
 $(TYPEDEF)
 
 Abstract type for dispatching on plotter
 """
-abstract type PlutoVistaType end
+abstract type PlutoVistaType <: AbstractPlotterType end
 
 """
 $(SIGNATURES)
     
 Heuristically detect type of plotter, returns the corresponding abstract type for plotting.
 """
-function plottertype(Plotter::Union{Module, Nothing})
+function plottertype(Plotter::Union{Module,Nothing})
     if ismakie(Plotter)
         return MakieType
     elseif isplots(Plotter)
@@ -133,7 +142,7 @@ plottername(::Type{PlutoVistaType}) = "PlutoVista"
 plottername(::Type{VTKViewType}) = "VTKView"
 plottername(::Type{MeshCatType}) = "MeshCat"
 plottername(::Type{Nothing}) = "nothing"
-plottername(p::Union{Module, Nothing}) = plottertype(p) |> plottername
+plottername(p::Union{Module,Nothing}) = plottertype(p) |> plottername
 
 """
 $(TYPEDEF)
@@ -141,7 +150,7 @@ $(TYPEDEF)
 A SubVisualizer is just a dictionary which contains plotting information,
 including the type of the plotter and its position in the plot.
 """
-const SubVisualizer = Union{Dict{Symbol, Any}, Nothing}
+const SubVisualizer = Union{Dict{Symbol,Any},Nothing}
 
 #
 # Update subplot context from dict 
@@ -168,14 +177,15 @@ $(TYPEDEF)
 GridVisualizer struct
 """
 struct GridVisualizer
-    Plotter::Union{Module, Nothing}
-    subplots::Array{SubVisualizer, 2}
+    Plotter::Union{Module,Nothing}
+    subplots::Array{SubVisualizer,2}
     context::SubVisualizer
-    function GridVisualizer(Plotter::Union{Module, Nothing}, layout::Tuple,
-                            default::SubVisualizer)
-        new(Plotter,
-            [copy(default) for I in CartesianIndices(layout)],
-            copy(default))
+    function GridVisualizer(
+        Plotter::Union{Module,Nothing},
+        layout::Tuple,
+        default::SubVisualizer,
+    )
+        new(Plotter, [copy(default) for I in CartesianIndices(layout)], copy(default))
     end
 end
 
@@ -219,8 +229,8 @@ toggle between "gallery view" showing all plots at once and "focused view" showi
 Keyword arguments: see [`available_kwargs`](@ref)
 
 """
-function GridVisualizer(; Plotter::Union{Module, Nothing} = default_plotter(), kwargs...)
-    default_ctx = Dict{Symbol, Any}(k => v[1] for (k, v) in default_plot_kwargs())
+function GridVisualizer(; Plotter::Union{Module,Nothing} = default_plotter(), kwargs...)
+    default_ctx = Dict{Symbol,Any}(k => v[1] for (k, v) in default_plot_kwargs())
     _update_context!(default_ctx, kwargs)
     layout = default_ctx[:layout]
     if isnothing(Plotter)
@@ -276,102 +286,87 @@ plottertype(p::GridVisualizer) = plottertype(p.Plotter)
 # Default context information with help info.
 #
 function default_plot_kwargs()
-    OrderedDict{Symbol, Pair{Any, String}}(:show => Pair(false, "Show plot immediately"),
-                                           :reveal => Pair(false,
-                                                           "Show plot immediately (same as :show)"),
-                                           :clear => Pair(true,
-                                                          "Clear plot before adding new content"),
-                                           :layout => Pair((1, 1),
-                                                           "Layout of plots in window"),
-                                           :size => Pair((500, 500),
-                                                         "Plot window resolution"),
-                                           :legend => Pair(:none,
-                                                           "Legend (position): one of [:none, :best, :lt, :ct, :rt, :lc, :rc, :lb, :cb, :rb]"),
-                                           :title => Pair("", "Plot title"),
-                                           :xlabel => Pair("x", "x axis label"),
-                                           :ylabel => Pair("y", "y axis label"),
-                                           :zlabel => Pair("z", "z axis label"),
-                                           :xlimits => Pair((1, -1), "x axis limits"),
-                                           :ylimits => Pair((1, -1), "y axis limits"),
-                                           :zlimits => Pair((1, -1), "z axis limits"),
-                                           :limits => Pair((1, -1), "function limits"),
-                                           :xscale => Pair(:identity,
-                                                           "x axis  scale: one of [:log, :identity]"),
-                                           :yscale => Pair(:identity,
-                                                           "y axis  scale: one of [:log, :identity]"),
-                                           :aspect => Pair(1.0,
-                                                           "XY Aspect ratio modification"),
-                                           :fontsize => Pair(20,
-                                                             "Fontsize of titles. All others are relative to it"),
-                                           :linewidth => Pair(2,
-                                                              "linewidth for isolines or 1D plots"),
-                                           :linestyle => Pair(:solid,
-                                                              "1D Plot linestyle: one of [:solid, :dash, :dot, :dashdot, :dashdotdot]"),
-                                           :markevery => Pair(5, "1D plot marker stride"),
-                                           :markersize => Pair(5, "1D plot marker size"),
-                                           :markershape => Pair(:none,
-                                                                "1D plot marker shape: one of [:none, :circle, :star5, :diamond, :hexagon, :cross, :xcross, :utriangle, :dtriangle, :rtriangle, :ltriangle, :pentagon, :+, :x]"),
-                                           :color => Pair((0.0, 0.0, 0.0),
-                                                          "1D plot line color"),
-                                           :cellwise => Pair(false,
-                                                             "1D plots cellwise; unmaintained and can be slow)"),
-                                           :label => Pair("", "1D plot label"),
-                                           :levels => Pair(5,
-                                                           "array of isolevels or number of isolevels for comtour plots"),
-                                           :elevation => Pair(0.0,
-                                                              "2D plot height factor for elevation"),
-                                           :colorlevels => Pair(51,
-                                                                "2D/3D contour plot: number of color levels"),
-                                           :colormap => Pair(:viridis,
-                                                             "2D/3D contour plot color map (any from [ColorSchemes.jl](https://juliagraphics.github.io/ColorSchemes.jl/stable/basics/#Pre-defined-schemes))"),
-                                           :colorbar => Pair(:vertical,
-                                                             "2D/3D plot colorbar. One of [:none, :vertical, :horizontal]"),
-                                           :colorbarticks => Pair(:default,
-                                                                  "number of ticks in colorbar (:default sets it equal to levels)"),
-                                           :outlinealpha => Pair(0.05,
-                                                                 "3D outline surface alpha value"),
-                                           :levelalpha => Pair(0.25, "3D isolevel alpha"),
-                                           :planealpha => Pair(1.0,
-                                                               "3D plane section alpha"),
-                                           :tetxplane_tol => Pair(0.0, "tolerance for tet-plane intersection in 3D"),
-                                           :spacing => Pair(:default,
-                                                            "Spacing of quiver points in vector plot"),
-                                           :offset => Pair(:default,
-                                                           "Offset of quiver grid"),
-                                           :vscale => Pair(1.0,
-                                                           "Vector field scale for quiver grid"),
-                                           :vnormalize => Pair(true,
-                                                               "Normalize vector field befor scaling"),
-                                           :interior => Pair(true,
-                                                             "3D plot interior of grid"),
-                                           :xplanes => Pair([prevfloat(Inf)],
-                                                            "3D x plane positions or number thereof"),
-                                           :yplanes => Pair([prevfloat(Inf)],
-                                                            "3D y plane positions or number thereof"),
-                                           :zplanes => Pair([prevfloat(Inf)],
-                                                            "3D z plane positions or number thereof"),
-                                           :zoom => Pair(1.0, "Zoom level"),
-                                           :gridscale => Pair(1.0, "grid scale factor"),
-                                           :azim => Pair(-60,
-                                                         "3D azimuth angle  (in degrees)"),
-                                           :elev => Pair(30,
-                                                         "3D elevation angle  (in degrees)"),
-                                           :perspectiveness => Pair(0.25,
-                                                                    "3D perspective A number between 0 and 1, where 0 is orthographic, and 1 full perspective"),
-                                           :scene3d => Pair(:Axis3,
-                                                            "3D plot type of Makie scene. Alternaitve to `:Axis3` is `:LScene`"),
-                                           :fignumber => Pair(1, "Figure number (PyPlot)"),
-                                           :framepos => Pair(1,
-                                                             "Subplot position in frame (VTKView)"),
-                                           :subplot => Pair((1, 1),
-                                                            "Private: Actual subplot"),
-                                           :backend => Pair(:default,
-                                                            "Backend for PlutoVista plot"),
-                                           :dim => Pair(1,
-                                                        "Data dimension for PlutoVista plot"),
-                                           :regions => Pair(:all, "List of regions to plot"),
-                                           :species => Pair(1,
-                                                            "Number of species to plot or number of species in regions"))
+    OrderedDict{Symbol,Pair{Any,String}}(
+        :show => Pair(false, "Show plot immediately"),
+        :reveal => Pair(false, "Show plot immediately (same as :show)"),
+        :clear => Pair(true, "Clear plot before adding new content"),
+        :layout => Pair((1, 1), "Layout of plots in window"),
+        :size => Pair((500, 500), "Plot window resolution"),
+        :legend => Pair(
+            :none,
+            "Legend (position): one of [:none, :best, :lt, :ct, :rt, :lc, :rc, :lb, :cb, :rb]",
+        ),
+        :title => Pair("", "Plot title"),
+        :xlabel => Pair("x", "x axis label"),
+        :ylabel => Pair("y", "y axis label"),
+        :zlabel => Pair("z", "z axis label"),
+        :xlimits => Pair((1, -1), "x axis limits"),
+        :ylimits => Pair((1, -1), "y axis limits"),
+        :zlimits => Pair((1, -1), "z axis limits"),
+        :limits => Pair((1, -1), "function limits"),
+        :xscale => Pair(:identity, "x axis  scale: one of [:log, :identity]"),
+        :yscale => Pair(:identity, "y axis  scale: one of [:log, :identity]"),
+        :aspect => Pair(1.0, "XY Aspect ratio modification"),
+        :fontsize => Pair(20, "Fontsize of titles. All others are relative to it"),
+        :linewidth => Pair(2, "linewidth for isolines or 1D plots"),
+        :linestyle => Pair(
+            :solid,
+            "1D Plot linestyle: one of [:solid, :dash, :dot, :dashdot, :dashdotdot]",
+        ),
+        :markevery => Pair(5, "1D plot marker stride"),
+        :markersize => Pair(5, "1D plot marker size"),
+        :markershape => Pair(
+            :none,
+            "1D plot marker shape: one of [:none, :circle, :star5, :diamond, :hexagon, :cross, :xcross, :utriangle, :dtriangle, :rtriangle, :ltriangle, :pentagon, :+, :x]",
+        ),
+        :color => Pair((0.0, 0.0, 0.0), "1D plot line color"),
+        :cellwise => Pair(false, "1D plots cellwise; unmaintained and can be slow)"),
+        :label => Pair("", "1D plot label"),
+        :levels => Pair(5, "array of isolevels or number of isolevels for comtour plots"),
+        :elevation => Pair(0.0, "2D plot height factor for elevation"),
+        :colorlevels => Pair(51, "2D/3D contour plot: number of color levels"),
+        :colormap => Pair(
+            :viridis,
+            "2D/3D contour plot color map (any from [ColorSchemes.jl](https://juliagraphics.github.io/ColorSchemes.jl/stable/basics/#Pre-defined-schemes))",
+        ),
+        :colorbar =>
+            Pair(:vertical, "2D/3D plot colorbar. One of [:none, :vertical, :horizontal]"),
+        :colorbarticks => Pair(
+            :default,
+            "number of ticks in colorbar (:default sets it equal to levels)",
+        ),
+        :outlinealpha => Pair(0.05, "3D outline surface alpha value"),
+        :levelalpha => Pair(0.25, "3D isolevel alpha"),
+        :planealpha => Pair(1.0, "3D plane section alpha"),
+        :tetxplane_tol => Pair(0.0, "tolerance for tet-plane intersection in 3D"),
+        :spacing => Pair(:default, "Spacing of quiver points in vector plot"),
+        :offset => Pair(:default, "Offset of quiver grid"),
+        :vscale => Pair(1.0, "Vector field scale for quiver grid"),
+        :vnormalize => Pair(true, "Normalize vector field befor scaling"),
+        :interior => Pair(true, "3D plot interior of grid"),
+        :xplanes => Pair([prevfloat(Inf)], "3D x plane positions or number thereof"),
+        :yplanes => Pair([prevfloat(Inf)], "3D y plane positions or number thereof"),
+        :zplanes => Pair([prevfloat(Inf)], "3D z plane positions or number thereof"),
+        :zoom => Pair(1.0, "Zoom level"),
+        :gridscale => Pair(1.0, "grid scale factor"),
+        :azim => Pair(-60, "3D azimuth angle  (in degrees)"),
+        :elev => Pair(30, "3D elevation angle  (in degrees)"),
+        :perspectiveness => Pair(
+            0.25,
+            "3D perspective A number between 0 and 1, where 0 is orthographic, and 1 full perspective",
+        ),
+        :scene3d => Pair(
+            :Axis3,
+            "3D plot type of Makie scene. Alternaitve to `:Axis3` is `:LScene`",
+        ),
+        :fignumber => Pair(1, "Figure number (PyPlot)"),
+        :framepos => Pair(1, "Subplot position in frame (VTKView)"),
+        :subplot => Pair((1, 1), "Private: Actual subplot"),
+        :backend => Pair(:default, "Backend for PlutoVista plot"),
+        :dim => Pair(1, "Data dimension for PlutoVista plot"),
+        :regions => Pair(:all, "List of regions to plot"),
+        :species => Pair(1, "Number of species to plot or number of species in regions"),
+    )
 end
 
 #
@@ -467,14 +462,25 @@ function scalarplot!(ctx::GridVisualizer, X::AbstractVector, func; kwargs...)
 end
 
 "$(TYPEDSIGNATURES)"
-function scalarplot!(ctx::GridVisualizer, X::AbstractVector, Y::AbstractVector, func;
-                     kwargs...)
+function scalarplot!(
+    ctx::GridVisualizer,
+    X::AbstractVector,
+    Y::AbstractVector,
+    func;
+    kwargs...,
+)
     scalarplot!(ctx, simplexgrid(X, Y), func; kwargs...)
 end
 
 "$(TYPEDSIGNATURES)"
-function scalarplot!(ctx::GridVisualizer, X::AbstractVector, Y::AbstractVector,
-                     Z::AbstractVector, func; kwargs...)
+function scalarplot!(
+    ctx::GridVisualizer,
+    X::AbstractVector,
+    Y::AbstractVector,
+    Z::AbstractVector,
+    func;
+    kwargs...,
+)
     scalarplot!(ctx, simplexgrid(X, Y, Z), func; kwargs...)
 end
 
@@ -505,8 +511,13 @@ function scalarplot(X::AbstractVector, Y::AbstractVector, func; kwargs...)
 end
 
 "$(TYPEDSIGNATURES)"
-function scalarplot(X::AbstractVector, Y::AbstractVector, Z::AbstractVector, func;
-                    kwargs...)
+function scalarplot(
+    X::AbstractVector,
+    Y::AbstractVector,
+    Z::AbstractVector,
+    func;
+    kwargs...,
+)
     scalarplot(simplexgrid(X, Y, Z), func; kwargs...)
 end
 
@@ -535,13 +546,24 @@ function vectorplot!(p::GridVisualizer, grid::ExtendableGrid, func; kwargs...)
     vectorplot!(p[1, 1], grid, func; kwargs...)
 end
 "$(TYPEDSIGNATURES)"
-function vectorplot!(ctx::GridVisualizer, X::AbstractVector, Y::AbstractVector, func;
-                     kwargs...)
+function vectorplot!(
+    ctx::GridVisualizer,
+    X::AbstractVector,
+    Y::AbstractVector,
+    func;
+    kwargs...,
+)
     vectorplot!(ctx, simplexgrid(X, Y), func; kwargs...)
 end
 "$(TYPEDSIGNATURES)"
-function vectorplot!(ctx::GridVisualizer, X::AbstractVector, Y::AbstractVector,
-                     Z::AbstractVector, func; kwargs...)
+function vectorplot!(
+    ctx::GridVisualizer,
+    X::AbstractVector,
+    Y::AbstractVector,
+    Z::AbstractVector,
+    func;
+    kwargs...,
+)
     vectorplot!(ctx, simplexgrid(X, Y, Z), func; kwargs...)
 end
 
@@ -558,8 +580,13 @@ function vectorplot(X::AbstractVector, Y::AbstractVector, func; kwargs...)
     vectorplot(simplexgrid(X, Y), func; kwargs...)
 end
 "$(TYPEDSIGNATURES)"
-function vectorplot(X::AbstractVector, Y::AbstractVector, Z::AbstractVector, func;
-                    kwargs...)
+function vectorplot(
+    X::AbstractVector,
+    Y::AbstractVector,
+    Z::AbstractVector,
+    func;
+    kwargs...,
+)
     vectorplot(simplexgrid(X, Y, Z), func; kwargs...)
 end
 
@@ -582,13 +609,24 @@ function streamplot!(p::GridVisualizer, grid::ExtendableGrid, func; kwargs...)
     streamplot!(p[1, 1], grid, func; kwargs...)
 end
 "$(TYPEDSIGNATURES)"
-function streamplot!(ctx::GridVisualizer, X::AbstractVector, Y::AbstractVector, func;
-                     kwargs...)
+function streamplot!(
+    ctx::GridVisualizer,
+    X::AbstractVector,
+    Y::AbstractVector,
+    func;
+    kwargs...,
+)
     streamplot!(ctx, simplexgrid(X, Y), func; kwargs...)
 end
 "$(TYPEDSIGNATURES)"
-function streamplot!(ctx::GridVisualizer, X::AbstractVector, Y::AbstractVector,
-                     Z::AbstractVector, func; kwargs...)
+function streamplot!(
+    ctx::GridVisualizer,
+    X::AbstractVector,
+    Y::AbstractVector,
+    Z::AbstractVector,
+    func;
+    kwargs...,
+)
     streamplot!(ctx, simplexgrid(X, Y, Z), func; kwargs...)
 end
 
@@ -606,8 +644,13 @@ function streamplot(X::AbstractVector, Y::AbstractVector, func; kwargs...)
     streamplot(simplexgrid(X, Y), func; kwargs...)
 end
 "$(TYPEDSIGNATURES)"
-function streamplot(X::AbstractVector, Y::AbstractVector, Z::AbstractVector, func;
-                    kwargs...)
+function streamplot(
+    X::AbstractVector,
+    Y::AbstractVector,
+    Z::AbstractVector,
+    func;
+    kwargs...,
+)
     streamplot(simplexgrid(X, Y, Z), func; kwargs...)
 end
 
@@ -618,6 +661,12 @@ Finish and show plot. Same as setting `:reveal=true` or `:show=true` in last plo
 for a context.
 """
 reveal(visualizer::GridVisualizer) = reveal(visualizer, plottertype(visualizer.Plotter))
+
+
+movie(func, visualizer::GridVisualizer, pltype::Any; kwargs...) = nothing
+
+movie(func, visualizer::GridVisualizer; kwargs...) =
+    movie(func, visualizer, plottertype(visualizer.Plotter); kwargs...)
 
 """
 $(TYPEDSIGNATURES)

@@ -26,9 +26,14 @@ function reveal(p::GridVisualizer, ::Type{PlotsType})
             end
         end
     end
-    p = Plots.plot(subplots...; layout = p.context[:layout], size = p.context[:size])
-    Plots.gui(p)
-    p
+    plt = Plots.plot(subplots...; layout = p.context[:layout], size = p.context[:size])
+    if haskey(p.context,:videostream)
+        Plots.frame(p.context[:videostream],plt)
+    else
+        Plots.gui(plt)
+        plt
+    end
+
 end
 
 function reveal(ctx::SubVisualizer, TP::Type{PlotsType})
@@ -40,6 +45,36 @@ end
 function save(fname, scene, Plots, ::Type{PlotsType})
     isnothing(scene) ? nothing : Plots.savefig(scene, fname)
 end
+
+
+function movie(func, vis::GridVisualizer, ::Type{PlotsType}; file=nothing, format="gif" ,kwargs...)
+    Plotter=vis.context[:Plotter]
+    if !isnothing(file)
+        format = lstrip(splitext(file)[2], '.')
+    end
+    if isdefined(Main, :PlutoRunner) || !isnothing(file)
+        vis.context[:videostream] = Plotter.Animation()
+    end
+
+    func(vis)
+    
+    if !isnothing(file)
+        if format=="mp4"
+            Plotter.mp4(vis.context[:videostream],file)
+        else
+            Plotter.gif(vis.context[:videostream],file)
+        end
+    elseif isdefined(Main, :PlutoRunner)
+        if format=="mp4"
+            Plotter.mp4(vis.context[:videostream])
+        else
+            Plotter.gif(vis.context[:videostream])
+        end
+    end
+end
+
+
+
 
 function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grid)
     Plots = ctx[:Plotter]
