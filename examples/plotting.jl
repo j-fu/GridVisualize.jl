@@ -128,6 +128,25 @@ function plotting_stream2d(; Plotter = default_plotter(), kwargs...)
 end
 # ![](plotting_stream2d.svg)
 
+# ### Movie
+# Movies can contain  any of the previous plots.
+function plotting_movie(;filename="plotting_video.gif", Plotter=default_plotter())
+    vis=GridVisualizer(Plotter=Plotter,size=(600,200),layout=(1,2))
+    X=0:0.2:10
+    grid=simplexgrid(X,X)
+    movie(vis,file=filename) do vis
+        for t=0:0.1:10
+	    f=map( (x,y)-> sin(x-t)*cos(y-t),grid)
+	    g=map( (x,y)-> sin(t)*sin(x)*cos(y),grid)
+	    scalarplot!(vis[1,1],grid,f,clear=true, title="t=$(t)",limits=(-1,1),levels=7,colormap=:hot)
+	    scalarplot!(vis[1,2],grid,g,clear=true, title="t=$(t)",limits=(-1,1),levels=7,colormap=:hot)
+	    reveal(vis)
+        end
+    end
+end
+# ![](plotting_video.gif)
+
+
 # ## Multiscene plots
 # We can combine multiple plots into one scene according to 
 # some layout grid given by the layout parameter.

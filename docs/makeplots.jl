@@ -59,5 +59,9 @@ function makeplots(picdir; Plotter=GLMakie, extension="png")
     println("grid1d")
 
 
+    fname=joinpath(picdir,"plotting_video."*"gif")
+    p=plotting_movie(;filename=fname,Plotter=Plotter)
+    @test isfile(fname)
+    println("plotting_video")
     true
 end

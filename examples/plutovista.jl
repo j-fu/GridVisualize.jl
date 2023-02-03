@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.16
+# v0.19.22
 
 using Markdown
 using InteractiveUtils
@@ -7,12 +7,7 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try
-            Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"),
-                                           "AbstractPlutoDingetjes")].Bonds.initial_value
-        catch
-            b -> missing
-        end
+        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -116,7 +111,7 @@ t4: $(@bind t4 PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 
 # ╔═╡ c1278fb2-3e75-445f-893a-b8b8a7e931d3
 p = GridVisualizer(; resolution = (600, 200), dim = 1, legend = :lt);
-p;
+
 
 # ╔═╡ 661531f7-f740-4dd4-9a59-89ddff06ba5c
 scalarplot!(p, X2, f2(t4); show = true, clear = true, color = :red, label = "t=$(t4)")
@@ -170,7 +165,6 @@ end
 
 # ╔═╡ faa59bbd-df1f-4c62-9a77-c4752c6a6df4
 vis = GridVisualizer(; resolution = (300, 300), dim = 2);
-vis;
 
 # ╔═╡ 6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
 md"""
@@ -235,8 +229,10 @@ scalarplot!(p3d, g3, f3; levels = [flevel], xplanes = [xplane], yplanes = [yplan
             levelalpha = 0.5)
 
 # ╔═╡ d924d90d-4102-4ae8-b8de-254a17a5d4df
-X4 = -1:0.1:1;
-g4 = simplexgrid(X4, X4, X4);
+begin
+	X4 = -1:0.1:1;
+	g4 = simplexgrid(X4, X4, X4);
+end
 
 # ╔═╡ 57ed5eea-bc1c-45eb-b4d3-dc63088db21a
 scalarplot(g4, map((x, y, z) -> 0.01 * exp(-10 * (x^2 + y^2 + z^2)), g4); levels = 10)
@@ -348,8 +344,10 @@ md"""
 """
 
 # ╔═╡ 6a3b2356-e8a1-45f8-8648-2eca09a7b258
-XX = 0:0.1:1;
-YY = 0:0.1:10;
+begin
+    XX = 0:0.1:1;
+    YY = 0:0.1:10;
+end
 
 # ╔═╡ 608a5704-a84c-4c55-8642-ecddb275dc1b
 scalarplot(XX, YY, (x, y) -> sin(4x) * 10 * y; aspect = 0.1, xlabel = "aaa",

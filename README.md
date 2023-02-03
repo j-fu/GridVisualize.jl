@@ -58,14 +58,14 @@ end
 ````
 
 ### Movies
-Currently, these can be recorded with Makie and Plots backends both from
-the REPL and Pluto notenooks. MP4 files and gifs can be created.
+Currently, these can be recorded with GLMakie, CairoMakie and Plots backends both from
+the REPL and Pluto notebooks. MP4 files and gifs can be created.
 PyPlot possibly will follow.
 
 This shows the animated graphic in the REPL (essentially the same as above)
-and creates an embedded video in a Pluto notebook.
+and creates an embedded video in a Pluto notebook:
 ````
-vis=GridVisualizer(Plotter=GLMakie)
+vis=GridVisualizer(Plotter=Plots)
 movie(vis) do vis
   for i=1:N
      function=calculate(i)
@@ -75,7 +75,7 @@ movie(vis) do vis
 end
 ````
 
-To save to a file, use
+To save to a file instead of showing in a notebooks or from the REPL , use:
 ````
 vis=GridVisualizer(Plotter=CairoMakie)
 movie(vis, file="video.mp4") do vis
@@ -120,8 +120,9 @@ and all plotting functions will do nothing.
 - 'i': some level of interactive control
 - '(y)': availability only on rectangular grids
 - 'p':  planned
+- 'n': probably not, also in the future
 
-|                | PyPlot | GLMakie | PlutoVista | Plots | VTKView |
+|                | PyPlot | Makie   | PlutoVista | Plots | VTKView |
 |----------------|--------|---------|------------|-------|---------|
 | scalarplot, 1D | y      | y       | y,i        | y     | y       |
 | vectorplot, 1D | y      | y       | y          | y     | y       |
@@ -130,10 +131,11 @@ and all plotting functions will do nothing.
 | vectorplot, 2D | y      | y       | y          | y     |         |
 | streamplot, 2D | y      | p       | p          |       |         |
 | gridplot, 2D   | y      | y,i     | y          | (y)   | y,i     |
-| scalarplot, 3D | y      | y,i     | y,i        |       | y,i     |
-| gridplot, 3D   | y      | y,i     | y,i        |       | y,i     |
-| vectorplot, 3D | p      | p       | p          |       |         |
-| streamplot, 3D |        | p       | p          |       |         |
+| scalarplot, 3D | y      | y,i     | y,i        |  n    | y,i     |
+| gridplot, 3D   | y      | y,i     | y,i        |  n    | y,i     |
+| vectorplot, 3D | p      | p       | p          |  n    |         |
+| streamplot, 3D |        | p       | p          |  n    |         |
+| movie          | p      | y       | n          |  y    |         |
 
 
 
