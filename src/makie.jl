@@ -1106,9 +1106,7 @@ end
 
 # 3d function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid, funcs)
-    grid = parentgrid
-    func = funcs[1]
-    levels, crange = isolevels(ctx, func)
+    levels, crange = isolevels(ctx, funcs)
     ctx[:crange] = crange
 
     nan_replacement = 0.5 * (crange[1] + crange[2])
@@ -1119,8 +1117,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
             colors = XMakie.Makie.interpolated_getindex.((cmap,), vals, (crange,))
             if ctx[:levelalpha] > 0
                 colors = [
-                    RGBA(colors[i].r, colors[i].g, colors[i].b, Float32(ctx[:levelalpha])) for i = 1:length(colors)
-                ]
+                RGBA(colors[i].r, colors[i].g, colors[i].b, Float32(ctx[:levelalpha])) for i = 1:length(colors)
+                     ]
             end
             GeometryBasics.Mesh(meta(pts; color = colors, normals = normals(pts, fcs)), fcs)
         else
@@ -1128,12 +1126,12 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
         end
     end
 
-    nregions = num_cellregions(grid)
-    nbregions = num_bfaceregions(grid)
+
+    nbregions = num_bfaceregions(parentgrid)
 
     XMakie = ctx[:Plotter]
     cmap = XMakie.to_colormap(ctx[:colormap])
-    xyzmin, xyzmax = xyzminmax(grid)
+    xyzmin, xyzmax = xyzminmax(parentgrid)
     xyzstep = (xyzmax - xyzmin) / 100
 
     fstep = (crange[2] - crange[1]) / 100
@@ -1149,6 +1147,10 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
     # end
 
     # adjust_planes()
+
+    ctx[:xplanes]=collect(ctx[:xplanes])
+    ctx[:yplanes]=collect(ctx[:yplanes])    
+    ctx[:zplanes]=collect(ctx[:zplanes])
 
     x = ctx[:xplanes]
     y = ctx[:yplanes]
@@ -1174,8 +1176,9 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
 
     if !haskey(ctx, :scene)
         ctx[:data] = Observable((
-            g = grid,
-            f = func,
+            g = grids,
+            p = parentgrid,
+            f = funcs,
             x = ctx[:xplanes],
             y = ctx[:yplanes],
             z = ctx[:zplanes],
@@ -1185,11 +1188,11 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
 
         ctx[:scene] = makeaxis3d(ctx)
 
-        #### Transparent outlne
+        #### Transparent outline
         if ctx[:outlinealpha] > 0.0
             ctx[:outlinedata] = map(
                 d -> extract_visible_bfaces3D(
-                    d.g,
+                    d.p,
                     xyzmax;
                     primepoints = hcat(xyzmin, xyzmax),
                     Tp = Point3f,

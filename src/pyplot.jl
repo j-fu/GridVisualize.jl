@@ -85,11 +85,39 @@ const leglocs = Dict(
 $(SIGNATURES)
 Return tridata to be splatted to PyPlot calls
 """
-function tridata(grid)
+function tridata(grid::ExtendableGrid)
     coord = grid[Coordinates]
     cellnodes = Matrix(grid[CellNodes])
     coord[1, :], coord[2, :], transpose(cellnodes .- 1)
 end
+
+function tridata(grids)
+    ngrids = length(grids)
+    coords = [grid[Coordinates] for grid in grids]
+    npoints = [num_nodes(grid) for grid in grids]
+    cellnodes = [grid[CellNodes] for grid in grids]
+    ncells = [num_cells(grid) for grid in grids]
+    offsets = zeros(Int, ngrids)
+    for i = 2:ngrids
+        offsets[i] = offsets[i-1] + npoints[i-1]
+    end
+
+    allcoords = hcat(coords...)
+
+    # transpose and subtract 1 !
+    allcellnodes = Matrix{Int}(undef, sum(ncells), 3)
+    k = 1
+    for j = 1:ngrids
+        for i = 1:ncells[j]
+            allcellnodes[k, 1] = cellnodes[j][1, i] + offsets[j] - 1
+            allcellnodes[k, 2] = cellnodes[j][2, i] + offsets[j] - 1
+            allcellnodes[k, 3] = cellnodes[j][3, i] + offsets[j] - 1
+            k = k + 1
+        end
+    end
+    allcoords[1, :], allcoords[2, :], allcellnodes
+end
+
 
 # Interfaces to Colors/Colorschemes
 plaincolormap(ctx) = colorschemes[ctx[:colormap]].colors
@@ -352,9 +380,8 @@ end
 
 ### 1D Function
 function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grids, parentgrid, funcs)
-    grid = parentgrid
-    func = funcs[1]
     PyPlot = ctx[:Plotter]
+    nfuncs = length(funcs)
     if !haskey(ctx, :ax)
         ctx[:ax] = ctx[:figure].add_subplot(ctx[:layout]..., ctx[:iplot])
     end
@@ -376,9 +403,6 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grids, parentgri
     ax = ctx[:ax]
     fig = ctx[:figure]
 
-    cellnodes = grid[CellNodes]
-    coord = grid[Coordinates]
-
     pplot = ax.plot
     if ctx[:xscale] == :log
         if ctx[:yscale] == :log
@@ -395,7 +419,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grids, parentgri
         end
     end
 
-    if ctx[:cellwise] # not checked
+    if ctx[:cellwise] # not checked,  outdated
         for icell = 1:num_cells(grid)
             i1 = cellnodes[1, icell]
             i2 = cellnodes[2, icell]
@@ -414,48 +438,56 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grids, parentgri
         end
     else
         if ctx[:markershape] == :none
-            if ctx[:label] !== ""
-                pplot(
-                    coord[1, :],
-                    func;
-                    linestyle = lstyles[ctx[:linestyle]],
-                    color = rgbtuple(ctx[:color]),
-                    linewidth = ctx[:linewidth],
-                    label = ctx[:label],
-                )
-            else
-                pplot(
-                    coord[1, :],
-                    func;
-                    linestyle = lstyles[ctx[:linestyle]],
-                    linewidth = ctx[:linewidth],
-                    color = rgbtuple(ctx[:color]),
-                )
+            for ifunc = 1:nfuncs
+                func = funcs[ifunc]
+                coord = grids[ifunc][Coordinates]
+                if ctx[:label] !== "" && ifunc == 1
+                    pplot(
+                        coord[1, :],
+                        func;
+                        linestyle = lstyles[ctx[:linestyle]],
+                        color = rgbtuple(ctx[:color]),
+                        linewidth = ctx[:linewidth],
+                        label = ctx[:label],
+                    )
+                else
+                    pplot(
+                        coord[1, :],
+                        func;
+                        linestyle = lstyles[ctx[:linestyle]],
+                        linewidth = ctx[:linewidth],
+                        color = rgbtuple(ctx[:color]),
+                    )
+                end
             end
         else
-            if ctx[:label] !== ""
-                pplot(
-                    coord[1, :],
-                    func;
-                    linestyle = lstyles[ctx[:linestyle]],
-                    color = rgbtuple(ctx[:color]),
-                    label = ctx[:label],
-                    marker = mshapes[ctx[:markershape]],
-                    markevery = ctx[:markevery],
-                    markersize = ctx[:markersize],
-                    linewidth = ctx[:linewidth],
-                )
-            else
-                pplot(
-                    coord[1, :],
-                    func;
-                    linestyle = lstyles[ctx[:linestyle]],
-                    color = rgbtuple(ctx[:color]),
-                    marker = mshapes[ctx[:markershape]],
-                    markevery = ctx[:markevery],
-                    markersize = ctx[:markersize],
-                    linewidth = ctx[:linewidth],
-                )
+            for ifunc = 1:nfuncs
+                func = funcs[ifunc]
+                coord = grids[ifunc][Coordinates]
+                if ctx[:label] !== "" && ifunc == 1
+                    pplot(
+                        coord[1, :],
+                        func;
+                        linestyle = lstyles[ctx[:linestyle]],
+                        color = rgbtuple(ctx[:color]),
+                        label = ctx[:label],
+                        marker = mshapes[ctx[:markershape]],
+                        markevery = ctx[:markevery],
+                        markersize = ctx[:markersize],
+                        linewidth = ctx[:linewidth],
+                    )
+                else
+                    pplot(
+                        coord[1, :],
+                        func;
+                        linestyle = lstyles[ctx[:linestyle]],
+                        color = rgbtuple(ctx[:color]),
+                        marker = mshapes[ctx[:markershape]],
+                        markevery = ctx[:markevery],
+                        markersize = ctx[:markersize],
+                        linewidth = ctx[:linewidth],
+                    )
+                end
             end
         end
         # points=[Point2f(coord[1,i],func[i]) for i=1:length(func)]
@@ -477,8 +509,7 @@ end
 
 ### 2D Function
 function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grids, parentgrid, funcs)
-    grid = parentgrid
-    func = funcs[1]
+
     PyPlot = ctx[:Plotter]
     if !haskey(ctx, :ax)
         ctx[:ax] = ctx[:figure].add_subplot(ctx[:layout]..., ctx[:iplot])
@@ -505,7 +536,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grids, parentgri
     ax.set_aspect(ctx[:aspect])
     ax.set_title(ctx[:title])
 
-    levels, crange, colorbarticks = isolevels(ctx, func)
+    levels, crange, colorbarticks = isolevels(ctx, funcs)
     eps = 1.0e-5
     if crange[1] == crange[2]
         crange = (crange[1] - eps, crange[1] + eps)
@@ -515,20 +546,25 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grids, parentgri
             collect(crange[1]:((crange[2]-crange[1])/(ctx[:colorlevels]-1)):crange[2])
     end
 
-    if !haskey(ctx, :grid) || !seemingly_equal(ctx[:grid], grid)
-        ctx[:grid] = grid
-        ctx[:tridata] = tridata(grid)
-    end
+    #    if !haskey(ctx, :grid) || !seemingly_equal(ctx[:grid], grid)
+    #        ctx[:grid] = grids
+    #        ctx[:tridata] = tridata(grids)
+    #    end
+
+    tdat = tridata(grids)
+    func = vcat(funcs...)
     cnt = ax.tricontourf(
-        ctx[:tridata]...,
+        tdat...,
         func;
         levels = colorlevels,
         cmap = PyPlot.ColorMap(plaincolormap(ctx)),
     )
+
     for c in cnt.collections
         c.set_edgecolor("face")
     end
-    ax.tricontour(ctx[:tridata]..., func; colors = "k", levels = levels)
+
+    ax.tricontour(tdat..., func; colors = "k", levels = levels)
 
     if ctx[:colorbar] == :horizontal
         ctx[:cbar] = fig.colorbar(
@@ -557,8 +593,6 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grids, parentgri
 end
 
 function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}}, grids, parentgrid, funcs)
-    grid = parentgrid
-    func = funcs[1]
     PyPlot = ctx[:Plotter]
     if !haskey(ctx, :ax)
         ctx[:ax] = ctx[:figure].add_subplot(ctx[:layout]..., ctx[:iplot]; projection = "3d")
@@ -566,18 +600,15 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}}, grids, parentgri
     ax = ctx[:ax]
     fig = ctx[:figure]
 
-    nregions = num_cellregions(grid)
-    nbregions = num_bfaceregions(grid)
-
     xyzmin = zeros(3)
     xyzmax = ones(3)
-    coord = grid[Coordinates]
+    coord = parentgrid[Coordinates]
     @views for idim = 1:3
         xyzmin[idim] = minimum(coord[idim, :])
         xyzmax[idim] = maximum(coord[idim, :])
     end
     xyzcut = [ctx[:xplanes], ctx[:yplanes], ctx[:zplanes]]
-    levels, crange, colorbarticks = isolevels(ctx, func)
+    levels, crange, colorbarticks = isolevels(ctx, funcs)
     eps = 1.0e-5
     if crange[1] == crange[2]
         crange = (crange[1] - eps, crange[1] + eps)
@@ -590,7 +621,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}}, grids, parentgri
     planes = makeplanes(xyzmin, xyzmax, ctx[:xplanes], ctx[:yplanes], ctx[:zplanes])
 
     ccoord0, faces0, values =
-        marching_tetrahedra(grid, func, planes, levels, tol = ctx[:tetxplane_tol])
+        marching_tetrahedra(grids, funcs, planes, levels, tol = ctx[:tetxplane_tol])
 
     faces = reshape(reinterpret(Int32, faces0), (3, length(faces0)))
     ccoord = reshape(reinterpret(Float32, ccoord0), (3, length(ccoord0)))
