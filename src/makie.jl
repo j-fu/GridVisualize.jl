@@ -337,10 +337,9 @@ end
 # 1D function
 
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid, funcs)
-    grid = parentgrid
-    func = funcs[1]
     XMakie = ctx[:Plotter]
 
+    nfuncs = length(funcs)
     if ctx[:title] == ""
         ctx[:title] = " "
     end
@@ -366,7 +365,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
         points = [Point2f(coord[1, i], func[i]) for i = 1:length(func)]
     end
 
-    coord = grid[Coordinates]
+    coord = parentgrid[Coordinates]
     xlimits = ctx[:xlimits]
     ylimits = ctx[:limits]
     xmin = coord[1, 1]
@@ -376,44 +375,60 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
         xmax = xlimits[2]
     end
 
-    (ymin, ymax) = extrema(func)
+
+
     if ylimits[1] < ylimits[2]
         ymin = ylimits[1]
         ymax = ylimits[2]
+    else
+        ext=extrema.(funcs)
+        (ymin, ymax)=(minimum(first.(ext)),maximum(last.(ext)))
     end
 
-    function update_lines(ctx)
+    function update_lines(ctx, newrange)
         if ctx[:markershape] == :none
             #line without marker
-            XMakie.lines!(
-                ctx[:scene],
-                map(a -> a, ctx[:lines][end]);
-                linestyle = ctx[:linestyle],
-                linewidth = ctx[:linewidth],
-                color = RGB(ctx[:color]),
-                label = ctx[:label],
-            )
+            for l in newrange
+                XMakie.lines!(
+                    ctx[:scene],
+                    map(a -> a, ctx[:lines][l]);
+                    linestyle = ctx[:linestyle],
+                    linewidth = ctx[:linewidth],
+                    color = RGB(ctx[:color]),
+                )
+            end
+            if ctx[:label] != ""
+                XMakie.scatterlines!(
+                    ctx[:scene],
+                    map(a -> a[1:1], ctx[:lines][newrange[begin]]);
+                    linestyle = ctx[:linestyle],
+                    linewidth = ctx[:linewidth],
+                    color = RGB(ctx[:color]),
+                    label = ctx[:label],
+                )
+            end
         else
             # line with markers separated by markevery
 
             # draw plain line without the label
-            XMakie.lines!(
-                ctx[:scene],
-                map(a -> a, ctx[:lines][end]);
-                linestyle = ctx[:linestyle],
-                color = RGB(ctx[:color]),
-                linewidth = ctx[:linewidth],
-            )
-
-            # draw markers without label
-            XMakie.scatter!(
-                ctx[:scene],
-                map(a -> a[1:ctx[:markevery]:end], ctx[:lines][end]);
-                color = RGB(ctx[:color]),
-                marker = ctx[:markershape],
-                markercolor = RGB(ctx[:color]),
-                markersize = ctx[:markersize],
-            )
+            for l in newrange
+                XMakie.lines!(
+                    ctx[:scene],
+                    map(a -> a, ctx[:lines][l]);
+                    linestyle = ctx[:linestyle],
+                    color = RGB(ctx[:color]),
+                    linewidth = ctx[:linewidth],
+                )
+                # draw markers without label
+                XMakie.scatter!(
+                    ctx[:scene],
+                    map(a -> a[1:ctx[:markevery]:end], ctx[:lines][l]);
+                    color = RGB(ctx[:color]),
+                    marker = ctx[:markershape],
+                    markercolor = RGB(ctx[:color]),
+                    markersize = ctx[:markersize],
+                )
+            end
 
             # Draw  dummy line with marker on top ot the first
             # marker position already drawn in order to
@@ -421,7 +436,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
             if ctx[:label] != ""
                 XMakie.scatterlines!(
                     ctx[:scene],
-                    map(a -> a[1:1], ctx[:lines][end]);
+                    map(a -> a[1:1], ctx[:lines][newrange[begin]]);
                     linestyle = ctx[:linestyle],
                     linewidth = ctx[:linewidth],
                     marker = ctx[:markershape],
@@ -462,33 +477,39 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
 
         # ctx[:lines]  is an array of lines to draw
         # Here, we start just with the first one.
-        ctx[:lines] = [Observable(polyline(grid, func))]
 
-        update_lines(ctx)
+        ctx[:lines] = [Observable(polyline(grids[i], funcs[i])) for i = 1:nfuncs]
+
+        update_lines(ctx, 1:nfuncs)
 
         XMakie.reset_limits!(ctx[:scene])
 
-        ctx[:nlines] = 1
+        ctx[:nlines] = nfuncs
 
         XMakie.reset_limits!(ctx[:scene])
         add_scene!(ctx, ctx[:scene])
 
     else
         if ctx[:clear]
-            ctx[:nlines] = 1
+            ctx[:nlines] = nfuncs
         else
-            ctx[:nlines] += 1
+            ctx[:nlines] += nfuncs
         end
 
-        p = polyline(grid, func)
         # Either update existing line, or
         # create new one. This works with repeating sequences of
         # updating lines.
         if ctx[:nlines] <= length(ctx[:lines])
-            ctx[:lines][ctx[:nlines]][] = p
+            for i = 1:nfuncs
+                ctx[:lines][ctx[:nlines]-nfuncs+i][] = polyline(grids[i], funcs[i])
+            end
         else
-            push!(ctx[:lines], Observable(p))
-            update_lines(ctx)
+            r0 = length(ctx[:lines])
+            for i = 1:nfuncs
+                push!(ctx[:lines], Observable(polyline(grids[i], funcs[i])))
+            end
+            r1 = length(ctx[:lines])
+            update_lines(ctx, r0+1:r1)
         end
 
         XMakie.reset_limits!(ctx[:scene])
