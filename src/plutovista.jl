@@ -199,31 +199,57 @@ function scalarplot!(
     parentgrid,
     funcs,
 )
-    grid = parentgrid
-    func = funcs[1]
+    nfuncs = length(funcs)
+
     PlutoVista = ctx[:Plotter]
-    coord = grid[Coordinates]
     PlutoVista.backend!(ctx[:figure]; backend = ctx[:backend], datadim = 1)
-    PlutoVista.plot!(
-        ctx[:figure],
-        coord[1, :],
-        func;
-        color = ctx[:color],
-        markertype = ctx[:markershape],
-        markercount = length(func) ÷ ctx[:markevery],
-        linestyle = ctx[:linestyle],
-        xlabel = ctx[:xlabel],
-        ylabel = ctx[:ylabel],
-        label = ctx[:label],
-        linewidth = ctx[:linewidth],
-        legend = ctx[:legend],
-        xlimits = ctx[:xlimits],
-        limits = ctx[:limits],
-        clear = ctx[:clear],
-        title = ctx[:title],
-        xscale = ctx[:xscale],
-        yscale = ctx[:yscale],
-    )
+
+    for ifunc = 1:nfuncs
+        func = funcs[ifunc]
+        grid = grids[ifunc]
+        coord = grid[Coordinates]
+
+        if ifunc == 1
+            PlutoVista.plot!(
+                ctx[:figure],
+                coord[1, :],
+                func;
+                color = ctx[:color],
+                markertype = ctx[:markershape],
+                markercount = length(func) ÷ ctx[:markevery],
+                linestyle = ctx[:linestyle],
+                xlabel = ctx[:xlabel],
+                ylabel = ctx[:ylabel],
+                label = ctx[:label],
+                linewidth = ctx[:linewidth],
+                legend = ctx[:legend],
+                xlimits = ctx[:xlimits],
+                limits = ctx[:limits],
+                clear = ctx[:clear],
+                title = ctx[:title],
+                xscale = ctx[:xscale],
+                yscale = ctx[:yscale],
+            )
+        else
+            PlutoVista.plot!(
+                ctx[:figure],
+                coord[1, :],
+                func;
+                color = ctx[:color],
+                markertype = ctx[:markershape],
+                markercount = length(func) ÷ ctx[:markevery],
+                linestyle = ctx[:linestyle],
+                xlabel = ctx[:xlabel],
+                ylabel = ctx[:ylabel],
+                linewidth = ctx[:linewidth],
+                xlimits = ctx[:xlimits],
+                limits = ctx[:limits],
+                clear = false,
+                xscale = ctx[:xscale],
+                yscale = ctx[:yscale],
+            )
+        end
+    end
     reveal(ctx, TP)
 end
 
@@ -268,15 +294,37 @@ function scalarplot!(
     parentgrid,
     funcs,
 )
-    grid = parentgrid
-    func = funcs[1]
+
+    ngrids = length(grids)
+    coords = [grid[Coordinates] for grid in grids]
+    npoints = [num_nodes(grid) for grid in grids]
+    cellnodes = [grid[CellNodes] for grid in grids]
+    ncells = [num_cells(grid) for grid in grids]
+    offsets = zeros(Int, ngrids)
+    for i = 2:ngrids
+        offsets[i] = offsets[i-1] + npoints[i-1]
+    end
+
+    allcoords = hcat(coords...)
+
+    allcellnodes = Matrix{Int}(undef, 3, sum(ncells))
+    k = 1
+    for j = 1:ngrids
+        for i = 1:ncells[j]
+            allcellnodes[1, k] = cellnodes[j][1, i] + offsets[j]
+            allcellnodes[2, k] = cellnodes[j][2, i] + offsets[j]
+            allcellnodes[3, k] = cellnodes[j][3, i] + offsets[j]
+            k = k + 1
+        end
+    end
+
     PlutoVista = ctx[:Plotter]
     PlutoVista.backend!(ctx[:figure]; backend = ctx[:backend], datadim = 2)
     PlutoVista.tricontour!(
         ctx[:figure],
-        grid[Coordinates],
-        grid[CellNodes],
-        func;
+        allcoords,
+        allcellnodes,
+        vcat(funcs...),
         colormap = ctx[:colormap],
         levels = ctx[:levels],
         colorbarticks = ctx[:colorbarticks],
@@ -345,25 +393,24 @@ function scalarplot!(
     parentgrid,
     funcs,
 )
-    grid = parentgrid
-    func = funcs[1]
     PlutoVista = ctx[:Plotter]
-    nbregions = num_bfaceregions(grid)
+    nbregions = num_bfaceregions(parentgrid)
     bcmap = bregion_cmap(nbregions)
     PlutoVista.backend!(ctx[:figure]; backend = ctx[:backend], datadim = 3)
     PlutoVista.tetcontour!(
         ctx[:figure],
-        grid[Coordinates],
-        grid[CellNodes],
-        func;
+        [grid[Coordinates] for grid in grids],
+        [grid[CellNodes] for grid in grids],
+        funcs;
+        parentpts = parentgrid[Coordinates],
         levels = ctx[:levels],
         colormap = ctx[:colormap],
         xplanes = ctx[:xplanes],
         yplanes = ctx[:yplanes],
         zplanes = ctx[:zplanes],
         limits = ctx[:limits],
-        faces = grid[BFaceNodes],
-        facemarkers = grid[BFaceRegions],
+        faces = parentgrid[BFaceNodes],
+        facemarkers = parentgrid[BFaceRegions],
         facecolormap = bcmap,
         outlinealpha = ctx[:outlinealpha],
         levelalpha = ctx[:levelalpha],
