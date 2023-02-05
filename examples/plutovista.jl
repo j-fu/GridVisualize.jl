@@ -116,6 +116,44 @@ p = GridVisualizer(; resolution = (600, 200), dim = 1, legend = :lt);
 # ╔═╡ 661531f7-f740-4dd4-9a59-89ddff06ba5c
 scalarplot!(p, X2, f2(t4); show = true, clear = true, color = :red, label = "t=$(t4)")
 
+# ╔═╡ dda4599d-05a2-4131-899a-42a653a18b51
+md"""
+### Non-continuous functions
+"""
+
+# ╔═╡ 00b115d3-aa8e-43ef-be6b-3d9d7b42f8af
+let
+	X = 0:1:10
+    g = simplexgrid(X)
+    cellmask!(g, [0], [5], 2)
+    g1 = subgrid(g, [1])
+    g2 = subgrid(g, [2])
+
+
+    vis = GridVisualizer(color = :red,size=(600,200))
+    func1 = map((x) -> x, g1)
+    func2 = map((x) -> -x, g2)
+    func = map(x -> x^2 / 100, g)
+    scalarplot!(
+                vis,
+                [g1, g2],
+                g,
+                [func1, func2];
+                elevation = 0.1,
+                clear = true,
+                color = :red,
+            )
+    scalarplot!(
+                vis,
+                g,
+                func;
+                elevation = 0.1,
+                clear = false,
+                color = :green,
+            )
+            reveal(vis)
+end
+
 # ╔═╡ ed9b80e5-9678-4ba6-bb36-c2e0674ed9ba
 md"""
 ## 1D grid plot 
@@ -173,6 +211,24 @@ t= $(@bind t PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 
 # ╔═╡ 412c905f-050c-4b78-a66f-0d03978e7edf
 scalarplot!(vis, grid, f(t); limits = (-π / 2, π / 2), show = true, levels = 5)
+
+# ╔═╡ e3c5a486-ec9b-4010-901b-07f7ac997355
+md"""
+### Non-continuous functions
+"""
+
+# ╔═╡ 9b41e77b-e6b9-43b2-89ce-14a9c0eb1242
+let
+	X = 0:0.7:10
+    g = simplexgrid(X, X)
+    cellmask!(g, [0, 0], [5, 5], 2)
+    g1 = subgrid(g, [1])
+    g2 = subgrid(g, [2])
+
+    func1 = map((x, y) -> x^2 + y, g1)
+    func2 = map((x, y) -> (x + y^2), g2)
+    scalarplot([g1, g2], g, [func1, func2])
+end
 
 # ╔═╡ e9bc2dae-c303-4063-9ea9-36f95f93371c
 md"""
@@ -236,6 +292,33 @@ end
 
 # ╔═╡ 57ed5eea-bc1c-45eb-b4d3-dc63088db21a
 scalarplot(g4, map((x, y, z) -> 0.01 * exp(-10 * (x^2 + y^2 + z^2)), g4); levels = 10)
+
+# ╔═╡ 943da8f0-d18f-40d5-8158-a3ab5793112f
+md"""
+### Non-continuous functions
+"""
+
+# ╔═╡ ef973737-5cc3-4a3c-8859-a86d9c12c976
+let
+	X = 0:0.1:1
+    g = simplexgrid(X, X, X)
+    cellmask!(g, [0, 0, 0], [0.5, 0.5, 0.5], 2)
+    g1 = subgrid(g, [1])
+    g2 = subgrid(g, [2])
+    func1 = map((x, y, z) -> (x + y + z), g1)
+    func2 = map((x, y, z) -> (3 - x - y - z), g2)
+    scalarplot(
+        [g1, g2],
+        g,
+        [func1, func2];
+        levels = 0,
+        yplane = 0.25,
+        xplane = 0.25,
+        zplane = 0.25,
+        levelalpha = 1,
+        colormap = :hot,
+    )
+end
 
 # ╔═╡ 4b9113d2-10bd-4f7a-a2b8-22092656c6b3
 md"""
@@ -385,6 +468,8 @@ md"""
 # ╟─29fa4467-65ee-4dad-a660-5197864ddbdc
 # ╠═c1278fb2-3e75-445f-893a-b8b8a7e931d3
 # ╠═661531f7-f740-4dd4-9a59-89ddff06ba5c
+# ╟─dda4599d-05a2-4131-899a-42a653a18b51
+# ╠═00b115d3-aa8e-43ef-be6b-3d9d7b42f8af
 # ╟─ed9b80e5-9678-4ba6-bb36-c2e0674ed9ba
 # ╠═9ce4f63d-cd96-48d7-a637-07cb84fa88ab
 # ╠═d503ee1e-1e1f-4235-b286-dc3137a2c96a
@@ -396,6 +481,8 @@ md"""
 # ╠═faa59bbd-df1f-4c62-9a77-c4752c6a6df4
 # ╠═412c905f-050c-4b78-a66f-0d03978e7edf
 # ╟─6f1707ed-79ab-42dc-8ad8-d66a9e1a65b3
+# ╟─e3c5a486-ec9b-4010-901b-07f7ac997355
+# ╠═9b41e77b-e6b9-43b2-89ce-14a9c0eb1242
 # ╟─e9bc2dae-c303-4063-9ea9-36f95f93371c
 # ╠═2b3cb0f4-0656-4981-bec6-48785caf2994
 # ╠═1388c246-be49-4757-a2cc-a685642b6b37
@@ -408,6 +495,8 @@ md"""
 # ╠═ecd941a0-85b7-4bb7-a903-b19a500198e1
 # ╠═d924d90d-4102-4ae8-b8de-254a17a5d4df
 # ╠═57ed5eea-bc1c-45eb-b4d3-dc63088db21a
+# ╟─943da8f0-d18f-40d5-8158-a3ab5793112f
+# ╠═ef973737-5cc3-4a3c-8859-a86d9c12c976
 # ╟─4b9113d2-10bd-4f7a-a2b8-22092656c6b3
 # ╠═f78196ca-d972-4fa6-bdc2-e76eba7ca5a1
 # ╟─7dd92757-c100-4158-baa8-1d9218c39aa7
@@ -420,7 +509,7 @@ md"""
 # ╠═f6205299-d097-4e78-8488-b088475191f6
 # ╟─6915cc3e-ad9b-4721-9933-884cfc68a25a
 # ╟─49db8b25-50ce-4fb4-bea2-de8abfb53c56
-# ╠═15f4eeb3-c42e-449c-9161-f1df66de6cef
+# ╟─15f4eeb3-c42e-449c-9161-f1df66de6cef
 # ╟─75ffcd09-dfa8-42df-a3cd-a7e68786e73c
 # ╟─cf592b99-d596-4511-adbf-001145a59983
 # ╠═bc1c6d12-8d06-4f57-9044-8b5e86fd1c13

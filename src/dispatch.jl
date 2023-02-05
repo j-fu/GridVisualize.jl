@@ -433,7 +433,38 @@ Keyword arguments: see [`available_kwargs`](@ref)
 function scalarplot!(ctx::SubVisualizer, grid::ExtendableGrid, func; kwargs...)
     _update_context!(ctx, Dict(:clear => true, :show => false, :reveal => false))
     _update_context!(ctx, kwargs)
-    scalarplot!(ctx, plottertype(ctx[:Plotter]), Val{dim_space(grid)}, grid, func)
+    scalarplot!(ctx, plottertype(ctx[:Plotter]), Val{dim_space(grid)}, [grid], grid, [func])
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Plot node vectors on subgrids of parent grid as P1 FEM function on the triangulation into subplot in the visualizer.
+If `[i,j]` is omitted, `[1,1]` is assumed.
+eyword arguments: see [`available_kwargs`](@ref)
+"""
+function scalarplot!(
+    ctx::SubVisualizer,
+    grids::Vector{ExtendableGrid{Tv,Ti}},
+    parentgrid::ExtendableGrid{Tv,Ti},
+    funcs::AbstractVector;
+    kwargs...,
+) where {Tv,Ti}
+    _update_context!(ctx, Dict(:clear => true, :show => false, :reveal => false))
+    _update_context!(ctx, kwargs)
+    if length(grids) != length(funcs)
+        error(
+            "number of subgrids: $(length(grids)) and number of functions: $(length(funcs)) not equal",
+        )
+    end
+    scalarplot!(
+        ctx,
+        plottertype(ctx[:Plotter]),
+        Val{dim_space(parentgrid)},
+        grids,
+        parentgrid,
+        funcs,
+    )
 end
 
 "$(TYPEDSIGNATURES)"
@@ -447,8 +478,22 @@ function scalarplot!(ctx::SubVisualizer, grid::ExtendableGrid, func::Function; k
 end
 
 "$(TYPEDSIGNATURES)"
+function scalarplot!(
+    p::GridVisualizer,
+    grids::Vector{ExtendableGrid{Tv,Ti}},
+    parentgrid::ExtendableGrid{Tv,Ti},
+    funcs::AbstractVector;
+    kwargs...,
+) where {Tv,Ti}
+    scalarplot!(p[1, 1], grids, parentgrid, funcs; kwargs...)
+end
+
+
+
+
+"$(TYPEDSIGNATURES)"
 function scalarplot!(ctx::SubVisualizer, func::AbstractVector; kwargs...)
-    scalarplot!(ctx, simplexgrid(X), 1:length(func), func; kwargs...)
+    scalarplot!(ctx, simplexgrid(1:length(func)), func; kwargs...)
 end
 
 "$(TYPEDSIGNATURES)"
@@ -499,11 +544,30 @@ function scalarplot(grid::ExtendableGrid, func; Plotter = default_plotter(), kwa
     scalarplot!(GridVisualizer(; Plotter = Plotter, kwargs...), grid, func; show = true)
 end
 
+
+function scalarplot(
+    grids::Vector{ExtendableGrid{Tv,Ti}},
+    parentgrid::ExtendableGrid{Tv,Ti},
+    funcs::AbstractVector;
+    Plotter = default_plotter(),
+    kwargs...,
+) where {Tv,Ti}
+    scalarplot!(
+        GridVisualizer(; Plotter = Plotter, kwargs...),
+        grids,
+        parentgrid,
+        funcs;
+        show = true,
+    )
+end
+
+
 "$(TYPEDSIGNATURES)"
 scalarplot(func::AbstractVector; kwargs...) = scalarplot(1:length(func), func; kwargs...)
 
 "$(TYPEDSIGNATURES)"
-scalarplot(X::AbstractVector, func; kwargs...) = scalarplot(simplexgrid(X), func; kwargs...)
+scalarplot(X::AbstractVector{T}, func; kwargs...) where {T<:Number} =
+    scalarplot(simplexgrid(X), func; kwargs...)
 
 "$(TYPEDSIGNATURES)"
 function scalarplot(X::AbstractVector, Y::AbstractVector, func; kwargs...)

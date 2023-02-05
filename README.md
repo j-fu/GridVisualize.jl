@@ -119,7 +119,7 @@ and all plotting functions will do nothing.
 - 'y': available
 - 'i': some level of interactive control
 - '(y)': availability only on rectangular grids
-- 'p':  planned
+- 'p':  planned (no schedule though)
 - 'n': probably not, also in the future
 
 |                | PyPlot | Makie   | PlutoVista | Plots | VTKView |
@@ -135,8 +135,7 @@ and all plotting functions will do nothing.
 | gridplot, 3D   | y      | y,i     | y,i        |  n    | y,i     |
 | vectorplot, 3D | p      | p       | p          |  n    |         |
 | streamplot, 3D |        | p       | p          |  n    |         |
-| movie          | p      | y       | n          |  y    |         |
-
+| movie          | n      | y       | n          |  y    |         |
 
 
 ## Sample output

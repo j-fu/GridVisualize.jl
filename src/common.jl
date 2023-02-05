@@ -56,6 +56,13 @@ function GridVisualizeTools.marching_tetrahedra(grid::ExtendableGrid, func, plan
     marching_tetrahedra(coord, cellnodes, func, planes, flevels; kwargs...)
 end
 
+function GridVisualizeTools.marching_tetrahedra(grids::Vector{ExtendableGrid{Tv,Ti}}, funcs, planes, flevels;
+                                                kwargs...) where {Tv,Ti}
+    coord = [grid[Coordinates] for grid in grids]
+    cellnodes = [grid[CellNodes] for grid in grids]
+    marching_tetrahedra(coord, cellnodes, funcs, planes, flevels; kwargs...)
+end
+
 ########################################################################################
 """
     $(SIGNATURES)
@@ -67,6 +74,14 @@ function GridVisualizeTools.marching_triangles(grid::ExtendableGrid, func, level
     cellnodes::Matrix{Int32} = grid[CellNodes]
     marching_triangles(coord, cellnodes, func, levels)
 end
+
+
+function GridVisualizeTools.marching_triangles(grids::Vector{ExtendableGrid{Tv,Ti}}, funcs, levels) where {Tv,Ti}
+    coords = [grid[Coordinates] for grid in grids]
+    cellnodes = [ grid[CellNodes] for grid in grids]
+    marching_triangles(coords, cellnodes, funcs, levels)
+end
+
 
 ##############################################
 # Create meshes from grid data
@@ -280,8 +295,8 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
 end
 
 # Calculate isolevel values and function limits
-function isolevels(ctx, func)
-    makeisolevels(func,
+function isolevels(ctx, funcs)
+    makeisolevels(funcs,
                   ctx[:levels],
                   ctx[:limits] == :auto ? (1, -1) : ctx[:limits],
                   ctx[:colorbarticks] == :default ? nothing : ctx[:colorbarticks])
