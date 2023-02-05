@@ -19,7 +19,7 @@ using GridVisualize
 
 # ### 1D grids
 function grid1d(; n = 50)
-    X = collect(0:(1 / n):1)
+    X = collect(0:(1/n):1)
     g = simplexgrid(X)
 end
 
@@ -31,7 +31,7 @@ end
 # ### 2D grids
 
 function grid2d(; n = 20)
-    X = collect(0:(1 / n):1)
+    X = collect(0:(1/n):1)
     g = simplexgrid(X, X)
 end
 
@@ -48,7 +48,7 @@ end
 # For Makie and VTKView, the cutplane values can be controlled interactively.
 
 function grid3d(; n = 15)
-    X = collect(0:(1 / n):1)
+    X = collect(0:(1/n):1)
     g = simplexgrid(X, X, X)
 end
 
@@ -98,10 +98,16 @@ function func3d(; n = 15)
     g, map((x, y, z) -> sinpi(2 * x) * sinpi(3.5 * y) * sinpi(1.5 * z), g)
 end
 
-function plotting_func3d(; Plotter = default_plotter(), zplane = 0.49, xplane = 0.49,
-                         levels = [0.25], kwargs...)
+function plotting_func3d(;
+    Plotter = default_plotter(),
+    zplane = 0.49,
+    xplane = 0.49,
+    levels = [0.25],
+    kwargs...,
+)
     g, f = func3d()
-    scalarplot(g, f; Plotter = Plotter, zplane, xplane, levels, kwargs...)
+    #    scalarplot(g, f; Plotter = Plotter, zplane, xplane, levels, kwargs...)
+    scalarplot(g, f; Plotter = Plotter)
 end
 # ![](plotting_func3d.svg)
 
@@ -110,8 +116,10 @@ end
 function vec2d(; n = 20)
     g = grid2d(; n = n)
     g,
-    vcat(map((x, y) -> sinpi(2 * x) * sinpi(3.5 * y), g)',
-         map((x, y) -> cospi(2 * x) * cospi(3.5 * y), g)')
+    vcat(
+        map((x, y) -> sinpi(2 * x) * sinpi(3.5 * y), g)',
+        map((x, y) -> cospi(2 * x) * cospi(3.5 * y), g)',
+    )
 end
 
 function plotting_vec2d(; Plotter = default_plotter(), kwargs...)
@@ -130,21 +138,39 @@ end
 
 # ### Movie
 # Movies can contain  any of the previous plots.
-function plotting_movie(;filename="plotting_video.gif", Plotter=default_plotter())
-    vis=GridVisualizer(Plotter=Plotter,size=(600,200),layout=(1,2))
-    X=0:0.2:10
-    grid=simplexgrid(X,X)
-    movie(vis,file=filename) do vis
-        for t=0:0.1:10
-	    f=map( (x,y)-> sin(x-t)*cos(y-t),grid)
-	    g=map( (x,y)-> sin(t)*sin(x)*cos(y),grid)
-	    scalarplot!(vis[1,1],grid,f,clear=true, title="t=$(t)",limits=(-1,1),levels=7,colormap=:hot)
-	    scalarplot!(vis[1,2],grid,g,clear=true, title="t=$(t)",limits=(-1,1),levels=7,colormap=:hot)
-	    reveal(vis)
+function plotting_movie(; filename = "plotting_video.gif", Plotter = default_plotter())
+    vis = GridVisualizer(Plotter = Plotter, size = (600, 200), layout = (1, 2))
+    X = 0:0.2:10
+    grid = simplexgrid(X, X)
+    movie(vis, file = filename) do vis
+        for t = 0:0.1:10
+            f = map((x, y) -> sin(x - t) * cos(y - t), grid)
+            g = map((x, y) -> sin(t) * sin(x) * cos(y), grid)
+            scalarplot!(
+                vis[1, 1],
+                grid,
+                f,
+                clear = true,
+                title = "t=$(t)",
+                limits = (-1, 1),
+                levels = 7,
+                colormap = :hot,
+            )
+            scalarplot!(
+                vis[1, 2],
+                grid,
+                g,
+                clear = true,
+                title = "t=$(t)",
+                limits = (-1, 1),
+                levels = 7,
+                colormap = :hot,
+            )
+            reveal(vis)
         end
     end
 end
-# ![](plotting_video.gif)
+# ![](plotting_movie.gif)
 
 
 # ## Multiscene plots
@@ -158,22 +184,155 @@ end
 # one subscene.
 function plotting_multiscene!(p)
     gridplot!(p[1, 1], grid1d(); title = "1D grid")
-    scalarplot!(p[2, 1], grid1d(), sin; title = "1D grid function", label = "sin",
-                markershape = :diamond, color = :red, legend = :rb)
-    scalarplot!(p[2, 1], grid1d(), cos; title = "1D grid function", label = "cos",
-                linestyle = :dash, markershape = :none, color = :green, clear = false)
+    scalarplot!(
+        p[2, 1],
+        grid1d(),
+        sin;
+        title = "1D grid function",
+        label = "sin",
+        markershape = :diamond,
+        color = :red,
+        legend = :rb,
+    )
+    scalarplot!(
+        p[2, 1],
+        grid1d(),
+        cos;
+        title = "1D grid function",
+        label = "cos",
+        linestyle = :dash,
+        markershape = :none,
+        color = :green,
+        clear = false,
+    )
     gridplot!(p[1, 2], grid2d(); title = "2D grid")
     scalarplot!(p[2, 2], func2d()...; colormap = :bamako, title = "2D grid function")
     gridplot!(p[1, 3], grid3d(); zplane = 0.49, title = "3D grid")
-    scalarplot!(p[2, 3], func3d()...; zplane = 0.49, flevel = 0.5, colormap = :bamako,
-                title = "3D grid function")
+    scalarplot!(
+        p[2, 3],
+        func3d()...;
+        zplane = 0.49,
+        flevel = 0.5,
+        colormap = :bamako,
+        title = "3D grid function",
+    )
     vectorplot!(p[1, 4], vec2d()...; title = "2D quiver")
     GridVisualize.streamplot!(p[2, 4], vec2d()...; title = "2D stream")
     reveal(p)
 end
 
 function plotting_multiscene(; Plotter = default_plotter(), resolution = (1000, 500))
-    plotting_multiscene!(GridVisualizer(; Plotter = Plotter, layout = (2, 4), clear = true,
-                                        resolution = resolution))
+    plotting_multiscene!(
+        GridVisualizer(;
+            Plotter = Plotter,
+            layout = (2, 4),
+            clear = true,
+            resolution = resolution,
+        ),
+    )
 end
 # ![](plotting_multiscene.svg)
+
+
+
+# ## Plots of functions on subgrids interfaces
+# We can jointly plot functions on different subgrids whic
+# e.g. model a particle density jumping at a heterointerface
+# Currently supported for PyPlot and Makie
+#
+# The general scheme is to pass a vector of subgrid, the parent grid and the corresponding
+# vector of functions on the respective subgrids
+#
+# ### 1D case
+function plotting_jfunc1d(; Plotter = default_plotter(), filename = "plotting_jfunc1d.gif")
+    X = 0:1:10
+    g = simplexgrid(X)
+    cellmask!(g, [0], [5], 2)
+    g1 = subgrid(g, [1])
+    g2 = subgrid(g, [2])
+
+
+    vis = GridVisualizer(; Plotter, color = :red)
+    movie(vis, file = filename) do vis
+        for t = 0:0.05:1
+            func1 = map((x) -> x - t, g1)
+            func2 = map((x) -> -x + t, g2)
+            func = map(x -> x^2 / 100 - t, g)
+            scalarplot!(
+                vis,
+                [g1, g2],
+                g,
+                [func1, func2];
+                Plotter,
+                elevation = 0.1,
+                clear = true,
+                color = :red,
+            )
+            scalarplot!(
+                vis,
+                g,
+                func;
+                Plotter,
+                elevation = 0.1,
+                clear = false,
+                color = :green,
+            )
+            reveal(vis)
+        end
+    end
+end
+
+# ![](plotting_jfunc1d.gif)
+
+
+# ### 2D case
+function plotting_jfunc2d(; Plotter = default_plotter(), kwargs...)
+    X = 0:0.7:10
+    g = simplexgrid(X, X)
+    cellmask!(g, [0, 0], [5, 5], 2)
+    g1 = subgrid(g, [1])
+    g2 = subgrid(g, [2])
+
+    func1 = map((x, y) -> x^2 + y, g1)
+    func2 = map((x, y) -> (x + y^2), g2)
+    scalarplot([g1, g2], g, [func1, func2]; Plotter, kwargs...)
+end
+
+# ![](plotting_jfunc2d.svg)
+
+# ### 3D case
+function plotting_jfunc3d(;
+    Plotter = default_plotter(),
+    levels = 0,
+    yplane = 0.25,
+    xplane = 0.25,
+    zplane = 0.25,
+    levelalpha = 1,
+    colormap = :hot,
+    kwargs...,
+)
+    X = 0:0.1:1
+    g = simplexgrid(X, X, X)
+    cellmask!(g, [0, 0, 0], [0.5, 0.5, 0.5], 2)
+    g1 = subgrid(g, [1])
+    g2 = subgrid(g, [2])
+    func1 = map((x, y, z) -> (x + y + z), g1)
+    func2 = map((x, y, z) -> (3 - x - y - z), g2)
+    scalarplot(
+        [g1, g2],
+        g,
+        [func1, func2];
+        Plotter,
+        levels,
+        xplane,
+        yplane,
+        zplane,
+        levelalpha,
+        colormap,
+        kwargs...,
+    )
+end
+
+# ![](plotting_jfunc3d.svg)
+
+

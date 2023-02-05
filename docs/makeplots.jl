@@ -8,12 +8,12 @@ function makeplots(picdir; Plotter=GLMakie, extension="png")
     println("multiscene")
 
    
-    p=plotting_func3d(Plotter=Plotter)
-    fname=joinpath(picdir,"plotting_func3d."*extension)
+
+    p=plotting_func1d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_func1d."*extension)
     save(fname,p,Plotter=Plotter)
     @test isfile(fname)
-    println("func3d")
-
+    println("func1d")
 
     p=plotting_func2d(Plotter=Plotter)
     fname=joinpath(picdir,"plotting_func2d."*extension)
@@ -21,11 +21,30 @@ function makeplots(picdir; Plotter=GLMakie, extension="png")
     @test isfile(fname)
     println("func2d")
 
-    p=plotting_func1d(Plotter=Plotter)
-    fname=joinpath(picdir,"plotting_func1d."*extension)
+    p=plotting_func3d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_func3d."*extension)
     save(fname,p,Plotter=Plotter)
     @test isfile(fname)
-    println("func1d")
+    println("func3d")
+
+
+    fname=joinpath(picdir,"plotting_jfunc1d."*"gif")
+    p=plotting_jfunc1d(Plotter=Plotter,filename=fname)
+    @test isfile(fname)
+    println("jfunc1d")
+
+    p=plotting_jfunc2d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_jfunc2d."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname)
+    println("jfunc2d")
+
+    p=plotting_jfunc3d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_jfunc3d."*extension)
+    save(fname,p,Plotter=Plotter)
+    @test isfile(fname)
+    println("jfunc3d")
+
 
     p=plotting_vec2d(Plotter=Plotter)
     fname=joinpath(picdir,"plotting_vec2d."*extension)
@@ -39,11 +58,11 @@ function makeplots(picdir; Plotter=GLMakie, extension="png")
     @test isfile(fname) || GridVisualize.plottername!="PyPlot"
     println("stream2d")
 
-    p=plotting_grid3d(Plotter=Plotter)
-    fname=joinpath(picdir,"plotting_grid3d."*extension)
+    p=plotting_grid1d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_grid1d."*extension)
     save(fname,p,Plotter=Plotter)
     @test isfile(fname)
-    println("grid3d")
+    println("grid1d")
 
     p=plotting_grid2d(Plotter=Plotter)
     fname=joinpath(picdir,"plotting_grid2d."*extension)
@@ -51,17 +70,15 @@ function makeplots(picdir; Plotter=GLMakie, extension="png")
     @test isfile(fname)
     println("grid2d")
 
-
-    p=plotting_grid1d(Plotter=Plotter)
-    fname=joinpath(picdir,"plotting_grid1d."*extension)
+    p=plotting_grid3d(Plotter=Plotter)
+    fname=joinpath(picdir,"plotting_grid3d."*extension)
     save(fname,p,Plotter=Plotter)
     @test isfile(fname)
-    println("grid1d")
+    println("grid3d")
 
-
-    fname=joinpath(picdir,"plotting_video."*"gif")
+    fname=joinpath(picdir,"plotting_movie."*"gif")
     p=plotting_movie(;filename=fname,Plotter=Plotter)
     @test isfile(fname)
-    println("plotting_video")
+    println("plotting_movie")
     true
 end

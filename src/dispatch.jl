@@ -436,6 +436,13 @@ function scalarplot!(ctx::SubVisualizer, grid::ExtendableGrid, func; kwargs...)
     scalarplot!(ctx, plottertype(ctx[:Plotter]), Val{dim_space(grid)}, [grid], grid, [func])
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Plot node vectors on subgrids of parent grid as P1 FEM function on the triangulation into subplot in the visualizer.
+If `[i,j]` is omitted, `[1,1]` is assumed.
+eyword arguments: see [`available_kwargs`](@ref)
+"""
 function scalarplot!(
     ctx::SubVisualizer,
     grids::Vector{ExtendableGrid{Tv,Ti}},
@@ -445,6 +452,11 @@ function scalarplot!(
 ) where {Tv,Ti}
     _update_context!(ctx, Dict(:clear => true, :show => false, :reveal => false))
     _update_context!(ctx, kwargs)
+    if length(grids) != length(funcs)
+        error(
+            "number of subgrids: $(length(grids)) and number of functions: $(length(funcs)) not equal",
+        )
+    end
     scalarplot!(
         ctx,
         plottertype(ctx[:Plotter]),

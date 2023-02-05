@@ -13,12 +13,12 @@ function initialize!(p::GridVisualizer, ::Type{MakieType})
 
     if version_installed < version_min
         error(
-            "Outdated version $(version_installed) of XMakie. Please upgrade to at least $(version_min)",
+            "Outdated version $(version_installed) of Makie. Please upgrade to at least $(version_min)",
         )
     end
 
     if version_installed > version_max
-        @warn("Possibly breaking version $(version_installed) of XMakie.")
+        @warn("Possibly breaking version $(version_installed) of Makie.")
     end
 
     # Prepare flippable layout
