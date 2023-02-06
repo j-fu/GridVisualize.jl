@@ -599,10 +599,10 @@ function vectorplot!(ctx::SubVisualizer, grid::ExtendableGrid, func; kwargs...)
 end
 
 function vectorplot!(ctx, ptype, ::Type{Val{1}}, grid, func::Matrix)
-    scalarplot!(ctx, ptype, Val{1}, grid, func[1, :])
+    scalarplot!(ctx, ptype, Val{1}, [grid], grid, [func[1, :]])
 end
 function vectorplot!(ctx, ptype, ::Type{Val{1}}, grid, func::Vector)
-    scalarplot!(ctx, ptype, Val{1}, grid, func)
+    scalarplot!(ctx, ptype, Val{1}, [grid], grid, [func])
 end
 
 "$(TYPEDSIGNATURES)"
