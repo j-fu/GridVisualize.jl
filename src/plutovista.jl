@@ -379,8 +379,12 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)
         colormap = cmap,
         faces = faces,
         facemarkers = facemarkers,
+        gridscale = ctx[:gridscale],
         facecolormap = bcmap,
         outlinealpha = ctx[:outlinealpha],
+        xlabel = ctx[:xlabel],
+        ylabel = ctx[:ylabel],
+        zlabel = ctx[:zlabel],
     )
     reveal(ctx, TP)
 end
@@ -415,6 +419,7 @@ function scalarplot!(
         outlinealpha = ctx[:outlinealpha],
         levelalpha = ctx[:levelalpha],
         zoom = ctx[:zoom],
+        gridscale = ctx[:gridscale],
         aspect = ctx[:aspect],
         xlabel = ctx[:xlabel],
         ylabel = ctx[:ylabel],
