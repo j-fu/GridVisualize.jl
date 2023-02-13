@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Plotting examples · GridVisualize.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">GridVisualize.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../api/">Public API</a></li><li><a class="tocitem" href="../../privapi/">Private API</a></li><li><span class="tocitem">Examples</span><ul><li class="is-active"><a class="tocitem" href>Plotting examples</a><ul class="internal"><li><a class="tocitem" href="#Plotters"><span>Plotters</span></a></li><li><a class="tocitem" href="#Grid-plots"><span>Grid plots</span></a></li><li><a class="tocitem" href="#Function-plots"><span>Function plots</span></a></li><li><a class="tocitem" href="#Vector-and-stream-plots"><span>Vector and stream plots</span></a></li><li><a class="tocitem" href="#Multiscene-plots"><span>Multiscene plots</span></a></li><li><a class="tocitem" href="#Plots-of-functions-on-subgrids-interfaces"><span>Plots of functions on subgrids interfaces</span></a></li></ul></li><li><a class="tocitem" href="../pluto/">Pluto notebook</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Plotting examples</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Plotting examples</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/j-fu/GridVisualize.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Plotting-examples"><a class="docs-heading-anchor" href="#Plotting-examples">Plotting examples</a><a id="Plotting-examples-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting-examples" title="Permalink"></a></h1><h2 id="Plotters"><a class="docs-heading-anchor" href="#Plotters">Plotters</a><a id="Plotters-1"></a><a class="docs-heading-anchor-permalink" href="#Plotters" title="Permalink"></a></h2><p>All plot functions in GridVisualize.jl have a <code>Plotter</code> keyword argument  which defaults to <code>nothing</code>.  This allows to pass a module as plotting backend  without creating a dependency. Fully supported are <code>PyPlot</code>, <code>GLMakie</code> and <code>PlutoVista</code>.  <code>WGLMakie</code> and <code>CairoMakie</code> work in principle but in the moment don&#39;t deliver  all necessary functionality. For <code>Plots</code> we miss the possibility to work with triangle meshes (this is under development, though)</p><p>Also supported is <a href="https://github.com/j-fu/VTKView.jl"><code>VTKView</code></a>  which is exeprimental and works only on linux.</p><h2 id="Grid-plots"><a class="docs-heading-anchor" href="#Grid-plots">Grid plots</a><a id="Grid-plots-1"></a><a class="docs-heading-anchor-permalink" href="#Grid-plots" title="Permalink"></a></h2><p>Here, we define some sample grids for plotting purposes.</p><pre><code class="language-julia hljs">using ExtendableGrids
+using GridVisualize</code></pre><h3 id="D-grids"><a class="docs-heading-anchor" href="#D-grids">1D grids</a><a id="D-grids-1"></a><a class="docs-heading-anchor-permalink" href="#D-grids" title="Permalink"></a></h3><pre><code class="language-julia hljs">function grid1d(; n = 50)
+    X = collect(0:(1/n):1)
+    g = simplexgrid(X)
+end
+
+function plotting_grid1d(; Plotter = default_plotter(), kwargs...)
+    gridplot(grid1d(); Plotter = Plotter, resolution = (500, 200), kwargs...)
+end</code></pre><p><img src="../plotting_grid1d.svg" alt/></p><h3 id="D-grids-2"><a class="docs-heading-anchor" href="#D-grids-2">2D grids</a><a class="docs-heading-anchor-permalink" href="#D-grids-2" title="Permalink"></a></h3><pre><code class="language-julia hljs">function grid2d(; n = 20)
+    X = collect(0:(1/n):1)
+    g = simplexgrid(X, X)
+end
+
+function plotting_grid2d(; Plotter = default_plotter(), kwargs...)
+    gridplot(grid2d(); Plotter = Plotter, kwargs...)
+end</code></pre><p><img src="../plotting_grid2d.svg" alt/></p><h3 id="D-grids-3"><a class="docs-heading-anchor" href="#D-grids-3">3D grids</a><a class="docs-heading-anchor-permalink" href="#D-grids-3" title="Permalink"></a></h3><p>The kwargs <code>xplane</code>, <code>yplane</code> and <code>zplane</code> which allow to control cutplanes which peel off some elements from the grid in 3d and allow to explore the inner triangulation.</p><p>For Makie and VTKView, the cutplane values can be controlled interactively.</p><pre><code class="language-julia hljs">function grid3d(; n = 15)
+    X = collect(0:(1/n):1)
+    g = simplexgrid(X, X, X)
+end
+
+function plotting_grid3d(; Plotter = default_plotter(), kwargs...)
+    gridplot(grid3d(); Plotter = Plotter, kwargs...)
+end</code></pre><p><img src="../plotting_grid3d.svg" alt/></p><h2 id="Function-plots"><a class="docs-heading-anchor" href="#Function-plots">Function plots</a><a id="Function-plots-1"></a><a class="docs-heading-anchor-permalink" href="#Function-plots" title="Permalink"></a></h2><h3 id="Function-on-1D-grid"><a class="docs-heading-anchor" href="#Function-on-1D-grid">Function on 1D grid</a><a id="Function-on-1D-grid-1"></a><a class="docs-heading-anchor-permalink" href="#Function-on-1D-grid" title="Permalink"></a></h3><pre><code class="language-julia hljs">function func1d(; n = 50)
+    g = grid1d(; n = n)
+    g, map(x -&gt; sinpi(2 * x[1]), g)
+end
+
+function plotting_func1d(; Plotter = default_plotter(), kwargs...)
+    g, f = func1d()
+    scalarplot(g, f; Plotter = Plotter, resolution = (500, 300), kwargs...)
+end</code></pre><p><img src="../plotting_func1d.svg" alt/></p><h3 id="Function-on-2D-grid"><a class="docs-heading-anchor" href="#Function-on-2D-grid">Function on 2D grid</a><a id="Function-on-2D-grid-1"></a><a class="docs-heading-anchor-permalink" href="#Function-on-2D-grid" title="Permalink"></a></h3><pre><code class="language-julia hljs">function func2d(; n = 20)
+    g = grid2d(; n = n)
+    g, map((x, y) -&gt; sinpi(2 * x) * sinpi(3.5 * y), g)
+end
+
+function plotting_func2d(; Plotter = default_plotter(), kwargs...)
+    g, f = func2d()
+    scalarplot(g, f; Plotter = Plotter, levels = 10, kwargs...)
+end</code></pre><p><img src="../plotting_func2d.svg" alt/></p><h3 id="Function-on-3D-grid"><a class="docs-heading-anchor" href="#Function-on-3D-grid">Function on 3D grid</a><a id="Function-on-3D-grid-1"></a><a class="docs-heading-anchor-permalink" href="#Function-on-3D-grid" title="Permalink"></a></h3><p>Plotting a function then goes as follows: <code>xplane</code>, <code>yplane</code> and <code>zplane</code> now define cut planes where the function projection is plotted as a heatmap. The additional <code>flevel</code> keyword argument allows to control an isolevel.</p><p>For Makie and VTKView, the cutplane values and the flevel can be controlled interactively.</p><pre><code class="language-julia hljs">function func3d(; n = 15)
+    g = grid3d(; n = n)
+    g, map((x, y, z) -&gt; sinpi(2 * x) * sinpi(3.5 * y) * sinpi(1.5 * z), g)
+end
+
+function plotting_func3d(;
+    Plotter = default_plotter(),
+    zplane = 0.49,
+    xplane = 0.49,
+    levels = [0.25],
+    kwargs...,
+)
+    g, f = func3d()</code></pre><p>scalarplot(g, f; Plotter = Plotter, zplane, xplane, levels, kwargs...)</p><pre><code class="language-julia hljs">    scalarplot(g, f; Plotter = Plotter)
+end</code></pre><p><img src="../plotting_func3d.svg" alt/></p><h2 id="Vector-and-stream-plots"><a class="docs-heading-anchor" href="#Vector-and-stream-plots">Vector and stream plots</a><a id="Vector-and-stream-plots-1"></a><a class="docs-heading-anchor-permalink" href="#Vector-and-stream-plots" title="Permalink"></a></h2><h3 id="D-vector"><a class="docs-heading-anchor" href="#D-vector">2D vector</a><a id="D-vector-1"></a><a class="docs-heading-anchor-permalink" href="#D-vector" title="Permalink"></a></h3><pre><code class="language-julia hljs">function vec2d(; n = 20)
+    g = grid2d(; n = n)
+    g,
+    vcat(
+        map((x, y) -&gt; sinpi(2 * x) * sinpi(3.5 * y), g)&#39;,
+        map((x, y) -&gt; cospi(2 * x) * cospi(3.5 * y), g)&#39;,
+    )
+end
+
+function plotting_vec2d(; Plotter = default_plotter(), kwargs...)
+    g, f = vec2d()
+    vectorplot(g, f; Plotter = Plotter, kwargs...)
+end</code></pre><p><img src="../plotting_vec2d.svg" alt/></p><h3 id="D-stream"><a class="docs-heading-anchor" href="#D-stream">2D stream</a><a id="D-stream-1"></a><a class="docs-heading-anchor-permalink" href="#D-stream" title="Permalink"></a></h3><p>Stream plots are currently only available with PyPlot.</p><pre><code class="language-julia hljs">function plotting_stream2d(; Plotter = default_plotter(), kwargs...)
+    g, f = vec2d()
+    streamplot(g, f; Plotter = Plotter, spacing = 0.05, kwargs...)
+end</code></pre><p><img src="plotting_stream2d.svg" alt/></p><h3 id="Movie"><a class="docs-heading-anchor" href="#Movie">Movie</a><a id="Movie-1"></a><a class="docs-heading-anchor-permalink" href="#Movie" title="Permalink"></a></h3><p>Movies can contain  any of the previous plots.</p><pre><code class="language-julia hljs">function plotting_movie(; filename = &quot;plotting_video.gif&quot;, Plotter = default_plotter())
+    vis = GridVisualizer(Plotter = Plotter, size = (600, 200), layout = (1, 2))
+    X = 0:0.2:10
+    grid = simplexgrid(X, X)
+    movie(vis, file = filename) do vis
+        for t = 0:0.1:10
+            f = map((x, y) -&gt; sin(x - t) * cos(y - t), grid)
+            g = map((x, y) -&gt; sin(t) * sin(x) * cos(y), grid)
+            scalarplot!(
+                vis[1, 1],
+                grid,
+                f,
+                clear = true,
+                title = &quot;t=$(t)&quot;,
+                limits = (-1, 1),
+                levels = 7,
+                colormap = :hot,
+            )
+            scalarplot!(
+                vis[1, 2],
+                grid,
+                g,
+                clear = true,
+                title = &quot;t=$(t)&quot;,
+                limits = (-1, 1),
+                levels = 7,
+                colormap = :hot,
+            )
+            reveal(vis)
+        end
+    end
+end</code></pre><p><img src="../plotting_movie.gif" alt/></p><h2 id="Multiscene-plots"><a class="docs-heading-anchor" href="#Multiscene-plots">Multiscene plots</a><a id="Multiscene-plots-1"></a><a class="docs-heading-anchor-permalink" href="#Multiscene-plots" title="Permalink"></a></h2><p>We can combine multiple plots into one scene according to some layout grid given by the layout parameter.</p><p>This is not currently supported by the PlutVista backend.</p><p>The &#39;,&#39; key for GLMakie and the &#39;*&#39; key for VTKView allow to switch between gallery view (default) and focused view of only one subscene.</p><pre><code class="language-julia hljs">function plotting_multiscene!(p)
+    gridplot!(p[1, 1], grid1d(); title = &quot;1D grid&quot;)
+    scalarplot!(
+        p[2, 1],
+        grid1d(),
+        sin;
+        title = &quot;1D grid function&quot;,
+        label = &quot;sin&quot;,
+        markershape = :diamond,
+        color = :red,
+        legend = :rb,
+    )
+    scalarplot!(
+        p[2, 1],
+        grid1d(),
+        cos;
+        title = &quot;1D grid function&quot;,
+        label = &quot;cos&quot;,
+        linestyle = :dash,
+        markershape = :none,
+        color = :green,
+        clear = false,
+    )
+    gridplot!(p[1, 2], grid2d(); title = &quot;2D grid&quot;)
+    scalarplot!(p[2, 2], func2d()...; colormap = :bamako, title = &quot;2D grid function&quot;)
+    gridplot!(p[1, 3], grid3d(); zplane = 0.49, title = &quot;3D grid&quot;)
+    scalarplot!(
+        p[2, 3],
+        func3d()...;
+        zplane = 0.49,
+        flevel = 0.5,
+        colormap = :bamako,
+        title = &quot;3D grid function&quot;,
+    )
+    vectorplot!(p[1, 4], vec2d()...; title = &quot;2D quiver&quot;)
+    GridVisualize.streamplot!(p[2, 4], vec2d()...; title = &quot;2D stream&quot;)
+    reveal(p)
+end
+
+function plotting_multiscene(; Plotter = default_plotter(), resolution = (1000, 500))
+    plotting_multiscene!(
+        GridVisualizer(;
+            Plotter = Plotter,
+            layout = (2, 4),
+            clear = true,
+            resolution = resolution,
+        ),
+    )
+end</code></pre><p><img src="../plotting_multiscene.svg" alt/></p><h2 id="Plots-of-functions-on-subgrids-interfaces"><a class="docs-heading-anchor" href="#Plots-of-functions-on-subgrids-interfaces">Plots of functions on subgrids interfaces</a><a id="Plots-of-functions-on-subgrids-interfaces-1"></a><a class="docs-heading-anchor-permalink" href="#Plots-of-functions-on-subgrids-interfaces" title="Permalink"></a></h2><p>We can jointly plot functions on different subgrids whic e.g. model a particle density jumping at a heterointerface Currently supported for PyPlot and Makie</p><p>The general scheme is to pass a vector of subgrid, the parent grid and the corresponding vector of functions on the respective subgrids</p><h3 id="D-case"><a class="docs-heading-anchor" href="#D-case">1D case</a><a id="D-case-1"></a><a class="docs-heading-anchor-permalink" href="#D-case" title="Permalink"></a></h3><pre><code class="language-julia hljs">function plotting_jfunc1d(; Plotter = default_plotter(), filename = &quot;plotting_jfunc1d.gif&quot;)
+    X = 0:1:10
+    g = simplexgrid(X)
+    cellmask!(g, [0], [5], 2)
+    g1 = subgrid(g, [1])
+    g2 = subgrid(g, [2])
+
+
+    vis = GridVisualizer(; Plotter, color = :red)
+    movie(vis, file = filename) do vis
+        for t = 0:0.05:1
+            func1 = map((x) -&gt; x - t, g1)
+            func2 = map((x) -&gt; -x + t, g2)
+            func = map(x -&gt; x^2 / 100 - t, g)
+            scalarplot!(
+                vis,
+                [g1, g2],
+                g,
+                [func1, func2];
+                Plotter,
+                elevation = 0.1,
+                clear = true,
+                color = :red,
+            )
+            scalarplot!(
+                vis,
+                g,
+                func;
+                Plotter,
+                elevation = 0.1,
+                clear = false,
+                color = :green,
+            )
+            reveal(vis)
+        end
+    end
+end</code></pre><p><img src="../plotting_jfunc1d.gif" alt/></p><h3 id="D-case-2"><a class="docs-heading-anchor" href="#D-case-2">2D case</a><a class="docs-heading-anchor-permalink" href="#D-case-2" title="Permalink"></a></h3><pre><code class="language-julia hljs">function plotting_jfunc2d(; Plotter = default_plotter(), kwargs...)
+    X = 0:0.7:10
+    g = simplexgrid(X, X)
+    cellmask!(g, [0, 0], [5, 5], 2)
+    g1 = subgrid(g, [1])
+    g2 = subgrid(g, [2])
+
+    func1 = map((x, y) -&gt; x^2 + y, g1)
+    func2 = map((x, y) -&gt; (x + y^2), g2)
+    scalarplot([g1, g2], g, [func1, func2]; Plotter, kwargs...)
+end</code></pre><p><img src="../plotting_jfunc2d.svg" alt/></p><h3 id="D-case-3"><a class="docs-heading-anchor" href="#D-case-3">3D case</a><a class="docs-heading-anchor-permalink" href="#D-case-3" title="Permalink"></a></h3><pre><code class="language-julia hljs">function plotting_jfunc3d(;
+    Plotter = default_plotter(),
+    levels = 0,
+    yplane = 0.25,
+    xplane = 0.25,
+    zplane = 0.25,
+    levelalpha = 1,
+    colormap = :hot,
+    kwargs...,
+)
+    X = 0:0.1:1
+    g = simplexgrid(X, X, X)
+    cellmask!(g, [0, 0, 0], [0.5, 0.5, 0.5], 2)
+    g1 = subgrid(g, [1])
+    g2 = subgrid(g, [2])
+    func1 = map((x, y, z) -&gt; (x + y + z), g1)
+    func2 = map((x, y, z) -&gt; (3 - x - y - z), g2)
+    scalarplot(
+        [g1, g2],
+        g,
+        [func1, func2];
+        Plotter,
+        levels,
+        xplane,
+        yplane,
+        zplane,
+        levelalpha,
+        colormap,
+        kwargs...,
+    )
+end</code></pre><p><img src="../plotting_jfunc3d.svg" alt/></p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../privapi/">« Private API</a><a class="docs-footer-nextpage" href="../pluto/">Pluto notebook »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Monday 13 February 2023 00:19">Monday 13 February 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
