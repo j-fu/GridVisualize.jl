@@ -1262,8 +1262,9 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
             end
             #            adjust_planes()
             ctx[:data][] = (
-                g = grid,
-                f = func,
+                g = grids,
+                p = parentgrid,
+                f = funcs,
                 x = ctx[:xplanes],
                 y = ctx[:yplanes],
                 z = ctx[:zplanes],
@@ -1275,8 +1276,9 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
         add_scene!(ctx, makescene3d(ctx))
     else
         ctx[:data][] = (
-            g = grid,
-            f = func,
+            g = grids,
+            p = parentgrid,
+            f = funcs,
             x = ctx[:xplanes],
             y = ctx[:yplanes],
             z = ctx[:zplanes],
