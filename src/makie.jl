@@ -635,14 +635,16 @@ function makescene2d(ctx, key)
             ctx[key];
             width = 10,
             ticks = unique(ctx[:cbarticks]),
+            tickformat = "{:.2e}",
         )
     elseif ctx[:colorbar] == :horizontal
         GL[2, 1] = XMakie.Colorbar(
             ctx[:figure],
             ctx[key];
             height = 10,
-            ticks = ctx[:cbarticks],
+            ticks = unique(ctx[:cbarticks]),
             vertical = false,
+            tickformat = "{:.2e}",
         )
     end
     GL
@@ -666,11 +668,11 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid
         end
 
         if elevation ≈ 0.0
-            points = Vector{Point2f}(undef, sum(npoints))
+            points = Vector{Point3f}(undef, sum(npoints))
             k = 1
             for j = 1:ngrids
                 for i = 1:npoints[j]
-                    points[k] = Point2f(coords[j][1, i], coords[j][2, i])
+                    points[k] = Point3f(coords[j][1, i], coords[j][2, i], -0.1)
                     k = k + 1
                 end
             end
