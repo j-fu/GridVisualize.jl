@@ -5,21 +5,6 @@ include("flippablelayout.jl")
 function initialize!(p::GridVisualizer, ::Type{MakieType})
     XMakie = p.context[:Plotter]
 
-    # Check for version compatibility
-    version_min = v"0.19"
-    version_max = v"0.19.99"
-
-    version_installed = PkgVersion.Version(XMakie.Makie)
-
-    if version_installed < version_min
-        error(
-            "Outdated version $(version_installed) of Makie. Please upgrade to at least $(version_min)",
-        )
-    end
-
-    if version_installed > version_max
-        @warn("Possibly breaking version $(version_installed) of Makie.")
-    end
 
     # Prepare flippable layout
     FlippableLayout.setmakie!(XMakie.Makie)
