@@ -100,13 +100,14 @@ end
 
 function plotting_func3d(;
     Plotter = default_plotter(),
-    zplane = 0.49,
-    xplane = 0.49,
-    levels = [0.25],
+    xplanes = [0.49],
+    yplanes = [0.49],
+    zplanes = [0.49],
+    levels = 5,
     kwargs...,
-)
+                         )
     g, f = func3d()
-    scalarplot(g, f; Plotter = Plotter, kwargs...)
+    scalarplot(g, f; Plotter = Plotter, levels, xplanes, yplanes, zplanes, kwargs...)
 end
 # ![](plotting_func3d.svg)
 

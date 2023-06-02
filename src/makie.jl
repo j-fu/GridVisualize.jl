@@ -366,8 +366,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
         ymin = ylimits[1]
         ymax = ylimits[2]
     else
-        ext=extrema.(funcs)
-        (ymin, ymax)=(minimum(first.(ext)),maximum(last.(ext)))
+        ext = extrema.(funcs)
+        (ymin, ymax) = (minimum(first.(ext)), maximum(last.(ext)))
     end
 
     function update_lines(ctx, newrange)
@@ -875,7 +875,8 @@ function makescene3d(ctx)
                 ctx[:figure];
                 colormap = ctx[:colormap],
                 colorrange = ctx[:crange],
-                ticks = ctx[:levels],
+                ticks = map(d -> d.l, ctx[:data]),
+                tickformat = "{:.2e}",
                 width = 15,
                 ticklabelsize = 0.5 * ctx[:fontsize],
             )
@@ -884,7 +885,8 @@ function makescene3d(ctx)
                 ctx[:figure];
                 colormap = ctx[:colormap],
                 colorrange = ctx[:crange],
-                ticks = ctx[:levels],
+                ticks = map(d -> d.l, ctx[:data]),
+                tickformat = "{:.2e}",
                 height = 15,
                 ticklabelsize = 0.5 * ctx[:fontsize],
                 vertical = false,
@@ -1091,19 +1093,21 @@ end
 
 # 3d function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid, funcs)
+
     levels, crange = isolevels(ctx, funcs)
     ctx[:crange] = crange
 
     nan_replacement = 0.5 * (crange[1] + crange[2])
     make_mesh(pts, fcs) = Mesh(pts, fcs)
 
-    function make_mesh(pts, fcs, vals)
+    function make_mesh(pts, fcs, vals, alpha)
         if length(fcs) > 0
             colors = XMakie.Makie.interpolated_getindex.((cmap,), vals, (crange,))
-            if ctx[:levelalpha] > 0
+            if alpha < 1
                 colors = [
-                RGBA(colors[i].r, colors[i].g, colors[i].b, Float32(ctx[:levelalpha])) for i = 1:length(colors)
-                     ]
+                    RGBA(colors[i].r, colors[i].g, colors[i].b, Float32(alpha)) for
+                    i = 1:length(colors)
+                ]
             end
             GeometryBasics.Mesh(meta(pts; color = colors, normals = normals(pts, fcs)), fcs)
         else
@@ -1133,9 +1137,9 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
 
     # adjust_planes()
 
-    ctx[:xplanes]=collect(ctx[:xplanes])
-    ctx[:yplanes]=collect(ctx[:yplanes])    
-    ctx[:zplanes]=collect(ctx[:zplanes])
+    ctx[:xplanes] = collect(ctx[:xplanes])
+    ctx[:yplanes] = collect(ctx[:yplanes])
+    ctx[:zplanes] = collect(ctx[:zplanes])
 
     x = ctx[:xplanes]
     y = ctx[:yplanes]
@@ -1201,12 +1205,29 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
             end
         end
 
-        f =
+        make_planes =
             d -> make_mesh(
                 marching_tetrahedra(
                     d.g,
                     d.f,
                     makeplanes(xyzmin, xyzmax, d.x, d.y, d.z),
+                    [];
+                    primepoints = hcat(xyzmin, xyzmax),
+                    primevalues = crange,
+                    tol = ctx[:tetxplane_tol],
+                    Tp = Point3f,
+                    Tf = GLTriangleFace,
+                    Tv = Float32,
+                )...,
+                ctx[:planealpha],
+            )
+
+        make_levels =
+            d -> make_mesh(
+                marching_tetrahedra(
+                    d.g,
+                    d.f,
+                    [],
                     d.l;
                     primepoints = hcat(xyzmin, xyzmax),
                     primevalues = crange,
@@ -1215,15 +1236,26 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
                     Tf = GLTriangleFace,
                     Tv = Float32,
                 )...,
+                ctx[:levelalpha],
             )
 
+
+
         #### Plane sections and isosurfaces
-        ctx[:mesh] = XMakie.mesh!(
+        ctx[:planesections] = XMakie.mesh!(
             ctx[:scene],
-            map(f, ctx[:data]);
+            map(make_planes, ctx[:data]);
+            backlight = 1.0f0,
+            transparency = ctx[:planealpha] < 1.0,
+        )
+
+        ctx[:isosurfaces] = XMakie.mesh!(
+            ctx[:scene],
+            map(make_levels, ctx[:data]);
             backlight = 1.0f0,
             transparency = ctx[:levelalpha] < 1.0,
         )
+
         #### Interactions
         scene_interaction(ctx[:scene].scene, XMakie, [:z, :y, :x, :l, :q]) do delta, key
             if key == :x

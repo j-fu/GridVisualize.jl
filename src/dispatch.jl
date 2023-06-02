@@ -322,7 +322,7 @@ function default_plot_kwargs()
         :color => Pair((0.0, 0.0, 0.0), "1D plot line color"),
         :cellwise => Pair(false, "1D plots cellwise; unmaintained and can be slow)"),
         :label => Pair("", "1D plot label"),
-        :levels => Pair(5, "array of isolevels or number of isolevels for comtour plots"),
+        :levels => Pair(5, "array of isolevels or number of isolevels for contour plots"),
         :elevation => Pair(0.0, "2D plot height factor for elevation"),
         :colorlevels => Pair(51, "2D/3D contour plot: number of color levels"),
         :colormap => Pair(
@@ -337,7 +337,7 @@ function default_plot_kwargs()
         ),
         :outlinealpha => Pair(0.05, "3D outline surface alpha value"),
         :levelalpha => Pair(0.25, "3D isolevel alpha"),
-        :planealpha => Pair(1.0, "3D plane section alpha"),
+        :planealpha => Pair(0.25, "3D plane section alpha"),
         :tetxplane_tol => Pair(0.0, "tolerance for tet-plane intersection in 3D"),
         :spacing => Pair(:default, "Spacing of quiver points in vector plot"),
         :offset => Pair(:default, "Offset of quiver grid"),
