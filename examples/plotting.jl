@@ -183,7 +183,7 @@ end
 # switch between gallery view (default) and focused view of only
 # one subscene.
 function plotting_multiscene!(p)
-    gridplot!(p[1, 1], grid1d(); title = "1D grid")
+    gridplot!(p[1, 1], grid1d(); title = "1D grid", legend=:rt)
     scalarplot!(
         p[2, 1],
         grid1d(),

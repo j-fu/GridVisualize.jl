@@ -39,9 +39,28 @@ add_scene!(ctx, ax) = ctx[:flayout][ctx[:subplot]...] = ax
 
 # Revealing the  visualizer just returns the figure
 function reveal(p::GridVisualizer, ::Type{MakieType})
-    Plotter = p.context[:Plotter]
+    XMakie = p.context[:Plotter]
+    layout = p.context[:layout]
+    # For 1D plots the legend should be rendered only once,
+    # when all lines+labels are defined
+    for I in CartesianIndices(layout)
+        ctx = p.subplots[I]
+        if ctx[:legend] != :none && haskey(ctx, :scalarplot1d)
+            if !haskey(ctx, :axislegend)
+                pos = ctx[:legend] == :best ? :rt : ctx[:legend]
+                ctx[:axislegend] = XMakie.axislegend(
+                    ctx[:scene];
+                    position = pos,
+                    labelsize = 0.5 * ctx[:fontsize],
+                    bgcolor = RGBA(1.0, 1.0, 1.0, 0.85),
+                )
+            end
+        end
+
+    end
+
     if haskey(p.context, :videostream)
-        Plotter.recordframe!(p.context[:videostream])
+        XMakie.recordframe!(p.context[:videostream])
     else
         p.context[:figure]
     end
@@ -328,7 +347,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
     if ctx[:title] == ""
         ctx[:title] = " "
     end
-
+    ctx[:scalarplot1d] = true
     # ... keep this for the case we are unsorted
     function polysegs(grid, func)
         points = Vector{Point2f}(undef, 0)
@@ -353,11 +372,15 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
     coord = parentgrid[Coordinates]
     xlimits = ctx[:xlimits]
     ylimits = ctx[:limits]
+
     xmin = coord[1, 1]
     xmax = coord[1, end]
+    xauto = true
+    yauto = true
     if xlimits[1] < xlimits[2]
         xmin = xlimits[1]
         xmax = xlimits[2]
+        xauto = false
     end
 
 
@@ -365,6 +388,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
     if ylimits[1] < ylimits[2]
         ymin = ylimits[1]
         ymax = ylimits[2]
+        yauto = false
     else
         ext = extrema.(funcs)
         (ymin, ymax) = (minimum(first.(ext)), maximum(last.(ext)))
@@ -388,6 +412,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
                     map(a -> a[1:1], ctx[:lines][newrange[begin]]);
                     linestyle = ctx[:linestyle],
                     linewidth = ctx[:linewidth],
+                    markersize = 0.1,
                     color = RGB(ctx[:color]),
                     label = ctx[:label],
                 )
@@ -433,15 +458,11 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
             end
         end
 
-        if ctx[:legend] != :none
-            pos = ctx[:legend] == :best ? :rt : ctx[:legend]
-            XMakie.axislegend(ctx[:scene]; position = pos, labelsize = 0.5 * ctx[:fontsize])
-            # ,backgroundcolor=:transparent
-        end
     end
 
     if !haskey(ctx, :scene)
         ctx[:xtitle] = Observable(ctx[:title])
+
 
         # Axis
         ctx[:scene] = XMakie.Axis(
@@ -449,8 +470,17 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
             title = map(a -> a, ctx[:xtitle]),
             xscale = ctx[:xscale] == :log ? log10 : identity,
             yscale = ctx[:yscale] == :log ? log10 : identity,
+            xlabel = ctx[:xlabel],
+            ylabel = ctx[:ylabel],
             scenekwargs(ctx)...,
         )
+
+        if !xauto
+            XMakie.xlims!(ctx[:scene], xmin, xmax)
+        end
+        if !yauto
+            XMakie.ylims!(ctx[:scene], ymin, ymax)
+        end
         # Plot size
         XMakie.scatter!(
             ctx[:scene],
@@ -475,6 +505,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
         add_scene!(ctx, ctx[:scene])
 
     else
+
         if ctx[:clear]
             ctx[:nlines] = nfuncs
         else
@@ -495,12 +526,16 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
             end
             r1 = length(ctx[:lines])
             update_lines(ctx, r0+1:r1)
+
+
         end
+
 
         XMakie.reset_limits!(ctx[:scene])
 
         ctx[:xtitle][] = ctx[:title]
     end
+
     reveal(ctx, TP)
 end
 
