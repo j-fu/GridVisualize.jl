@@ -3,7 +3,11 @@ function initialize!(p, ::Type{PyPlotType})
     PyPlot.PyObject(PyPlot.axes3D)# see https://github.com/JuliaPy/PyPlot.jl/issues/351
     if !haskey(p.context, :figure)
         res = p.context[:size]
-        p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 100)
+        if !isdefined(Main, :PlutoRunner)
+            p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 50)
+        else
+            p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 100)
+        end
         p.context[:figure].set_size_inches(res[1] / 100, res[2] / 100; forward = true)
         for ctx in p.subplots
             ctx[:figure] = p.context[:figure]
@@ -382,14 +386,11 @@ end
 function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grids, parentgrid, funcs)
     PyPlot = ctx[:Plotter]
     nfuncs = length(funcs)
-    if !haskey(ctx, :ax)
-        ctx[:ax] = ctx[:figure].add_subplot(ctx[:layout]..., ctx[:iplot])
-    end
-    if ctx[:clear]
-        ctx[:ax].cla()
+
+    function set_limits_grid_title()
+        ax=ctx[:ax]
         xlimits = ctx[:xlimits]
         ylimits = ctx[:limits]
-        ax = ctx[:ax]
 
         if xlimits[1] < xlimits[2]
             ax.set_xlim(xlimits...)
@@ -397,10 +398,19 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grids, parentgri
         if ylimits[1] < ylimits[2]
             ax.set_ylim(ylimits...)
         end
+        ax.set_title(ctx[:title])
         ax.grid()
     end
+    
+    if !haskey(ctx, :ax)
+        ctx[:ax] = ctx[:figure].add_subplot(ctx[:layout]..., ctx[:iplot])
+        set_limits_grid_title()
+    end
+    if ctx[:clear]
+        ctx[:ax].cla()
+        set_limits_grid_title()
+    end
     ax = ctx[:ax]
-    ax.set_title(ctx[:title])
     fig = ctx[:figure]
 
     pplot = ax.plot

@@ -592,23 +592,36 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid)
     nregions = num_cellregions(grid)
 
     nbregions = num_bfaceregions(grid)
-
+    @show "here"
     set_plot_data!(ctx, :grid, grid)
 
     if !haskey(ctx, :gridplot)
         if !haskey(ctx, :scene)
-            coord = grid[Coordinates]
-            ex = extrema(coord; dims = (2))
-            data_aspect = (ex[2][2] - ex[2][1]) / (ex[1][2] - ex[1][1])
-            makie_aspect = 1.0 / (data_aspect * ctx[:aspect])
+            aspect = nothing
+            autolimitaspect = nothing
+            if ctx[:aspect] ≈ 1.0
+                aspect = XMakie.DataAspect()
+            else
+                autolimitaspect = ctx[:aspect]
+            end
             ctx[:scene] = XMakie.Axis(
                 ctx[:figure];
                 title = ctx[:title],
-                aspect = makie_aspect,
+                aspect = aspect,
+                autolimitaspect = autolimitaspect,
                 scenekwargs(ctx)...,
             )
-        end
+            xlimits = ctx[:xlimits]
+            ylimits = ctx[:ylimits]
+            if xlimits[1] < xlimits[2]
+                XMakie.xlims!(ctx[:scene], xlimits...)
+            end
+            if ylimits[1] < ylimits[2]
+                XMakie.ylims!(ctx[:scene], ylimits...)
+            end
 
+
+        end
         # Draw cells with region mark
         cmap = region_cmap(nregions)
         ctx[:cmap] = cmap
@@ -760,12 +773,9 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid
 
     if !haskey(ctx, :contourplot)
         if !haskey(ctx, :scene)
-            coord = parentgrid[Coordinates]
-            #            ex = extrema(coord; dims = (2))
-
             aspect = nothing
             autolimitaspect = nothing
-            if ctx[:aspect] == 1.0
+            if ctx[:aspect] ≈ 1.0
                 aspect = XMakie.DataAspect()
             else
                 autolimitaspect = ctx[:aspect]
