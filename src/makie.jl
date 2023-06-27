@@ -761,23 +761,43 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid
     if !haskey(ctx, :contourplot)
         if !haskey(ctx, :scene)
             coord = parentgrid[Coordinates]
-            ex = extrema(coord; dims = (2))
-            data_aspect = (ex[2][2] - ex[2][1]) / (ex[1][2] - ex[1][1])
-            makie_aspect = 1.0 / (data_aspect * ctx[:aspect])
+            #            ex = extrema(coord; dims = (2))
+
+            aspect = nothing
+            autolimitaspect = nothing
+            if ctx[:aspect] == 1.0
+                aspect = XMakie.DataAspect()
+            else
+                autolimitaspect = ctx[:aspect]
+            end
             if ctx[:elevation] ≈ 0
                 ctx[:scene] = XMakie.Axis(
                     ctx[:figure];
                     title = map(data -> data.t, ctx[:contourdata]),
-                    aspect = makie_aspect,
+                    aspect = aspect,
+                    autolimitaspect = autolimitaspect,
                     scenekwargs(ctx)...,
                 )
             else
                 ctx[:scene] = XMakie.Axis3(
                     ctx[:figure];
                     title = map(data -> data.t, ctx[:contourdata]),
+                    aspect = aspect,
+                    autolimitaspect = autolimitaspect,
                     scenekwargs(ctx)...,
                 )
             end
+
+            xlimits = ctx[:xlimits]
+            ylimits = ctx[:ylimits]
+            if xlimits[1] < xlimits[2]
+                XMakie.xlims!(ctx[:scene], xlimits...)
+            end
+            if ylimits[1] < ylimits[2]
+                XMakie.ylims!(ctx[:scene], ylimits...)
+            end
+
+
         end
 
         # Draw the mesh for the cells
