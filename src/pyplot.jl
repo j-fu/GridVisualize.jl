@@ -398,9 +398,9 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grids, parentgri
             ax.set_ylim(ylimits...)
         end
         ax.grid()
-        ax.set_title(ctx[:title])
     end
     ax = ctx[:ax]
+    ax.set_title(ctx[:title])
     fig = ctx[:figure]
 
     pplot = ax.plot
