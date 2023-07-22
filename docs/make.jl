@@ -1,6 +1,7 @@
 using Documenter, ExtendableGrids, Literate, GridVisualize,Pluto
 using GridVisualize.FlippableLayout
 import CairoMakie
+CairoMakie.activate!(type="svg",visible=false)
 using Test
 
 
