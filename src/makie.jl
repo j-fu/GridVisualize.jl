@@ -592,7 +592,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid)
     nregions = num_cellregions(grid)
 
     nbregions = num_bfaceregions(grid)
-    @show "here"
+
     set_plot_data!(ctx, :grid, grid)
 
     if !haskey(ctx, :gridplot)
