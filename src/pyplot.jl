@@ -554,6 +554,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grids, parentgri
         crange = (crange[1] - eps, crange[1] + eps)
         colorlevels = collect(crange[1]:((crange[2]-crange[1])/(1)):crange[2])
     else
+        crange = (crange[1] - 1e-16, crange[2] + 1e-16) # avoids rare clipping of last color level
         colorlevels =
             collect(crange[1]:((crange[2]-crange[1])/(ctx[:colorlevels]-1)):crange[2])
     end
