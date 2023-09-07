@@ -1,14 +1,15 @@
 function initialize!(p, ::Type{PyPlotType})
     PyPlot = p.context[:Plotter]
     PyPlot.PyObject(PyPlot.axes3D)# see https://github.com/JuliaPy/PyPlot.jl/issues/351
+    PyPlot.rc("font", size = p.context[:fontsize])
     if !haskey(p.context, :figure)
         res = p.context[:size]
         if !isdefined(Main, :PlutoRunner)
-            p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 50)
+            p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 50, figsize=res./50)
         else
-            p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 100)
+            p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 100, figsize=res./100)
         end
-        p.context[:figure].set_size_inches(res[1] / 100, res[2] / 100; forward = true)
+        #p.context[:figure].set_size_inches(res[1] / 100, res[2] / 100, forward = true)
         for ctx in p.subplots
             ctx[:figure] = p.context[:figure]
         end
@@ -43,6 +44,7 @@ function reveal(ctx::SubVisualizer, TP::Type{PyPlotType})
     if ctx[:show] || ctx[:reveal]
         reveal(ctx[:GridVisualizer], TP)
     end
+    ctx[:GridVisualizer].Plotter.tight_layout()
 end
 
 #translate Julia attribute symbols to pyplot-speak
