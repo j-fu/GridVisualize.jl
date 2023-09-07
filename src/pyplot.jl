@@ -719,10 +719,10 @@ function vectorplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
     ax.set_aspect(ctx[:aspect])
     ax.set_title(ctx[:title])
 
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset])
-    qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize])
+    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], xlimits = ctx[:xlimits], ylimits = ctx[:ylimits])
+    qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize], vconstant = ctx[:vconstant])
 
-    ax.quiver(qc[1, :], qc[2, :], qv[1, :], qv[2, :])
+    ax.quiver(qc[1, :], qc[2, :], qv[1, :], qv[2, :]; color = ctx[:color])
     ax.set_xlabel(ctx[:xlabel])
     ax.set_ylabel(ctx[:ylabel])
 
@@ -772,11 +772,11 @@ function streamplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
         xout, yout
     end
 
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset])
+    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], xlimits = ctx[:xlimits], ylimits = ctx[:ylimits])
 
     X, Y = meshgrid(rc)
 
-    ax.streamplot(X, Y, rv[1, :, :, 1], rv[2, :, :, 1]; color = ctx[:color])
+    ax.streamplot(X, Y, rv[1, :, :, 1]', rv[2, :, :, 1]'; color = ctx[:color], density = ctx[:density])
     ax.set_xlabel(ctx[:xlabel])
     ax.set_ylabel(ctx[:ylabel])
 

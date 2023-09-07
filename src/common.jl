@@ -153,7 +153,7 @@ streamlines.
 The code is 3D ready.
 """
 function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
-                      spacing = :default, reltol = 1.0e-10) where {Tv, Ti}
+                      spacing = :default, reltol = 1.0e-10, xlimits = (1,-1), ylimits = (1,-1), zlimits = (1,-1)) where {Tv, Ti}
     coord = grid[Coordinates]
     cn = grid[CellNodes]
     ncells::Int = num_cells(grid)
@@ -172,6 +172,15 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
 
     # coordinate window
     cminmax = extrema(coord; dims = (2,))
+    if xlimits[1] < xlimits[2]
+        cminmax[1] = xlimits[:]
+    end
+    if ylimits[1] < ylimits[2]
+        cminmax[2] = ylimits[:]
+    end
+    if zlimits[1] < zlimits[2]
+        cminmax[3] = zlimits[:]
+    end
 
     if offset == :default
         offset = [cminmax[i][1] for i = 1:dim]
@@ -255,8 +264,17 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
         # If so, obtain P1 interpolated raster data and
         # assign them to rasterflux
         for I[1] ∈ Imin[1]:Imax[1] # 0 alloc
+            if I[1] <= 0 || I[1] > length(rastercoord[1])
+                continue
+            end
             for I[2] ∈ Imin[2]:Imax[2]
+                if I[2] <= 0 || I[2] > length(rastercoord[2])
+                    continue
+                end
                 for I[3] ∈ Imin[3]:Imax[3]
+                    if dim == 3 && (I[3] <= 0 || I[3] > length(rastercoord[3]))
+                        continue
+                    end
 
                     # Fill raster point to be tested
                     for idim = 1:dim
@@ -315,7 +333,7 @@ is scaled by vscale
 Result data are meant to  be ready for being passed to calls to `quiver`.
 
 """
-function quiverdata(rastercoord, rasterflux; vscale = 1.0, vnormalize = true)
+function quiverdata(rastercoord, rasterflux; vscale = 1.0, vnormalize = true, vconstant = false)
     dim = length(rastercoord)
 
     imax = length(rastercoord[1])
@@ -355,7 +373,11 @@ function quiverdata(rastercoord, rasterflux; vscale = 1.0, vnormalize = true)
     qv = reshape(reinterpret(Float32, qvvalues), (2, length(qvvalues)))
 
     # Normalize vectors to raster point spacing
-    if vnormalize
+    if vconstant
+        for j = 1 : size(qv,2)
+            view(qv,:,j) ./= norm(view(qv,:,j))
+        end
+    elseif vnormalize
         @views vmax = maximum(norm, (qv[:, i] for i = 1:length(qvvalues)))
         vscale = vscale * min(spacing...) / vmax
     end
