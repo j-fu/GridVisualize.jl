@@ -1,14 +1,15 @@
 function initialize!(p, ::Type{PyPlotType})
     PyPlot = p.context[:Plotter]
     PyPlot.PyObject(PyPlot.axes3D)# see https://github.com/JuliaPy/PyPlot.jl/issues/351
+    PyPlot.rc("font", size = p.context[:fontsize])
     if !haskey(p.context, :figure)
         res = p.context[:size]
         if !isdefined(Main, :PlutoRunner)
-            p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 50)
+            p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 50, figsize=res./50)
         else
-            p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 100)
+            p.context[:figure] = PyPlot.figure(p.context[:fignumber]; dpi = 100, figsize=res./100)
         end
-        p.context[:figure].set_size_inches(res[1] / 100, res[2] / 100; forward = true)
+        #p.context[:figure].set_size_inches(res[1] / 100, res[2] / 100, forward = true)
         for ctx in p.subplots
             ctx[:figure] = p.context[:figure]
         end
@@ -43,6 +44,7 @@ function reveal(ctx::SubVisualizer, TP::Type{PyPlotType})
     if ctx[:show] || ctx[:reveal]
         reveal(ctx[:GridVisualizer], TP)
     end
+    ctx[:GridVisualizer].Plotter.tight_layout()
 end
 
 #translate Julia attribute symbols to pyplot-speak
@@ -552,6 +554,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grids, parentgri
         crange = (crange[1] - eps, crange[1] + eps)
         colorlevels = collect(crange[1]:((crange[2]-crange[1])/(1)):crange[2])
     else
+        crange = (crange[1] - 1e-16, crange[2] + 1e-16) # avoids rare clipping of last color level
         colorlevels =
             collect(crange[1]:((crange[2]-crange[1])/(ctx[:colorlevels]-1)):crange[2])
     end
@@ -716,10 +719,10 @@ function vectorplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
     ax.set_aspect(ctx[:aspect])
     ax.set_title(ctx[:title])
 
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset])
-    qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize])
+    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], xlimits = ctx[:xlimits], ylimits = ctx[:ylimits])
+    qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize], vconstant = ctx[:vconstant])
 
-    ax.quiver(qc[1, :], qc[2, :], qv[1, :], qv[2, :])
+    ax.quiver(qc[1, :], qc[2, :], qv[1, :], qv[2, :]; color = ctx[:color])
     ax.set_xlabel(ctx[:xlabel])
     ax.set_ylabel(ctx[:ylabel])
 
@@ -769,11 +772,11 @@ function streamplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
         xout, yout
     end
 
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset])
+    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], xlimits = ctx[:xlimits], ylimits = ctx[:ylimits])
 
     X, Y = meshgrid(rc)
 
-    ax.streamplot(X, Y, rv[1, :, :, 1], rv[2, :, :, 1]; color = ctx[:color])
+    ax.streamplot(X, Y, rv[1, :, :, 1]', rv[2, :, :, 1]'; color = ctx[:color], density = ctx[:density])
     ax.set_xlabel(ctx[:xlabel])
     ax.set_ylabel(ctx[:ylabel])
 
