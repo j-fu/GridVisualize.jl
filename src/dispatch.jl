@@ -342,6 +342,7 @@ function default_plot_kwargs()
         :spacing => Pair(:default, "Spacing of quiver points in vector plot"),
         :offset => Pair(:default, "Offset of quiver grid"),
         :vscale => Pair(1.0, "Vector field scale for quiver grid"),
+        :vconstant => Pair(false, "Set all arrow length constant in vector plot"),
         :vnormalize => Pair(true, "Normalize vector field befor scaling"),
         :interior => Pair(true, "3D plot interior of grid"),
         :xplanes => Pair([prevfloat(Inf)], "3D x plane positions or number thereof"),
