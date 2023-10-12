@@ -9,6 +9,15 @@ Public = false
 Pages = ["dispatch.jl","common.jl"]
 ```
 
+```@docs
+ispyplot
+isplutovista
+isplots
+ismakie
+isvtkview
+```
+
+
 ## PyPlot
 ```@autodocs
 Modules = [GridVisualize]
@@ -23,6 +32,10 @@ Modules = [GridVisualize,FlippableLayout]
 Private = true
 Public = false
 Pages = ["makie.jl", "flippablelayout.jl"]
+```
+
+```@docs
+FlippableLayout
 ```
 
 ## Plots

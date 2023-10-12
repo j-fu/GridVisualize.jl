@@ -50,6 +50,7 @@ function makeplots(picdir; Plotter=GLMakie, extension="png")
     fname=joinpath(picdir,"plotting_vec2d."*extension)
     save(fname,p,Plotter=Plotter)
     @test isfile(fname)
+
     println("vec2d")
 
     p=plotting_stream2d(Plotter=Plotter)

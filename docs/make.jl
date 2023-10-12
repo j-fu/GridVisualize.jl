@@ -15,7 +15,7 @@ function rendernotebook(name)
     input=joinpath(@__DIR__,"..","examples",name*".jl")
     output=joinpath(@__DIR__,"src",name*".html")
     session = Pluto.ServerSession();
-    notebook = Pluto.SessionActions.open(session, input; run_async=false)
+    notebook = Pluto.SessionActions.open(session, input)
     html_contents = Pluto.generate_html(notebook)
     write(output, html_contents)
 end
