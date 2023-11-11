@@ -52,7 +52,7 @@ function reveal(p::GridVisualizer, ::Type{MakieType})
                     ctx[:scene];
                     position = pos,
                     labelsize = 0.5 * ctx[:fontsize],
-                    bgcolor = RGBA(1.0, 1.0, 1.0, 0.85),
+                    backgroundcolor = RGBA(1.0, 1.0, 1.0, 0.85),
                 )
             end
         end
