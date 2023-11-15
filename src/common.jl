@@ -56,8 +56,8 @@ function GridVisualizeTools.marching_tetrahedra(grid::ExtendableGrid, func, plan
     marching_tetrahedra(coord, cellnodes, func, planes, flevels; kwargs...)
 end
 
-function GridVisualizeTools.marching_tetrahedra(grids::Vector{ExtendableGrid{Tv,Ti}}, funcs, planes, flevels;
-                                                kwargs...) where {Tv,Ti}
+function GridVisualizeTools.marching_tetrahedra(grids::Vector{ExtendableGrid{Tv, Ti}}, funcs, planes, flevels;
+                                                kwargs...) where {Tv, Ti}
     coord = [grid[Coordinates] for grid in grids]
     cellnodes = [grid[CellNodes] for grid in grids]
     marching_tetrahedra(coord, cellnodes, funcs, planes, flevels; kwargs...)
@@ -75,13 +75,11 @@ function GridVisualizeTools.marching_triangles(grid::ExtendableGrid, func, level
     marching_triangles(coord, cellnodes, func, levels)
 end
 
-
-function GridVisualizeTools.marching_triangles(grids::Vector{ExtendableGrid{Tv,Ti}}, funcs, levels) where {Tv,Ti}
+function GridVisualizeTools.marching_triangles(grids::Vector{ExtendableGrid{Tv, Ti}}, funcs, levels) where {Tv, Ti}
     coords = [grid[Coordinates] for grid in grids]
-    cellnodes = [ grid[CellNodes] for grid in grids]
+    cellnodes = [grid[CellNodes] for grid in grids]
     marching_triangles(coords, cellnodes, funcs, levels)
 end
-
 
 ##############################################
 # Create meshes from grid data
@@ -153,7 +151,7 @@ streamlines.
 The code is 3D ready.
 """
 function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
-                      spacing = :default, reltol = 1.0e-10, xlimits = (1,-1), ylimits = (1,-1), zlimits = (1,-1)) where {Tv, Ti}
+                      spacing = :default, reltol = 1.0e-10, xlimits = (1, -1), ylimits = (1, -1), zlimits = (1, -1)) where {Tv, Ti}
     coord = grid[Coordinates]
     cn = grid[CellNodes]
     ncells::Int = num_cells(grid)
@@ -374,8 +372,8 @@ function quiverdata(rastercoord, rasterflux; vscale = 1.0, vnormalize = true, vc
 
     # Normalize vectors to raster point spacing
     if vconstant
-        for j = 1 : size(qv,2)
-            view(qv,:,j) ./= norm(view(qv,:,j))
+        for j = 1:size(qv, 2)
+            view(qv, :, j) ./= norm(view(qv, :, j))
         end
     elseif vnormalize
         @views vmax = maximum(norm, (qv[:, i] for i = 1:length(qvvalues)))

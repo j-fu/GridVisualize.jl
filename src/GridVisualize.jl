@@ -11,7 +11,6 @@ using Colors
 using ColorSchemes
 using GeometryBasics
 
-
 using GridVisualizeTools
 using ExtendableGrids
 

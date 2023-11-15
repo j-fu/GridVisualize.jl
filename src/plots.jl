@@ -33,7 +33,6 @@ function reveal(p::GridVisualizer, ::Type{PlotsType})
         Plots.gui(plt)
         plt
     end
-
 end
 
 function reveal(ctx::SubVisualizer, TP::Type{PlotsType})
@@ -46,15 +45,12 @@ function save(fname, scene, Plots, ::Type{PlotsType})
     isnothing(scene) ? nothing : Plots.savefig(scene, fname)
 end
 
-
-function movie(
-    func,
-    vis::GridVisualizer,
-    ::Type{PlotsType};
-    file = nothing,
-    format = "gif",
-    kwargs...,
-)
+function movie(func,
+               vis::GridVisualizer,
+               ::Type{PlotsType};
+               file = nothing,
+               format = "gif",
+               kwargs...,)
     Plotter = vis.context[:Plotter]
     if !isnothing(file)
         format = lstrip(splitext(file)[2], '.')
@@ -79,9 +75,6 @@ function movie(
         end
     end
 end
-
-
-
 
 function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grid)
     Plots = ctx[:Plotter]
@@ -109,28 +102,24 @@ function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grid)
         x2 = coord[1, cellnodes[2, icell]]
         Plots.plot!(p, [x1, x1], [-h, h]; linewidth = 0.5, color = :black, label = "")
         Plots.plot!(p, [x2, x2], [-h, h]; linewidth = 0.5, color = :black, label = "")
-        Plots.plot!(
-            p,
-            [x1, x2],
-            [0, 0];
-            linewidth = 3.0,
-            color = cmap[cellregions[icell]],
-            label = "",
-        )
+        Plots.plot!(p,
+                    [x1, x2],
+                    [0, 0];
+                    linewidth = 3.0,
+                    color = cmap[cellregions[icell]],
+                    label = "",)
     end
 
     cmap = bregion_cmap(nbfaceregions)
     for ibface = 1:num_bfaces(grid)
         if bfaceregions[ibface] > 0
             x1 = coord[1, bfacenodes[1, ibface]]
-            Plots.plot!(
-                p,
-                [x1, x1],
-                [-2 * h, 2 * h];
-                linewidth = 3.0,
-                color = cmap[bfaceregions[ibface]],
-                label = "",
-            )
+            Plots.plot!(p,
+                        [x1, x1],
+                        [-2 * h, 2 * h];
+                        linewidth = 3.0,
+                        color = cmap[bfaceregions[ibface]],
+                        label = "",)
         end
     end
     reveal(ctx, TP)
@@ -156,54 +145,44 @@ function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}}, grid)
         inode2 = cellnodes[2, icell]
         inode3 = cellnodes[3, icell]
         # https://github.com/JuliaPlots/Plots.jl/issues/605
-        tri = Plots.Shape(
-            [coord[1, inode1], coord[1, inode2], coord[1, inode3]],
-            [coord[2, inode1], coord[2, inode2], coord[2, inode3]],
-        )
+        tri = Plots.Shape([coord[1, inode1], coord[1, inode2], coord[1, inode3]],
+                          [coord[2, inode1], coord[2, inode2], coord[2, inode3]])
         Plots.plot!(p, tri; color = cmap[cellregions[icell]], label = "")
     end
     for icell = 1:num_cells(grid)
         inode1 = cellnodes[1, icell]
         inode2 = cellnodes[2, icell]
         inode3 = cellnodes[3, icell]
-        Plots.plot!(
-            p,
-            [coord[1, inode1], coord[1, inode2]],
-            [coord[2, inode1], coord[2, inode2]];
-            linewidth = 0.5,
-            color = :black,
-            label = "",
-        )
-        Plots.plot!(
-            p,
-            [coord[1, inode1], coord[1, inode3]],
-            [coord[2, inode1], coord[2, inode3]];
-            linewidth = 0.5,
-            color = :black,
-            label = "",
-        )
-        Plots.plot!(
-            p,
-            [coord[1, inode2], coord[1, inode3]],
-            [coord[2, inode2], coord[2, inode3]];
-            linewidth = 0.5,
-            color = :black,
-            label = "",
-        )
+        Plots.plot!(p,
+                    [coord[1, inode1], coord[1, inode2]],
+                    [coord[2, inode1], coord[2, inode2]];
+                    linewidth = 0.5,
+                    color = :black,
+                    label = "",)
+        Plots.plot!(p,
+                    [coord[1, inode1], coord[1, inode3]],
+                    [coord[2, inode1], coord[2, inode3]];
+                    linewidth = 0.5,
+                    color = :black,
+                    label = "",)
+        Plots.plot!(p,
+                    [coord[1, inode2], coord[1, inode3]],
+                    [coord[2, inode2], coord[2, inode3]];
+                    linewidth = 0.5,
+                    color = :black,
+                    label = "",)
     end
 
     cmap = bregion_cmap(nbfaceregions)
     for ibface = 1:num_bfaces(grid)
         inode1 = bfacenodes[1, ibface]
         inode2 = bfacenodes[2, ibface]
-        Plots.plot!(
-            p,
-            [coord[1, inode1], coord[1, inode2]],
-            [coord[2, inode1], coord[2, inode2]];
-            linewidth = 5,
-            color = cmap[bfaceregions[ibface]],
-            label = "",
-        )
+        Plots.plot!(p,
+                    [coord[1, inode1], coord[1, inode2]],
+                    [coord[2, inode1], coord[2, inode2]];
+                    linewidth = 5,
+                    color = cmap[bfaceregions[ibface]],
+                    label = "",)
     end
     reveal(ctx, TP)
 end
@@ -211,18 +190,16 @@ end
 function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grids, parentgrid, funcs)
     grid = parentgrid
     func = funcs[1]
-    legpos = Dict(
-        :none => :none,
-        :best => :best,
-        :lt => :topleft,
-        :ct => :topcenter,
-        :rt => :topright,
-        :lc => :centerleft,
-        :rc => :centerright,
-        :lb => :bottomleft,
-        :cb => :bottomcenter,
-        :rb => :bottomright,
-    )
+    legpos = Dict(:none => :none,
+                  :best => :best,
+                  :lt => :topleft,
+                  :ct => :topcenter,
+                  :rt => :topright,
+                  :lc => :centerleft,
+                  :rc => :centerright,
+                  :lb => :bottomleft,
+                  :cb => :bottomcenter,
+                  :rb => :bottomright)
 
     Plots = ctx[:Plotter]
     if !haskey(ctx, :ax)
@@ -249,16 +226,14 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grids, parentgrid
     ctx[:xscale] == :log ? ctx[:xscale] = :log10 : nothing
     ctx[:yscale] == :log ? ctx[:yscale] = :log10 : nothing
 
-    Plots.plot!(
-        p,
-        [xmin, xmax],
-        [ymin, ymax];
-        seriestype = :scatter,
-        makersize = 0,
-        markercolor = :white,
-        markerstrokecolor = :white,
-        label = "",
-    )
+    Plots.plot!(p,
+                [xmin, xmax],
+                [ymin, ymax];
+                seriestype = :scatter,
+                makersize = 0,
+                markercolor = :white,
+                markerstrokecolor = :white,
+                label = "",)
 
     color = ctx[:color]
     if ctx[:cellwise] ## not checked
@@ -269,21 +244,17 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grids, parentgrid
             x1 = coord[1, i1]
             x2 = coord[1, i2]
             if icell == 1 && ctx[:label] != " "
-                Plots.plot!(
-                    p,
-                    [x1, x2],
-                    [func[i1], func[i2]];
-                    linecolor = Plots.RGB(color...),
-                    label = ctx[:label],
-                )
+                Plots.plot!(p,
+                            [x1, x2],
+                            [func[i1], func[i2]];
+                            linecolor = Plots.RGB(color...),
+                            label = ctx[:label],)
             else
-                Plots.plot!(
-                    p,
-                    [x1, x2],
-                    [func[i1], func[i2]];
-                    linecolor = Plots.RGB(color...),
-                    label = "",
-                )
+                Plots.plot!(p,
+                            [x1, x2],
+                            [func[i1], func[i2]];
+                            linecolor = Plots.RGB(color...),
+                            label = "",)
             end
         end
     else
@@ -291,59 +262,51 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grids, parentgrid
         markershape = ctx[:markershape]
         X = vec(grid[Coordinates])
         if markershape == :none
-            Plots.plot!(
-                p,
-                X,
-                func;
-                linecolor = Plots.RGB(color),
-                linewidth = ctx[:linewidth],
-                linestyle = ctx[:linestyle],
-                legend = legpos[ctx[:legend]],
-                xscale = ctx[:xscale],
-                yscale = ctx[:yscale],
-                label = ctx[:label],
-            )
+            Plots.plot!(p,
+                        X,
+                        func;
+                        linecolor = Plots.RGB(color),
+                        linewidth = ctx[:linewidth],
+                        linestyle = ctx[:linestyle],
+                        legend = legpos[ctx[:legend]],
+                        xscale = ctx[:xscale],
+                        yscale = ctx[:yscale],
+                        label = ctx[:label],)
         else
             #Trick plots to use markers
-            Plots.plot!(
-                p,
-                X,
-                func;
-                linecolor = Plots.RGB(color),
-                linewidth = ctx[:linewidth],
-                linestyle = ctx[:linestyle],
-                xscale = ctx[:xscale],
-                yscale = ctx[:yscale],
-                label = "",
-            )
-            Plots.plot!(
-                p,
-                [X[1]],
-                [func[1]];
-                markershape = markershape,
-                label = ctx[:label],
-                markersize = ctx[:markersize],
-                linecolor = Plots.RGB(color),
-                linewidth = ctx[:linewidth],
-                xscale = ctx[:xscale],
-                yscale = ctx[:yscale],
-                legend = legpos[ctx[:legend]],
-                linestyle = ctx[:linestyle],
-                markercolor = Plots.RGB(color),
-            )
-            @views Plots.plot!(
-                p,
-                X[1:markevery:end],
-                func[1:markevery:end],
-                markercolor = Plots.RGB(color),
-                label = "",
-                linecolor = :white,
-                xscale = ctx[:xscale],
-                yscale = ctx[:yscale],
-                markershape = markershape,
-                markersize = ctx[:markersize],
-                lines = false,
-            )
+            Plots.plot!(p,
+                        X,
+                        func;
+                        linecolor = Plots.RGB(color),
+                        linewidth = ctx[:linewidth],
+                        linestyle = ctx[:linestyle],
+                        xscale = ctx[:xscale],
+                        yscale = ctx[:yscale],
+                        label = "",)
+            Plots.plot!(p,
+                        [X[1]],
+                        [func[1]];
+                        markershape = markershape,
+                        label = ctx[:label],
+                        markersize = ctx[:markersize],
+                        linecolor = Plots.RGB(color),
+                        linewidth = ctx[:linewidth],
+                        xscale = ctx[:xscale],
+                        yscale = ctx[:yscale],
+                        legend = legpos[ctx[:legend]],
+                        linestyle = ctx[:linestyle],
+                        markercolor = Plots.RGB(color),)
+            @views Plots.plot!(p,
+                               X[1:markevery:end],
+                               func[1:markevery:end],
+                               markercolor = Plots.RGB(color),
+                               label = "",
+                               linecolor = :white,
+                               xscale = ctx[:xscale],
+                               yscale = ctx[:yscale],
+                               markershape = markershape,
+                               markersize = ctx[:markersize],
+                               lines = false)
         end
     end
     reveal(ctx, TP)
@@ -379,17 +342,15 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}}, grids, parentgrid
     p = ctx[:ax]
 
     levels, crange, colorbarticks = isolevels(ctx, func)
-    colorlevels = collect(crange[1]:((crange[2]-crange[1])/(ctx[:colorlevels]-1)):crange[2])
+    colorlevels = collect(crange[1]:((crange[2] - crange[1]) / (ctx[:colorlevels] - 1)):crange[2])
 
-    Plots.contourf!(
-        p,
-        rdata...;
-        aspect_ratio = ctx[:aspect],
-        fill = ctx[:colormap],
-        linewidth = 0,
-        levels = colorlevels,
-        colorbar_ticks = colorbarticks,
-    )
+    Plots.contourf!(p,
+                    rdata...;
+                    aspect_ratio = ctx[:aspect],
+                    fill = ctx[:colormap],
+                    linewidth = 0,
+                    levels = colorlevels,
+                    colorbar_ticks = colorbarticks,)
     Plots.contour!(p, rdata...; aspect_ratio = ctx[:aspect], c = :black, levels = levels)
     reveal(ctx, TP)
 end

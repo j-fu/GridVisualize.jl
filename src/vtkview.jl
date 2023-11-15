@@ -132,11 +132,9 @@ function scalarplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}}, grids, parentgr
     reveal(ctx, TP)
 end
 
-
 vectorplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}}, grid, func) = nothing
 vectorplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{2}}, grid, func) = nothing
 vectorplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{3}}, grid, func) = nothing
-
 
 streamplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{1}}, grid, func) = nothing
 streamplot!(ctx, TP::Type{VTKViewType}, ::Type{Val{2}}, grid, func) = nothing

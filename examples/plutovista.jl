@@ -7,7 +7,11 @@ using InteractiveUtils
 # This Pluto notebook uses @bind for interactivity. When running this notebook outside of Pluto, the following 'mock version' of @bind gives bound variables a default value (instead of an error).
 macro bind(def, element)
     quote
-        local iv = try Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value catch; b -> missing; end
+        local iv = try
+            Base.loaded_modules[Base.PkgId(Base.UUID("6e696c72-6542-2067-7265-42206c756150"), "AbstractPlutoDingetjes")].Bonds.initial_value
+        catch
+            b -> missing
+        end
         local el = $(esc(element))
         global $(esc(def)) = Core.applicable(Base.get, el) ? Base.get(el) : iv(el)
         el
@@ -16,8 +20,8 @@ end
 
 # ╔═╡ 9701cbe0-d048-11eb-151b-67dda7b72b71
 begin
-	import Pkg as _Pkg
-	haskey(ENV,"PLUTO_PROJECT") && _Pkg.activate(ENV["PLUTO_PROJECT"]) # hide
+    import Pkg as _Pkg
+    haskey(ENV, "PLUTO_PROJECT") && _Pkg.activate(ENV["PLUTO_PROJECT"]) # hide
     using Revise
     using PlutoVista
     using GridVisualize
@@ -105,7 +109,6 @@ t4: $(@bind t4 PlutoUI.Slider(-10:0.1:10, default=0, show_value=true))
 # ╔═╡ c1278fb2-3e75-445f-893a-b8b8a7e931d3
 p = GridVisualizer(; resolution = (600, 200), dim = 1, legend = :lt);
 
-
 # ╔═╡ 661531f7-f740-4dd4-9a59-89ddff06ba5c
 scalarplot!(p, X2, f2(t4); show = true, clear = true, color = :red, label = "t=$(t4)")
 
@@ -116,35 +119,30 @@ md"""
 
 # ╔═╡ 00b115d3-aa8e-43ef-be6b-3d9d7b42f8af
 let
-	X = 0:1:10
+    X = 0:1:10
     g = simplexgrid(X)
     cellmask!(g, [0], [5], 2)
     g1 = subgrid(g, [1])
     g2 = subgrid(g, [2])
 
-
-    vis = GridVisualizer(color = :red,size=(600,200))
+    vis = GridVisualizer(; color = :red, size = (600, 200))
     func1 = map((x) -> x, g1)
     func2 = map((x) -> -x, g2)
     func = map(x -> x^2 / 100, g)
-    scalarplot!(
-                vis,
+    scalarplot!(vis,
                 [g1, g2],
                 g,
                 [func1, func2];
                 elevation = 0.1,
                 clear = true,
-                color = :red,
-            )
-    scalarplot!(
-                vis,
+                color = :red,)
+    scalarplot!(vis,
                 g,
                 func;
                 elevation = 0.1,
                 clear = false,
-                color = :green,
-            )
-            reveal(vis)
+                color = :green,)
+    reveal(vis)
 end
 
 # ╔═╡ ed9b80e5-9678-4ba6-bb36-c2e0674ed9ba
@@ -212,7 +210,7 @@ md"""
 
 # ╔═╡ 9b41e77b-e6b9-43b2-89ce-14a9c0eb1242
 let
-	X = 0:0.7:10
+    X = 0:0.7:10
     g = simplexgrid(X, X)
     cellmask!(g, [0, 0], [5, 5], 2)
     g1 = subgrid(g, [1])
@@ -279,8 +277,8 @@ scalarplot!(p3d, g3, f3; levels = [flevel], xplanes = [xplane], yplanes = [yplan
 
 # ╔═╡ d924d90d-4102-4ae8-b8de-254a17a5d4df
 begin
-	X4 = -1:0.1:1;
-	g4 = simplexgrid(X4, X4, X4);
+    X4 = -1:0.1:1
+    g4 = simplexgrid(X4, X4, X4)
 end
 
 # ╔═╡ 57ed5eea-bc1c-45eb-b4d3-dc63088db21a
@@ -293,24 +291,22 @@ md"""
 
 # ╔═╡ ef973737-5cc3-4a3c-8859-a86d9c12c976
 let
-	X = 0:0.1:1
+    X = 0:0.1:1
     g = simplexgrid(X, X, X)
     cellmask!(g, [0, 0, 0], [0.5, 0.5, 0.5], 2)
     g1 = subgrid(g, [1])
     g2 = subgrid(g, [2])
     func1 = map((x, y, z) -> (x + y + z), g1)
     func2 = map((x, y, z) -> (3 - x - y - z), g2)
-    scalarplot(
-        [g1, g2],
-        g,
-        [func1, func2];
-        levels = 0,
-        yplane = 0.25,
-        xplane = 0.25,
-        zplane = 0.25,
-        levelalpha = 1,
-        colormap = :hot,
-    )
+    scalarplot([g1, g2],
+               g,
+               [func1, func2];
+               levels = 0,
+               yplane = 0.25,
+               xplane = 0.25,
+               zplane = 0.25,
+               levelalpha = 1,
+               colormap = :hot,)
 end
 
 # ╔═╡ 4b9113d2-10bd-4f7a-a2b8-22092656c6b3
@@ -421,8 +417,8 @@ md"""
 
 # ╔═╡ 6a3b2356-e8a1-45f8-8648-2eca09a7b258
 begin
-    XX = 0:0.1:1;
-    YY = 0:0.1:10;
+    XX = 0:0.1:1
+    YY = 0:0.1:10
 end
 
 # ╔═╡ 608a5704-a84c-4c55-8642-ecddb275dc1b
