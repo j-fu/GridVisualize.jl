@@ -95,7 +95,7 @@ end
 
 function _inscene(l, pos)
     if isa(l, Makie.Block)
-        _inarea(l.scene.px_area[], pos)
+        _inarea(l.scene.viewport[], pos)
     elseif isa(l, Makie.GridLayout)
         _inarea(l.layoutobservables.computedbbox[], pos)
     end
