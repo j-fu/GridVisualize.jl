@@ -10,7 +10,7 @@ function initialize!(p::GridVisualizer, ::Type{MakieType})
 
     layout = p.context[:layout]
 
-    parent, flayout = FlippableLayout.flayoutscene(; resolution = p.context[:size])
+    parent, flayout = FlippableLayout.flayoutscene(; size = p.context[:size])
 
     p.context[:figure] = parent
     p.context[:flayout] = flayout
