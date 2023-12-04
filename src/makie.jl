@@ -747,7 +747,7 @@ function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid, func)
     XMakie = ctx[:Plotter]
 
     rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset])
-    qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize])
+    qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize], vconstant = ctx[:vconstant])
 
     set_plot_data!(ctx, :arrowdata, (qc = qc, qv = qv))
 
