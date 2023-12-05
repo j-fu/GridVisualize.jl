@@ -6,12 +6,12 @@ GridVisualize
 =============
 
 Plotting companion module for [ExtendableGrids.jl](https://github.com/j-fu/ExtendableGrids.jl)
-Provides grid and scalar piecewise linear function plotting for various plotting backends
+Provides plotting of grids,  scalar piecewise linear functions and vectors (2D only) for various plotting backends
 on simplicial grids in one, two or three space dimensions. The main supported backends
-are PyPlot, GLMakie and PlutoVista.
+are CairoMakie, GLMakie, PyPlot,  and PlutoVista. Plots is only partially supported (1D and 2D rectangular grids).
 
 ## Disclaimer
-The code is rather new and quite a few codepaths are untested. Please be prepared to help
+The code is rather complex and many codepaths are hard to test. Please be prepared to help
 fixing things.
 
 
@@ -19,22 +19,22 @@ fixing things.
 
 ### Plotting a grid, a function or a vector field
 ````
-gridplot(grid, Plotter=PyPlot)
-scalarplot(grid, function,Plotter=PyPlot)
-vectorplot(grid, vectorfunction,Plotter=PyPlot)
-streamplot(grid, vectorfunction,Plotter=PyPlot)
+gridplot(grid, Plotter=GLMakie)
+scalarplot(grid, function,Plotter=GLMakie)
+vectorplot(grid, vectorfunction,Plotter=GLMakie)
+streamplot(grid, vectorfunction,Plotter=GLMakie)
 ````
 
 This works for  1/2/3D grids and either a function  represented by its
 values on  the nodes of the  grid, or a scalar  function of 1, 2  or 3
-variables, respectively. Vector plots are currenly available for 2D only,
-and stream plots only for PyPlot.
+variables, respectively. Vector and stream plots are currenly available for 2D only.
+
 
 Plot appearance can be tweaked by a number of
 [keyword arguments](https://j-fu.github.io/GridVisualize.jl/dev/api/#GridVisualize.available_kwargs).
 
 ### Plotters
-Plotters can be e.g. Plots, PyPlot, GLMakie, PlutoVista - we pass the module exported
+Plotters can be e.g. Plots, PyPlot, GLMakie, CairoMakie PlutoVista - we pass the module exported
 by the package. Different plotters can be used at the same time.
 
 ### Multiple plots in one plotting window
@@ -129,7 +129,7 @@ and all plotting functions will do nothing.
 | gridplot, 1D   | y      | y       | y          | y     |         |
 | scalarplot, 2D | y      | y       | y          | (y)   | y,i     |
 | vectorplot, 2D | y      | y       | y          | y     |         |
-| streamplot, 2D | y      | p       | p          |       |         |
+| streamplot, 2D | y      | y       | p          |  n    |         |
 | gridplot, 2D   | y      | y,i     | y          | (y)   | y,i     |
 | scalarplot, 3D | y      | y,i     | y,i        |  n    | y,i     |
 | gridplot, 3D   | y      | y,i     | y,i        |  n    | y,i     |
@@ -158,7 +158,7 @@ and all plotting functions will do nothing.
 ![](https://github.com/j-fu/GridVisualize.jl/blob/main/docs/src/assets/multiscene_vtkview.png?raw=true")
 
 ## vscode
-Plotting  into the plot pane of Visual Studio Code is working. Here, you can use WGLMakie as backend. This works only with the mutating functions, i.e. you should use something like
+Plotting  into the plot pane of Visual Studio Code is working. Here, you can use CairoMakie or WGLMakie as backend. This works only with the mutating functions, i.e. you should use something like
 ```
 vis=GridVisualizer(Plotter=WGLMakie)
 gridplot!(vis,grid,clear=true,show=true)
@@ -167,7 +167,7 @@ gridplot!(vis,grid,clear=true,show=true)
 ## Notebooks
 
 ###  Pluto
-Plotting in Pluto notebooks for PyPlot, Plots, GLMakie is working.
+Plotting in Pluto notebooks for CairoMakie, PyPlot, Plots, GLMakie is working, WGLMakie probably works in combination with JSServe.
 
 Plotting in Pluto notebooks can use [PlutoVista.jl](https://github.com/j-fu/PlutoVista.jl)
 based on [plotly.js](https://plotly.com/javascript/) (1D) and [vtk.js](https://kitware.github.io/vtk-js/index.html) (2/3D).
