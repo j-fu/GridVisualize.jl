@@ -26,7 +26,7 @@ PlutoVista = "646e1f28-b900-46d7-9d87-d554eb38a413"
 PyPlot = "d330b81b-6aea-500a-939a-2ce795aea3ee"
 
 [compat]
-CairoMakie = "=0.11.1"
+CairoMakie = "0.11.3"
 ColorSchemes = "3"
 Colors = "0.12,1"
 DocStringExtensions = "0.8,0.9"
