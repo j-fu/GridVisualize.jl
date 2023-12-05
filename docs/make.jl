@@ -1,7 +1,7 @@
 using Documenter, ExtendableGrids, Literate, GridVisualize, Pluto
 using GridVisualize.FlippableLayout
 import CairoMakie
-CairoMakie.activate!(; type = "svg", visible = false, antialias = :none)
+CairoMakie.activate!(; type = "svg", visible = false)
 using Test
 
 plotting = joinpath(@__DIR__, "..", "examples", "plotting.jl")
