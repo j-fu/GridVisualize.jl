@@ -719,7 +719,7 @@ function streamplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
 
     X, Y = meshgrid(rc)
 
-    ax.streamplot(X, Y, rv[1, :, :, 1]', rv[2, :, :, 1]'; color = ctx[:color], density = ctx[:density])
+    ax.streamplot(X, Y, rv[1, :, :, 1]', rv[2, :, :, 1]'; color = ctx[:color], density = 1)
     ax.set_xlabel(ctx[:xlabel])
     ax.set_ylabel(ctx[:ylabel])
 

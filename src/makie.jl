@@ -772,7 +772,37 @@ function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid, func)
     reveal(ctx, TP)
 end
 
-function streamplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid, func) end
+function streamplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid, func)
+    XMakie = ctx[:Plotter]
+
+    rc, rv0 = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset])
+    srv = size(rv0)
+    rv = reshape(rv0, (srv[1], srv[2], srv[3]))
+    x = rc[1]
+    y = rc[2]
+    ix = linear_interpolation((x, y), rv[1, :, :])
+    iy = linear_interpolation((x, y), rv[2, :, :])
+    f(x, y) = Point2(ix(x, y), iy(x, y))
+    set_plot_data!(ctx, :streamdata, (xinterval = x[begin] .. x[end], yinterval = y[begin] .. y[end], f = f))
+
+    if !haskey(ctx, :streamplot)
+        if !haskey(ctx, :scene)
+            ctx[:scene] = XMakie.Axis(ctx[:figure];
+                                      title = ctx[:title],
+                                      aspect = XMakie.DataAspect(),
+                                      scenekwargs(ctx)...,)
+            add_scene!(ctx, ctx[:scene])
+        end
+
+        ctx[:streamplot] = XMakie.streamplot!(ctx[:scene],
+                                              map(data -> data.f, ctx[:streamdata]),
+                                              map(data -> data.xinterval, ctx[:streamdata]),
+                                              map(data -> data.yinterval, ctx[:streamdata]);
+                                              linewidth = ctx[:linewidth], colormap = ctx[:colormap])
+        XMakie.reset_limits!(ctx[:scene])
+    end
+    reveal(ctx, TP)
+end
 
 #######################################################################################
 #######################################################################################

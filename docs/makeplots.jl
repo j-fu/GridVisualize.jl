@@ -51,7 +51,7 @@ function makeplots(picdir; Plotter = GLMakie, extension = "png")
     p = plotting_stream2d(; Plotter = Plotter)
     fname = joinpath(picdir, "plotting_stream2d." * extension)
     save(fname, p; Plotter = Plotter)
-    @test isfile(fname) || GridVisualize.plottername != "PyPlot"
+    @test isfile(fname)
     println("stream2d")
 
     p = plotting_grid1d(; Plotter = Plotter)

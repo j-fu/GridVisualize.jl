@@ -126,11 +126,12 @@ end
 # ![](plotting_vec2d.svg)
 
 # ### 2D stream
-# Stream plots are currently only available with PyPlot.
+# Stream plots are currently only available with PyPlot and Makie
 function plotting_stream2d(; Plotter = default_plotter(), kwargs...)
     g, f = vec2d()
-    streamplot(g, f; Plotter = Plotter, spacing = 0.05, kwargs...)
+    GridVisualize.streamplot(g, f; Plotter = Plotter, spacing = 0.01, kwargs...)
 end
+# ![](plotting_stream2d.svg)
 
 # ### Movie
 # Movies can contain  any of the previous plots.

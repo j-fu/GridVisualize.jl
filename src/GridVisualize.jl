@@ -10,6 +10,8 @@ using StaticArrays
 using Colors
 using ColorSchemes
 using GeometryBasics
+using Interpolations: linear_interpolation
+using IntervalSets
 
 using GridVisualizeTools
 using ExtendableGrids
