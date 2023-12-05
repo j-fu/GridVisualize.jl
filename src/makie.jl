@@ -120,7 +120,7 @@ function scene_interaction(update_scene,
 
     # Check if pixel position pos sits within the scene
     function _inscene(scene, pos)
-        area = scene.px_area[]
+        area = scene.viewport[]
         pos[1] > area.origin[1] &&
             pos[1] < area.origin[1] + area.widths[1] &&
             pos[2] > area.origin[2] &&
