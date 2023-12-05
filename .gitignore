@@ -1,6 +1,9 @@
 QUARRY
 .project.jl
 docs/build
+docs/src/examples/*.png
+docs/src/examples/*.svg
+docs/src/examples/*.gif
 *~
 *.html
 *.svg
