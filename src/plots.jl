@@ -329,15 +329,16 @@ function rectdata(grid, U)
 end
 
 function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}}, grids, parentgrid, funcs)
-    grid = parentgrid
+    grid = grids[1]
     func = funcs[1]
     rdata = rectdata(grid, func)
-    if rdata == nothing
-        return nothing
-    end
     Plots = ctx[:Plotter]
     if !haskey(ctx, :ax)
         ctx[:ax] = Plots.plot(; title = ctx[:title])
+    end
+    if rdata == nothing
+        @warn "2D scalarplot with Plots backend works only on rectangular grids with X and Y coordinate vectors"
+        return reveal(ctx, TP)
     end
     p = ctx[:ax]
 
@@ -375,15 +376,17 @@ function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grid)
     if !haskey(ctx, :ax)
         ctx[:ax] = Plots.plot(; title = ctx[:title])
     end
+    @warn "3D gridplot with Plots backend is not available."
     reveal(ctx, TP)
 end
 
 function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grids, parentgrid, funcs)
-    grid = parentgrid
+    grid = grids[1]
     func = funcs[1]
     Plots = ctx[:Plotter]
     if !haskey(ctx, :ax)
         ctx[:ax] = Plots.plot(; title = ctx[:title])
     end
+    @warn "3D Scalarplot with Plots backend is not available."
     reveal(ctx, TP)
 end
