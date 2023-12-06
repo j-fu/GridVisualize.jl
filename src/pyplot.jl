@@ -505,12 +505,12 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grids, parentgri
     levels, crange, colorbarticks = isolevels(ctx, funcs)
     eps = 1.0e-5
     if crange[1] == crange[2]
-        crange = (crange[1] - eps, crange[1] + eps)
-        colorlevels = collect(crange[1]:((crange[2] - crange[1]) / (1)):crange[2])
+        eps=1.0e-5
     else
-        crange = (crange[1] - 1e-16, crange[2] + 1e-16) # avoids rare clipping of last color level
-        colorlevels = collect(crange[1]:((crange[2] - crange[1]) / (ctx[:colorlevels] - 1)):crange[2])
+        eps=(crange[2]-crange[1])*1.0e-15
     end
+    
+    colorlevels=range(crange[1]-eps, crange[2]+eps, length=ctx[:colorlevels])
 
     #    if !haskey(ctx, :grid) || !seemingly_equal(ctx[:grid], grid)
     #        ctx[:grid] = grids
