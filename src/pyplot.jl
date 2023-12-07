@@ -85,15 +85,15 @@ const leglocs = Dict(:none => "",
 $(SIGNATURES)
 Return tridata to be splatted to PyPlot calls
 """
-function tridata(grid::ExtendableGrid)
-    coord = grid[Coordinates]
+function tridata(grid::ExtendableGrid, gridscale)
+    coord = grid[Coordinates] * gridscale
     cellnodes = Matrix(grid[CellNodes])
     coord[1, :], coord[2, :], transpose(cellnodes .- 1)
 end
 
-function tridata(grids)
+function tridata(grids, gridscale)
     ngrids = length(grids)
-    coords = [grid[Coordinates] for grid in grids]
+    coords = [grid[Coordinates] * gridscale for grid in grids]
     npoints = [num_nodes(grid) for grid in grids]
     cellnodes = [grid[CellNodes] for grid in grids]
     ncells = [num_cells(grid) for grid in grids]
@@ -154,14 +154,15 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grid)
     ax.get_yaxis().set_ticks([])
     ax.set_ylim(-5 * h, xmax - xmin)
     cmap = region_cmap(ncellregions)
+    gridscale = ctx[:gridscale]
 
     for icell = 1:num_cells(grid)
         ireg = cellregions[icell]
         label = crflag[ireg] ? "c$(ireg)" : ""
         crflag[ireg] = false
 
-        x1 = coord[1, cellnodes[1, icell]]
-        x2 = coord[1, cellnodes[2, icell]]
+        x1 = coord[1, cellnodes[1, icell]] * gridscale
+        x2 = coord[1, cellnodes[2, icell]] * gridscale
         ax.plot([x1, x2],
                 [0, 0];
                 linewidth = 3.0,
@@ -177,7 +178,7 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grid)
         if ireg > 0
             label = brflag[ireg] ? "b$(ireg)" : ""
             brflag[ireg] = false
-            x1 = coord[1, bfacenodes[1, ibface]]
+            x1 = coord[1, bfacenodes[1, ibface]] * ctx[:gridscale]
             ax.plot([x1, x1],
                     [-2 * h, 2 * h];
                     linewidth = 3.0,
@@ -214,7 +215,6 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid)
     fig = ctx[:figure]
     cellregions = grid[CellRegions]
     cellnodes = grid[CellNodes]
-    coord = grid[Coordinates]
     ncellregions = grid[NumCellRegions]
     nbfaceregions = grid[NumBFaceRegions]
     ncellregions = grid[NumCellRegions]
@@ -226,7 +226,7 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid)
     crflag = ones(Bool, ncellregions)
     brflag = ones(Bool, nbfaceregions)
     ax.set_aspect(ctx[:aspect])
-    tridat = tridata(grid)
+    tridat = tridata(grid, ctx[:gridscale])
     cmap = region_cmap(ncellregions)
     cdata = ax.tripcolor(tridat...;
                          facecolors = grid[CellRegions],
@@ -250,16 +250,18 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid)
     ax.triplot(tridat...; color = "k", linewidth = ctx[:linewidth])
 
     if nbfaceregions > 0
+        gridscale = ctx[:gridscale]
+        coord = grid[Coordinates]
         cmap = bregion_cmap(nbfaceregions)
         # see https://gist.github.com/gizmaa/7214002
-        c1 = [coord[:, bfacenodes[1, i]] for i = 1:num_sources(bfacenodes)]
-        c2 = [coord[:, bfacenodes[2, i]] for i = 1:num_sources(bfacenodes)]
+        c1 = [coord[:, bfacenodes[1, i]] for i = 1:num_sources(bfacenodes)] * gridscale
+        c2 = [coord[:, bfacenodes[2, i]] for i = 1:num_sources(bfacenodes)] * gridscale
         rgb = [rgbtuple(cmap[bfaceregions[i]]) for i = 1:length(bfaceregions)]
         ax.add_collection(PyPlot.matplotlib.collections.LineCollection(collect(zip(c1, c2));
                                                                        colors = rgb,
                                                                        linewidth = 3,))
         for i = 1:nbfaceregions
-            ax.plot(coord[1, 1:1], coord[2, 1:1]; label = "$(i)", color = rgbtuple(cmap[i]))
+            ax.plot(coord[1, 1:1] * gridscale, coord[2, 1:1] * gridscale; label = "$(i)", color = rgbtuple(cmap[i]))
         end
     end
     if ctx[:legend] != :none
@@ -287,10 +289,10 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}}, grid)
 
     nregions = num_cellregions(grid)
     nbregions = num_bfaceregions(grid)
-
+    gridscale = ctx[:gridscale]
     xyzmin = zeros(3)
     xyzmax = ones(3)
-    coord = grid[Coordinates]
+    coord = grid[Coordinates] * gridscale
     @views for idim = 1:3
         xyzmin[idim] = minimum(coord[idim, :])
         xyzmax[idim] = maximum(coord[idim, :])
@@ -307,7 +309,8 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}}, grid)
     xyzcut = [ctx[:xplanes][1], ctx[:yplanes][1], ctx[:zplanes][1]]
 
     if ctx[:interior]
-        regpoints0, regfacets0 = extract_visible_cells3D(grid, xyzcut; primepoints = hcat(xyzmin, xyzmax))
+        regpoints0, regfacets0 = extract_visible_cells3D(grid, xyzcut; gridscale = ctx[:gridscale],
+                                                         primepoints = hcat(xyzmin, xyzmax))
         regfacets = [reshape(reinterpret(Int32, regfacets0[i]), (3, length(regfacets0[i]))) for
                      i = 1:nregions]
         regpoints = [reshape(reinterpret(Float32, regpoints0[i]), (3, length(regpoints0[i]))) for
@@ -326,7 +329,8 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}}, grid)
         end
     end
 
-    bregpoints0, bregfacets0 = extract_visible_bfaces3D(grid, xyzcut; primepoints = hcat(xyzmin, xyzmax))
+    bregpoints0, bregfacets0 = extract_visible_bfaces3D(grid, xyzcut; gridscale = ctx[:gridscale],
+                                                        primepoints = hcat(xyzmin, xyzmax))
     bregfacets = [reshape(reinterpret(Int32, bregfacets0[i]), (3, length(bregfacets0[i]))) for
                   i = 1:nbregions]
     bregpoints = [reshape(reinterpret(Float32, bregpoints0[i]), (3, length(bregpoints0[i]))) for
@@ -395,7 +399,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grids, parentgri
             pplot = ax.semilogy
         end
     end
-
+    gridscale = ctx[:gridscale]
     if ctx[:cellwise] # not checked,  outdated
         for icell = 1:num_cells(grid)
             i1 = cellnodes[1, icell]
@@ -415,7 +419,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grids, parentgri
         if ctx[:markershape] == :none
             for ifunc = 1:nfuncs
                 func = funcs[ifunc]
-                coord = grids[ifunc][Coordinates]
+                coord = grids[ifunc][Coordinates] * gridscale
                 if ctx[:label] !== "" && ifunc == 1
                     pplot(coord[1, :],
                           func;
@@ -434,7 +438,7 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grids, parentgri
         else
             for ifunc = 1:nfuncs
                 func = funcs[ifunc]
-                coord = grids[ifunc][Coordinates]
+                coord = grids[ifunc][Coordinates] * gridscale
                 if ctx[:label] !== "" && ifunc == 1
                     pplot(coord[1, :],
                           func;
@@ -505,19 +509,19 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grids, parentgri
     levels, crange, colorbarticks = isolevels(ctx, funcs)
     eps = 1.0e-5
     if crange[1] == crange[2]
-        eps=1.0e-5
+        eps = 1.0e-5
     else
-        eps=(crange[2]-crange[1])*1.0e-15
+        eps = (crange[2] - crange[1]) * 1.0e-15
     end
-    
-    colorlevels=range(crange[1]-eps, crange[2]+eps, length=ctx[:colorlevels])
+
+    colorlevels = range(crange[1] - eps, crange[2] + eps; length = ctx[:colorlevels])
 
     #    if !haskey(ctx, :grid) || !seemingly_equal(ctx[:grid], grid)
     #        ctx[:grid] = grids
     #        ctx[:tridata] = tridata(grids)
     #    end
 
-    tdat = tridata(grids)
+    tdat = tridata(grids, ctx[:gridscale])
     func = vcat(funcs...)
     cnt = ax.tricontourf(tdat...,
                          func;
@@ -559,27 +563,29 @@ function scalarplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}}, grids, parentgri
     end
     ax = ctx[:ax]
     fig = ctx[:figure]
-
+    griscale = ctx[:gridscale]
     xyzmin = zeros(3)
     xyzmax = ones(3)
     coord = parentgrid[Coordinates]
     @views for idim = 1:3
-        xyzmin[idim] = minimum(coord[idim, :])
-        xyzmax[idim] = maximum(coord[idim, :])
+        xyzmin[idim] = minimum(coord[idim, :]) * ctx[:gridscale]
+        xyzmax[idim] = maximum(coord[idim, :]) * ctx[:gridscale]
     end
-    xyzcut = [ctx[:xplanes], ctx[:yplanes], ctx[:zplanes]]
+    xyzcut = [ctx[:xplanes], ctx[:yplanes], ctx[:zplanes]] * ctx[:gridscale]
     levels, crange, colorbarticks = isolevels(ctx, funcs)
-    eps = 1.0e-5
+
     if crange[1] == crange[2]
-        crange = (crange[1] - eps, crange[1] + eps)
-        colorlevels = collect(crange[1]:((crange[2] - crange[1]) / (1)):crange[2])
+        eps = 1.0e-5
     else
-        colorlevels = collect(crange[1]:((crange[2] - crange[1]) / (ctx[:colorlevels] - 1)):crange[2])
+        eps = (crange[2] - crange[1]) * 1.0e-15
     end
+
+    colorlevels = range(crange[1] - eps, crange[2] + eps; length = ctx[:colorlevels])
 
     planes = makeplanes(xyzmin, xyzmax, ctx[:xplanes], ctx[:yplanes], ctx[:zplanes])
 
-    ccoord0, faces0, values = marching_tetrahedra(grids, funcs, planes, levels; tol = ctx[:tetxplane_tol])
+    ccoord0, faces0, values = marching_tetrahedra(grids, funcs, planes, levels; gridscale = ctx[:gridscale],
+                                                  tol = ctx[:tetxplane_tol])
 
     faces = reshape(reinterpret(Int32, faces0), (3, length(faces0)))
     ccoord = reshape(reinterpret(Float32, ccoord0), (3, length(ccoord0)))
@@ -658,7 +664,7 @@ function vectorplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
     ax.set_title(ctx[:title])
 
     rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], xlimits = ctx[:xlimits],
-                          ylimits = ctx[:ylimits])
+                          ylimits = ctx[:ylimits], gridscale = ctx[:gridscale])
     qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize], vconstant = ctx[:vconstant])
 
     # For the kwargs, see 
@@ -715,7 +721,7 @@ function streamplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
     end
 
     rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], xlimits = ctx[:xlimits],
-                          ylimits = ctx[:ylimits])
+                          ylimits = ctx[:ylimits], gridscale = ctx[:gridscale])
 
     X, Y = meshgrid(rc)
 
