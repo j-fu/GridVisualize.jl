@@ -150,9 +150,15 @@ streamlines.
     
 The code is 3D ready.
 """
-function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
-                      spacing = :default, reltol = 1.0e-10, xlimits = (1, -1), ylimits = (1, -1), zlimits = (1, -1)) where {Tv, Ti}
-    coord = grid[Coordinates]
+function vectorsample(grid::ExtendableGrid{Tv, Ti}, v;
+                      offset = :default,
+                      spacing = :default,
+                      reltol = 1.0e-10,
+                      gridscale = 1.0,
+                      xlimits = (1, -1),
+                      ylimits = (1, -1),
+                      zlimits = (1, -1)) where {Tv, Ti}
+    coord = grid[Coordinates] * gridscale
     cn = grid[CellNodes]
     ncells::Int = num_cells(grid)
 
@@ -160,7 +166,12 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
 
     eltype = dim == 2 ? Triangle2D : Tetrahedron3D
 
-    L2G = ExtendableGrids.L2GTransformer(eltype, grid, ON_CELLS)
+    scaledgrid = grid
+    if gridscale != 1.0
+        scaledgrid.components = copy(grid.components)
+        scaledgrid[Coordinates] = coord
+    end
+    L2G = ExtendableGrids.L2GTransformer(eltype, scaledgrid, ON_CELLS)
 
     # memory for  inverse of local transformation matrix
     invA = zeros(dim + 1, dim + 1)
@@ -179,9 +190,10 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
     if zlimits[1] < zlimits[2]
         cminmax[3] = zlimits[:]
     end
-
     if offset == :default
         offset = [cminmax[i][1] for i = 1:dim]
+    else
+        offset = offset * gridscale
     end
 
     # extent  of domain
@@ -194,9 +206,11 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
     if spacing == :default
         spacing = [extent / 15 for i = 1:dim]
     elseif isa(spacing, Number)
-        spacing = [spacing for i = 1:dim]
+        spacing = [spacing for i = 1:dim] * gridscale
+    else
+        # else assume spacing vector has been given
+        spacing = spacing * gridscale
     end
-    # else assume spacing vector has been given
 
     # index range
     ijkmax = ones(Int, 3)
