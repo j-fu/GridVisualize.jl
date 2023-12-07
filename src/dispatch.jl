@@ -334,7 +334,7 @@ function default_plot_kwargs()
                                            :yplanes => Pair([prevfloat(Inf)], "3D y plane positions or number thereof"),
                                            :zplanes => Pair([prevfloat(Inf)], "3D z plane positions or number thereof"),
                                            :zoom => Pair(1.0, "Zoom level"),
-                                           :gridscale => Pair(1.0, "grid scale factor"),
+                                           :gridscale => Pair(1, "grid scale factor"),
                                            :azim => Pair(-60, "3D azimuth angle  (in degrees)"),
                                            :elev => Pair(30, "3D elevation angle  (in degrees)"),
                                            :perspectiveness => Pair(0.25,

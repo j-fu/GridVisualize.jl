@@ -9,14 +9,15 @@ Return corresponding points and facets for each region for drawing as mesh (Maki
 or trisurf (pyplot)
 """
 function GridVisualizeTools.extract_visible_cells3D(grid::ExtendableGrid, xyzcut;
+                                                    gridscale = 1.0,
                                                     primepoints = zeros(0, 0),
                                                     Tp = SVector{3, Float32},
                                                     Tf = SVector{3, Int32})
-    coord = grid[Coordinates]
+    coord = grid[Coordinates] * gridscale
     cellnodes = grid[CellNodes]
     cellregions = grid[CellRegions]
     nregions = grid[NumCellRegions]
-    extract_visible_cells3D(coord, cellnodes, cellregions, nregions, xyzcut;
+    extract_visible_cells3D(coord, cellnodes, cellregions, nregions, [xyzcut...] * gridscale;
                             primepoints = primepoints,
                             Tp = Tp, Tf = Tf)
 end
@@ -31,15 +32,16 @@ Return corresponding points and facets for each region for drawing as mesh (Maki
 or trisurf (pyplot)
 """
 function GridVisualizeTools.extract_visible_bfaces3D(grid::ExtendableGrid, xyzcut;
+                                                     gridscale = 1.0,
                                                      primepoints = zeros(0, 0),
                                                      Tp = SVector{3, Float32},
                                                      Tf = SVector{3, Int32})
-    coord = grid[Coordinates]
+    coord = grid[Coordinates] * gridscale
     bfacenodes = grid[BFaceNodes]
     bfaceregions = grid[BFaceRegions]
     nbregions = grid[NumBFaceRegions]
 
-    extract_visible_bfaces3D(coord, bfacenodes, bfaceregions, nbregions, xyzcut;
+    extract_visible_bfaces3D(coord, bfacenodes, bfaceregions, nbregions, [xyzcut...] * gridscale;
                              primepoints = primepoints, Tp = Tp, Tf = Tf)
 end
 
@@ -49,16 +51,17 @@ end
 Extract isosurfaces and plane interpolation for function on 3D tetrahedral mesh.
 See [`marching_tetrahedra(coord,cellnodes,func,planes,flevels;tol, primepoints, primevalues, Tv, Tp, Tf)`](@ref)
 """
-function GridVisualizeTools.marching_tetrahedra(grid::ExtendableGrid, func, planes, flevels;
+function GridVisualizeTools.marching_tetrahedra(grid::ExtendableGrid, func, planes, flevels; gridscale = 1.0,
                                                 kwargs...)
-    coord = grid[Coordinates]
+    coord = grid[Coordinates] * gridscale
     cellnodes = grid[CellNodes]
     marching_tetrahedra(coord, cellnodes, func, planes, flevels; kwargs...)
 end
 
 function GridVisualizeTools.marching_tetrahedra(grids::Vector{ExtendableGrid{Tv, Ti}}, funcs, planes, flevels;
+                                                gridscale = 1.0,
                                                 kwargs...) where {Tv, Ti}
-    coord = [grid[Coordinates] for grid in grids]
+    coord = [grid[Coordinates] * gridscale for grid in grids]
     cellnodes = [grid[CellNodes] for grid in grids]
     marching_tetrahedra(coord, cellnodes, funcs, planes, flevels; kwargs...)
 end
@@ -69,25 +72,25 @@ end
 
 Collect isoline snippets on triangles ready for linesegments!
 """
-function GridVisualizeTools.marching_triangles(grid::ExtendableGrid, func, levels)
-    coord::Matrix{Float64} = grid[Coordinates]
+function GridVisualizeTools.marching_triangles(grid::ExtendableGrid, func, levels; gridscale = 1.0)
+    coord::Matrix{Float64} = grid[Coordinates] * gridscale
     cellnodes::Matrix{Int32} = grid[CellNodes]
     marching_triangles(coord, cellnodes, func, levels)
 end
 
-function GridVisualizeTools.marching_triangles(grids::Vector{ExtendableGrid{Tv, Ti}}, funcs, levels) where {Tv, Ti}
-    coords = [grid[Coordinates] for grid in grids]
+function GridVisualizeTools.marching_triangles(grids::Vector{ExtendableGrid{Tv, Ti}}, funcs, levels; gridscale = 1.0) where {Tv, Ti}
+    coords = [grid[Coordinates] * gridscale for grid in grids]
     cellnodes = [grid[CellNodes] for grid in grids]
     marching_triangles(coords, cellnodes, funcs, levels)
 end
 
 ##############################################
 # Create meshes from grid data
-function regionmesh(grid, iregion)
+function regionmesh(grid, gridscale, iregion)
     coord = grid[Coordinates]
     cn = grid[CellNodes]
     cr = grid[CellRegions]
-    @views points = [Point2f(coord[:, i]) for i = 1:size(coord, 2)]
+    @views points = [Point2f(coord[:, i] * gridscale) for i = 1:size(coord, 2)]
     faces = Vector{GLTriangleFace}(undef, 0)
     for i = 1:length(cr)
         if cr[i] == iregion
@@ -97,7 +100,7 @@ function regionmesh(grid, iregion)
     Mesh(points, faces)
 end
 
-function bfacesegments(grid, ibreg)
+function bfacesegments(grid, gridscale, ibreg)
     coord = grid[Coordinates]
     nbfaces = num_bfaces(grid)
     bfacenodes = grid[BFaceNodes]
@@ -106,15 +109,15 @@ function bfacesegments(grid, ibreg)
     for ibface = 1:nbfaces
         if bfaceregions[ibface] == ibreg
             push!(points,
-                  Point2f(coord[1, bfacenodes[1, ibface]], coord[2, bfacenodes[1, ibface]]))
+                  Point2f(coord[1, bfacenodes[1, ibface]] * gridscale, coord[2, bfacenodes[1, ibface]] * gridscale))
             push!(points,
-                  Point2f(coord[1, bfacenodes[2, ibface]], coord[2, bfacenodes[2, ibface]]))
+                  Point2f(coord[1, bfacenodes[2, ibface]] * gridscale, coord[2, bfacenodes[2, ibface]] * gridscale))
         end
     end
     points
 end
 
-function bfacesegments3(grid, ibreg)
+function bfacesegments3(grid, gridscale, ibreg)
     coord = grid[Coordinates]
     nbfaces = num_bfaces(grid)
     bfacenodes = grid[BFaceNodes]
@@ -123,10 +126,10 @@ function bfacesegments3(grid, ibreg)
     for ibface = 1:nbfaces
         if bfaceregions[ibface] == ibreg
             push!(points,
-                  Point3f(coord[1, bfacenodes[1, ibface]], coord[2, bfacenodes[1, ibface]],
+                  Point3f(coord[1, bfacenodes[1, ibface]] * gridscale, coord[2, bfacenodes[1, ibface]] * gridscale,
                           0.0))
             push!(points,
-                  Point3f(coord[1, bfacenodes[2, ibface]], coord[2, bfacenodes[2, ibface]],
+                  Point3f(coord[1, bfacenodes[2, ibface]] * gridscale, coord[2, bfacenodes[2, ibface]] * gridscale,
                           0.0))
         end
     end

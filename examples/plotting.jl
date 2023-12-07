@@ -72,7 +72,7 @@ end
 # ![](plotting_func1d.svg)
 
 # ### Function on 2D grid
-function func2d(; n = 20)
+function func2d(; n = 30)
     g = grid2d(; n = n)
     g, map((x, y) -> sinpi(2 * x) * sinpi(3.5 * y), g)
 end
@@ -119,16 +119,16 @@ function vec2d(; n = 20)
          map((x, y) -> cospi(2 * x) * cospi(3.5 * y), g)')
 end
 
-function plotting_vec2d(; Plotter = default_plotter(), kwargs...)
-    g, f = vec2d()
+function plotting_vec2d(; Plotter = default_plotter(), n = 20, kwargs...)
+    g, f = vec2d(; n = n)
     vectorplot(g, f; Plotter = Plotter, kwargs...)
 end
 # ![](plotting_vec2d.svg)
 
 # ### 2D stream
 # Stream plots are currently only available with PyPlot and Makie
-function plotting_stream2d(; Plotter = default_plotter(), kwargs...)
-    g, f = vec2d()
+function plotting_stream2d(; Plotter = default_plotter(), n = 50, kwargs...)
+    g, f = vec2d(; n = n)
     GridVisualize.streamplot(g, f; Plotter = Plotter, spacing = 0.01, kwargs...)
 end
 # ![](plotting_stream2d.svg)
