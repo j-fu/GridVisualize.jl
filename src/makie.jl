@@ -748,7 +748,7 @@ end
 function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid, func)
     XMakie = ctx[:Plotter]
 
-    rc, rv = vectorsample(grid, func; gridscale = ctx[:gridscale], spacing = ctx[:spacing], offset = ctx[:offset])
+    rc, rv = vectorsample(grid, func; gridscale = ctx[:gridscale], rasterpoints = ctx[:rasterpoints], offset = ctx[:offset])
     qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize], vconstant = ctx[:vconstant])
 
     set_plot_data!(ctx, :arrowdata, (qc = qc, qv = qv))
@@ -777,7 +777,7 @@ end
 function streamplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid, func)
     XMakie = ctx[:Plotter]
 
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], xlimits = ctx[:xlimits],
+    rc, rv = vectorsample(grid, func; rasterpoints = 2 * ctx[:rasterpoints], offset = ctx[:offset], xlimits = ctx[:xlimits],
                           ylimits = ctx[:ylimits], gridscale = ctx[:gridscale])
 
     x = rc[1]
@@ -789,9 +789,10 @@ function streamplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid, func)
 
     xextent = x[end] - x[begin]
     yextent = y[end] - y[begin]
+
     maxextent = max(xextent, yextent)
-    gridstep = maxextent / 32
-    gridsize = (Int(ceil(xextent / gridstep)), Int(ceil(yextent / gridstep)), 20)
+    gridstep = maxextent / (2 * ctx[:rasterpoints])
+    gridsize = (Int(ceil(xextent / gridstep)), Int(ceil(yextent / gridstep)), 2 * ctx[:rasterpoints])
 
     set_plot_data!(ctx, :streamdata, (xinterval = x[begin] .. x[end], yinterval = y[begin] .. y[end], f = f))
 
