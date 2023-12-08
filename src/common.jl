@@ -139,7 +139,7 @@ end
 """
           vectorsample(grid::ExtendableGrid{Tv, Ti}, v;
                       offset = :default,
-                      spacing = :default,
+                      rasterpoints = 15,
                       reltol = 1.0e-10,
                       gridscale = 1.0,
                       xlimits = (1, -1),
@@ -161,7 +161,7 @@ The code is 3D ready.
 """
 function vectorsample(grid::ExtendableGrid{Tv, Ti}, v;
                       offset = :default,
-                      spacing = :default,
+                      rasterpoints = 32,
                       reltol = 1.0e-10,
                       gridscale = 1.0,
                       xlimits = (1, -1),
@@ -215,22 +215,14 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v;
     tol = reltol * extent
 
     # point spacing
-    if spacing == :default
-        spacing = [extent / 15 for i = 1:dim]
-    elseif isa(spacing, Number)
-        spacing = [spacing for i = 1:dim] * gridscale
-    else
-        # else assume spacing vector has been given
-        spacing = spacing * gridscale
-    end
+    spacing = [extent / rasterpoints for i = 1:dim]
 
     # index range
     ijkmax = ones(Int, 3)
     for idim = 1:dim
         ijkmax[idim] = ceil(Int64, (cminmax[idim][2] - offset[idim]) / spacing[idim]) + 1
     end
-    @show ijkmax
-    @show spacing
+
     # The ijk raster corresponds to a  tensorproduct grid
     # spanned by x,y and z coordinate vectors. Here, we build them
     # in order to avoid to calculate them from the raster indices

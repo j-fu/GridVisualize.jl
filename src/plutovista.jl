@@ -270,7 +270,7 @@ function scalarplot!(ctx,
     end
 
     allcoords = hcat(coords...)
-
+    levels, crange, colorbarticks = isolevels(ctx, funcs)
     allcellnodes = Matrix{Int}(undef, 3, sum(ncells))
     k = 1
     for j = 1:ngrids
@@ -289,8 +289,8 @@ function scalarplot!(ctx,
                            allcellnodes,
                            vcat(funcs...);
                            colormap = ctx[:colormap],
-                           levels = ctx[:levels],
-                           colorbarticks = ctx[:colorbarticks],
+                           levels,
+                           colorbarticks = colorbarticks,
                            limits = ctx[:limits],
                            backend = ctx[:backend],
                            zoom = ctx[:zoom],
@@ -306,7 +306,7 @@ function vectorplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid, func)
     PlutoVista = ctx[:Plotter]
     PlutoVista.backend!(ctx[:figure]; backend = ctx[:backend], datadim = 2)
 
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], gridscale = ctx[:gridscale])
+    rc, rv = vectorsample(grid, func; rasterpoints = ctx[:rasterpoints], offset = ctx[:offset], gridscale = ctx[:gridscale])
     qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize])
 
     PlutoVista.quiver2d!(ctx[:figure], qc, qv)

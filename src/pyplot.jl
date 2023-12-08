@@ -663,7 +663,7 @@ function vectorplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
     ax.set_aspect(ctx[:aspect])
     ax.set_title(ctx[:title])
 
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], xlimits = ctx[:xlimits],
+    rc, rv = vectorsample(grid, func; rasterpoints = ctx[:rasterpoints], offset = ctx[:offset], xlimits = ctx[:xlimits],
                           ylimits = ctx[:ylimits], gridscale = ctx[:gridscale])
     qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize], vconstant = ctx[:vconstant])
 
@@ -720,7 +720,7 @@ function streamplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
         xout, yout
     end
 
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], xlimits = ctx[:xlimits],
+    rc, rv = vectorsample(grid, func; rasterpoints = 2 * ctx[:rasterpoints], offset = ctx[:offset], xlimits = ctx[:xlimits],
                           ylimits = ctx[:ylimits], gridscale = ctx[:gridscale])
 
     X, Y = meshgrid(rc)

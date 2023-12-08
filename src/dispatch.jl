@@ -324,8 +324,8 @@ function default_plot_kwargs()
                                            :levelalpha => Pair(0.25, "3D isolevel alpha"),
                                            :planealpha => Pair(0.25, "3D plane section alpha"),
                                            :tetxplane_tol => Pair(0.0, "tolerance for tet-plane intersection in 3D"),
-                                           :spacing => Pair(:default,
-                                                            "Spacing of quiver/streamplot interpolation points in vector plot"),
+                                           :rasterpoints => Pair(16,
+                                                                 "Number of quiver points resp. half number of streamplot interpolation points in the maximum extent direction. "),
                                            :offset => Pair(:default, "Offset of quiver grid"),
                                            :vscale => Pair(1.0, "Vector field scale for quiver grid"),
                                            :vconstant => Pair(false, "Set all arrow length constant in vector plot"),
@@ -335,7 +335,7 @@ function default_plot_kwargs()
                                            :yplanes => Pair([prevfloat(Inf)], "3D y plane positions or number thereof"),
                                            :zplanes => Pair([prevfloat(Inf)], "3D z plane positions or number thereof"),
                                            :zoom => Pair(1.0, "Zoom level"),
-                                           :gridscale => Pair(1, "Grid scale factor. Will be applied also to planes, spacing."),
+                                           :gridscale => Pair(1, "Grid scale factor. Will be applied also to planes, spacing"),
                                            :azim => Pair(-60, "3D azimuth angle  (in degrees)"),
                                            :elev => Pair(30, "3D elevation angle  (in degrees)"),
                                            :perspectiveness => Pair(0.25,
@@ -348,7 +348,8 @@ function default_plot_kwargs()
                                            :backend => Pair(:default, "Backend for PlutoVista plot"),
                                            :dim => Pair(1, "Data dimension for PlutoVista plot"),
                                            :regions => Pair(:all, "List of regions to plot"),
-                                           :species => Pair(1, "Number of species to plot or number of species in regions"))
+                                           :species => Pair(1, "Number of species to plot or number of species in regions"),
+                                           :spacing => Pair(nothing, "Removed from API"))
 end
 
 #
@@ -553,6 +554,9 @@ Plot piecewise linear vector field  as quiver plot.
 function vectorplot!(ctx::SubVisualizer, grid::ExtendableGrid, func; kwargs...)
     _update_context!(ctx, Dict(:clear => true, :show => false, :reveal => false))
     _update_context!(ctx, kwargs)
+    if ctx[:spacing] != nothing
+        @warn "`spacing` has been removed from keyword arguments, use `rasterpoints` to control spacing"
+    end
     vectorplot!(ctx, plottertype(ctx[:Plotter]), Val{dim_space(grid)}, grid, func)
 end
 
@@ -617,6 +621,9 @@ Plot piecewise linear vector field  as stream plot.
 function streamplot!(ctx::SubVisualizer, grid::ExtendableGrid, func; kwargs...)
     _update_context!(ctx, Dict(:clear => true, :show => false, :reveal => false))
     _update_context!(ctx, kwargs)
+    if ctx[:spacing] != nothing
+        @warn "`spacing` has been removed from keyword arguments, use `rasterpoints` to control spacing"
+    end
     streamplot!(ctx, plottertype(ctx[:Plotter]), Val{dim_space(grid)}, grid, func)
 end
 

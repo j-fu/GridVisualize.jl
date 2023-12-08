@@ -363,7 +363,7 @@ function vectorplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}}, grid, func)
         ctx[:ax] = Plots.plot(; title = ctx[:title])
     end
     p = ctx[:ax]
-    rc, rv = vectorsample(grid, func; gridscale = ctx[:gridscale], spacing = ctx[:spacing], offset = ctx[:offset])
+    rc, rv = vectorsample(grid, func; gridscale = ctx[:gridscale], rasterpoints = ctx[:rasterpoints], offset = ctx[:offset])
     qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize])
 
     Plots.quiver!(p, qc[1, :], qc[2, :]; quiver = (qv[1, :], qv[2, :]), color = :black)

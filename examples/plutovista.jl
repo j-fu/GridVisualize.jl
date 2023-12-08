@@ -348,7 +348,7 @@ function qv2d(; n = 20, stream = false, kwargs...)
 end
 
 # ╔═╡ 812af347-7606-4c54-b155-88322d20d921
-qv2d(; n = 50, spacing = 0.5)
+qv2d(; n = 50, rasterpoints=16)
 
 # ╔═╡ 09998521-68b6-45b4-8c1d-ae73bbd431ad
 md"""
