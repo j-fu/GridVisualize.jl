@@ -137,16 +137,22 @@ function bfacesegments3(grid, gridscale, ibreg)
 end
 
 """
-$(TYPEDSIGNATURES)
+          vectorsample(grid::ExtendableGrid{Tv, Ti}, v;
+                      offset = :default,
+                      spacing = :default,
+                      reltol = 1.0e-10,
+                      gridscale = 1.0,
+                      xlimits = (1, -1),
+                      ylimits = (1, -1),
+                      zlimits = (1, -1)) where {Tv, Ti}
 
 Extract values of given vector field (either nodal values of a piecewise linear vector field or a callback function
 providing evaluation of the vector field for given generalized barycentric coordinates).
 at all sampling points on  `offset+ i*spacing` for i in Z^d  defined by the tuples offset and spacing.
+Returned values can be fed into [`quiverdata`](@ref)
 
 By default, offset is at the minimum of grid coordinates, and spacing is defined
 the largest grid extend divided by 10.
-
-
 
 The intermediate `rasterflux` in future versions can be used to calculate
 streamlines.
@@ -336,19 +342,28 @@ function isolevels(ctx, funcs)
 end
 
 """
-$(TYPEDSIGNATURES)
+     function quiverdata(rastercoord,
+                         rasterflux;
+                         vscale = 1.0,
+                         vnormalize = true,
+                         vconstant = false)
 
 
-Extract  nonzero fluxes for quiver plots from rastergrid.
+
+Extract  nonzero fluxes for quiver plots from rastergrid obtained by [`vectorsample`](@ref).
 
 Returns qc, qv -  `d x nquiver` matrices.
 
 If vnormalize is true, the vector field is normalized to vscale*min(spacing), otherwise, it
 is scaled by vscale
-Result data are meant to  be ready for being passed to calls to `quiver`.
+Result data are meant to  be ready for being passed to calls to `quiver` with various plotting backends.
 
 """
-function quiverdata(rastercoord, rasterflux; vscale = 1.0, vnormalize = true, vconstant = false)
+function quiverdata(rastercoord,
+                    rasterflux;
+                    vscale = 1.0,
+                    vnormalize = true,
+                    vconstant = false)
     dim = length(rastercoord)
 
     imax = length(rastercoord[1])

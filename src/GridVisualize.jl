@@ -18,6 +18,7 @@ using ExtendableGrids
 
 include("dispatch.jl")
 include("common.jl")
+export quiverdata, vectorsample
 include("pyplot.jl")
 include("makie.jl")
 include("vtkview.jl")
