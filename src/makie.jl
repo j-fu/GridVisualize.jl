@@ -883,7 +883,7 @@ function makescene3d(ctx)
             GL[1, 2] = XMakie.Colorbar(ctx[:figure];
                                        colormap = ctx[:colormap],
                                        colorrange = ctx[:crange],
-                                       ticks = map(d -> d.l, ctx[:data]),
+                                       ticks = map(d -> d.c, ctx[:data]),
                                        tickformat = "{:.2e}",
                                        width = 15,
                                        ticklabelsize = 0.5 * ctx[:fontsize],)
@@ -891,7 +891,7 @@ function makescene3d(ctx)
             GL[2, 1] = XMakie.Colorbar(ctx[:figure];
                                        colormap = ctx[:colormap],
                                        colorrange = ctx[:crange],
-                                       ticks = map(d -> d.l, ctx[:data]),
+                                       ticks = map(d -> d.c, ctx[:data]),
                                        tickformat = "{:.2e}",
                                        height = 15,
                                        ticklabelsize = 0.5 * ctx[:fontsize],
@@ -1070,8 +1070,9 @@ end
 
 # 3d function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid, funcs)
-    levels, crange = isolevels(ctx, funcs)
+    levels, crange, colorbarticks = isolevels(ctx, funcs)
     ctx[:crange] = crange
+    ctx[:colorbarticks] = colorbarticks
 
     nan_replacement = 0.5 * (crange[1] + crange[2])
     make_mesh(pts, fcs) = Mesh(pts, fcs)
@@ -1132,6 +1133,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
                                  y = ctx[:iyplanes],
                                  z = ctx[:izplanes],
                                  l = ctx[:levels],
+                                 c = ctx[:colorbarticks],
                                  t = ctx[:title]))
 
         ctx[:scene] = makeaxis3d(ctx)

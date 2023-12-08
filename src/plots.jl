@@ -344,7 +344,13 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}}, grids, parentgrid
     p = ctx[:ax]
 
     levels, crange, colorbarticks = isolevels(ctx, func)
-    colorlevels = collect(crange[1]:((crange[2] - crange[1]) / (ctx[:colorlevels] - 1)):crange[2])
+    eps = 1.0e-5
+    if crange[1] == crange[2]
+        eps = 1.0e-5
+    else
+        eps = (crange[2] - crange[1]) * 1.0e-15
+    end
+    colorlevels = range(crange[1] - eps, crange[2] + eps; length = ctx[:colorlevels])
 
     Plots.contourf!(p,
                     rdata...;
