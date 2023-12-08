@@ -229,11 +229,13 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v;
     for idim = 1:dim
         ijkmax[idim] = ceil(Int64, (cminmax[idim][2] - offset[idim]) / spacing[idim]) + 1
     end
-
+    @show ijkmax
+    @show spacing
     # The ijk raster corresponds to a  tensorproduct grid
     # spanned by x,y and z coordinate vectors. Here, we build them
     # in order to avoid to calculate them from the raster indices
     rastercoord = [zeros(Float32, ijkmax[idim]) for idim = 1:dim]
+
     for idim = 1:dim
         rastercoord[idim] = collect(range(offset[idim]; step = spacing[idim],
                                           length = ijkmax[idim]))
