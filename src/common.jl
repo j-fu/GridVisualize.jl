@@ -177,7 +177,10 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v;
 
     scaledgrid = grid
     if gridscale != 1.0
-        scaledgrid.components = copy(grid.components)
+        scaledgrid = ExtendableGrid{coord_type(grid), index_type(grid)}()
+        for (k, v) in grid.components
+            scaledgrid.components[k] = v
+        end
         scaledgrid[Coordinates] = coord
     end
     L2G = ExtendableGrids.L2GTransformer(eltype, scaledgrid, ON_CELLS)

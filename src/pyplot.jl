@@ -722,7 +722,7 @@ function streamplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
 
     rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset], xlimits = ctx[:xlimits],
                           ylimits = ctx[:ylimits], gridscale = ctx[:gridscale])
-
+    @show rv
     X, Y = meshgrid(rc)
 
     ax.streamplot(X, Y, rv[1, :, :, 1]', rv[2, :, :, 1]'; color = ctx[:color], density = 1)
