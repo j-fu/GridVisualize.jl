@@ -9,14 +9,15 @@ Return corresponding points and facets for each region for drawing as mesh (Maki
 or trisurf (pyplot)
 """
 function GridVisualizeTools.extract_visible_cells3D(grid::ExtendableGrid, xyzcut;
+                                                    gridscale = 1.0,
                                                     primepoints = zeros(0, 0),
                                                     Tp = SVector{3, Float32},
                                                     Tf = SVector{3, Int32})
-    coord = grid[Coordinates]
+    coord = grid[Coordinates] * gridscale
     cellnodes = grid[CellNodes]
     cellregions = grid[CellRegions]
     nregions = grid[NumCellRegions]
-    extract_visible_cells3D(coord, cellnodes, cellregions, nregions, xyzcut;
+    extract_visible_cells3D(coord, cellnodes, cellregions, nregions, [xyzcut...] * gridscale;
                             primepoints = primepoints,
                             Tp = Tp, Tf = Tf)
 end
@@ -31,15 +32,16 @@ Return corresponding points and facets for each region for drawing as mesh (Maki
 or trisurf (pyplot)
 """
 function GridVisualizeTools.extract_visible_bfaces3D(grid::ExtendableGrid, xyzcut;
+                                                     gridscale = 1.0,
                                                      primepoints = zeros(0, 0),
                                                      Tp = SVector{3, Float32},
                                                      Tf = SVector{3, Int32})
-    coord = grid[Coordinates]
+    coord = grid[Coordinates] * gridscale
     bfacenodes = grid[BFaceNodes]
     bfaceregions = grid[BFaceRegions]
     nbregions = grid[NumBFaceRegions]
 
-    extract_visible_bfaces3D(coord, bfacenodes, bfaceregions, nbregions, xyzcut;
+    extract_visible_bfaces3D(coord, bfacenodes, bfaceregions, nbregions, [xyzcut...] * gridscale;
                              primepoints = primepoints, Tp = Tp, Tf = Tf)
 end
 
@@ -49,16 +51,17 @@ end
 Extract isosurfaces and plane interpolation for function on 3D tetrahedral mesh.
 See [`marching_tetrahedra(coord,cellnodes,func,planes,flevels;tol, primepoints, primevalues, Tv, Tp, Tf)`](@ref)
 """
-function GridVisualizeTools.marching_tetrahedra(grid::ExtendableGrid, func, planes, flevels;
+function GridVisualizeTools.marching_tetrahedra(grid::ExtendableGrid, func, planes, flevels; gridscale = 1.0,
                                                 kwargs...)
-    coord = grid[Coordinates]
+    coord = grid[Coordinates] * gridscale
     cellnodes = grid[CellNodes]
     marching_tetrahedra(coord, cellnodes, func, planes, flevels; kwargs...)
 end
 
 function GridVisualizeTools.marching_tetrahedra(grids::Vector{ExtendableGrid{Tv, Ti}}, funcs, planes, flevels;
+                                                gridscale = 1.0,
                                                 kwargs...) where {Tv, Ti}
-    coord = [grid[Coordinates] for grid in grids]
+    coord = [grid[Coordinates] * gridscale for grid in grids]
     cellnodes = [grid[CellNodes] for grid in grids]
     marching_tetrahedra(coord, cellnodes, funcs, planes, flevels; kwargs...)
 end
@@ -69,25 +72,25 @@ end
 
 Collect isoline snippets on triangles ready for linesegments!
 """
-function GridVisualizeTools.marching_triangles(grid::ExtendableGrid, func, levels)
-    coord::Matrix{Float64} = grid[Coordinates]
+function GridVisualizeTools.marching_triangles(grid::ExtendableGrid, func, levels; gridscale = 1.0)
+    coord::Matrix{Float64} = grid[Coordinates] * gridscale
     cellnodes::Matrix{Int32} = grid[CellNodes]
     marching_triangles(coord, cellnodes, func, levels)
 end
 
-function GridVisualizeTools.marching_triangles(grids::Vector{ExtendableGrid{Tv, Ti}}, funcs, levels) where {Tv, Ti}
-    coords = [grid[Coordinates] for grid in grids]
+function GridVisualizeTools.marching_triangles(grids::Vector{ExtendableGrid{Tv, Ti}}, funcs, levels; gridscale = 1.0) where {Tv, Ti}
+    coords = [grid[Coordinates] * gridscale for grid in grids]
     cellnodes = [grid[CellNodes] for grid in grids]
     marching_triangles(coords, cellnodes, funcs, levels)
 end
 
 ##############################################
 # Create meshes from grid data
-function regionmesh(grid, iregion)
+function regionmesh(grid, gridscale, iregion)
     coord = grid[Coordinates]
     cn = grid[CellNodes]
     cr = grid[CellRegions]
-    @views points = [Point2f(coord[:, i]) for i = 1:size(coord, 2)]
+    @views points = [Point2f(coord[:, i] * gridscale) for i = 1:size(coord, 2)]
     faces = Vector{GLTriangleFace}(undef, 0)
     for i = 1:length(cr)
         if cr[i] == iregion
@@ -97,7 +100,7 @@ function regionmesh(grid, iregion)
     Mesh(points, faces)
 end
 
-function bfacesegments(grid, ibreg)
+function bfacesegments(grid, gridscale, ibreg)
     coord = grid[Coordinates]
     nbfaces = num_bfaces(grid)
     bfacenodes = grid[BFaceNodes]
@@ -106,15 +109,15 @@ function bfacesegments(grid, ibreg)
     for ibface = 1:nbfaces
         if bfaceregions[ibface] == ibreg
             push!(points,
-                  Point2f(coord[1, bfacenodes[1, ibface]], coord[2, bfacenodes[1, ibface]]))
+                  Point2f(coord[1, bfacenodes[1, ibface]] * gridscale, coord[2, bfacenodes[1, ibface]] * gridscale))
             push!(points,
-                  Point2f(coord[1, bfacenodes[2, ibface]], coord[2, bfacenodes[2, ibface]]))
+                  Point2f(coord[1, bfacenodes[2, ibface]] * gridscale, coord[2, bfacenodes[2, ibface]] * gridscale))
         end
     end
     points
 end
 
-function bfacesegments3(grid, ibreg)
+function bfacesegments3(grid, gridscale, ibreg)
     coord = grid[Coordinates]
     nbfaces = num_bfaces(grid)
     bfacenodes = grid[BFaceNodes]
@@ -123,10 +126,10 @@ function bfacesegments3(grid, ibreg)
     for ibface = 1:nbfaces
         if bfaceregions[ibface] == ibreg
             push!(points,
-                  Point3f(coord[1, bfacenodes[1, ibface]], coord[2, bfacenodes[1, ibface]],
+                  Point3f(coord[1, bfacenodes[1, ibface]] * gridscale, coord[2, bfacenodes[1, ibface]] * gridscale,
                           0.0))
             push!(points,
-                  Point3f(coord[1, bfacenodes[2, ibface]], coord[2, bfacenodes[2, ibface]],
+                  Point3f(coord[1, bfacenodes[2, ibface]] * gridscale, coord[2, bfacenodes[2, ibface]] * gridscale,
                           0.0))
         end
     end
@@ -134,25 +137,37 @@ function bfacesegments3(grid, ibreg)
 end
 
 """
-$(TYPEDSIGNATURES)
+          vectorsample(grid::ExtendableGrid{Tv, Ti}, v;
+                      offset = :default,
+                      rasterpoints = 15,
+                      reltol = 1.0e-10,
+                      gridscale = 1.0,
+                      xlimits = (1, -1),
+                      ylimits = (1, -1),
+                      zlimits = (1, -1)) where {Tv, Ti}
 
 Extract values of given vector field (either nodal values of a piecewise linear vector field or a callback function
 providing evaluation of the vector field for given generalized barycentric coordinates).
 at all sampling points on  `offset+ i*spacing` for i in Z^d  defined by the tuples offset and spacing.
+Returned values can be fed into [`quiverdata`](@ref)
 
 By default, offset is at the minimum of grid coordinates, and spacing is defined
 the largest grid extend divided by 10.
-
-
 
 The intermediate `rasterflux` in future versions can be used to calculate
 streamlines.
     
 The code is 3D ready.
 """
-function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
-                      spacing = :default, reltol = 1.0e-10, xlimits = (1, -1), ylimits = (1, -1), zlimits = (1, -1)) where {Tv, Ti}
-    coord = grid[Coordinates]
+function vectorsample(grid::ExtendableGrid{Tv, Ti}, v;
+                      offset = :default,
+                      rasterpoints = 32,
+                      reltol = 1.0e-10,
+                      gridscale = 1.0,
+                      xlimits = (1, -1),
+                      ylimits = (1, -1),
+                      zlimits = (1, -1)) where {Tv, Ti}
+    coord = grid[Coordinates] * gridscale
     cn = grid[CellNodes]
     ncells::Int = num_cells(grid)
 
@@ -160,7 +175,15 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
 
     eltype = dim == 2 ? Triangle2D : Tetrahedron3D
 
-    L2G = ExtendableGrids.L2GTransformer(eltype, grid, ON_CELLS)
+    scaledgrid = grid
+    if gridscale != 1.0
+        scaledgrid = ExtendableGrid{coord_type(grid), index_type(grid)}()
+        for (k, v) in grid.components
+            scaledgrid.components[k] = v
+        end
+        scaledgrid[Coordinates] = coord
+    end
+    L2G = ExtendableGrids.L2GTransformer(eltype, scaledgrid, ON_CELLS)
 
     # memory for  inverse of local transformation matrix
     invA = zeros(dim + 1, dim + 1)
@@ -179,9 +202,10 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
     if zlimits[1] < zlimits[2]
         cminmax[3] = zlimits[:]
     end
-
     if offset == :default
         offset = [cminmax[i][1] for i = 1:dim]
+    else
+        offset = offset * gridscale
     end
 
     # extent  of domain
@@ -191,12 +215,7 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
     tol = reltol * extent
 
     # point spacing
-    if spacing == :default
-        spacing = [extent / 15 for i = 1:dim]
-    elseif isa(spacing, Number)
-        spacing = [spacing for i = 1:dim]
-    end
-    # else assume spacing vector has been given
+    spacing = [extent / rasterpoints for i = 1:dim]
 
     # index range
     ijkmax = ones(Int, 3)
@@ -208,6 +227,7 @@ function vectorsample(grid::ExtendableGrid{Tv, Ti}, v; offset = :default,
     # spanned by x,y and z coordinate vectors. Here, we build them
     # in order to avoid to calculate them from the raster indices
     rastercoord = [zeros(Float32, ijkmax[idim]) for idim = 1:dim]
+
     for idim = 1:dim
         rastercoord[idim] = collect(range(offset[idim]; step = spacing[idim],
                                           length = ijkmax[idim]))
@@ -319,19 +339,28 @@ function isolevels(ctx, funcs)
 end
 
 """
-$(TYPEDSIGNATURES)
+     function quiverdata(rastercoord,
+                         rasterflux;
+                         vscale = 1.0,
+                         vnormalize = true,
+                         vconstant = false)
 
 
-Extract  nonzero fluxes for quiver plots from rastergrid.
+
+Extract  nonzero fluxes for quiver plots from rastergrid obtained by [`vectorsample`](@ref).
 
 Returns qc, qv -  `d x nquiver` matrices.
 
 If vnormalize is true, the vector field is normalized to vscale*min(spacing), otherwise, it
 is scaled by vscale
-Result data are meant to  be ready for being passed to calls to `quiver`.
+Result data are meant to  be ready for being passed to calls to `quiver` with various plotting backends.
 
 """
-function quiverdata(rastercoord, rasterflux; vscale = 1.0, vnormalize = true, vconstant = false)
+function quiverdata(rastercoord,
+                    rasterflux;
+                    vscale = 1.0,
+                    vnormalize = true,
+                    vconstant = false)
     dim = length(rastercoord)
 
     imax = length(rastercoord[1])

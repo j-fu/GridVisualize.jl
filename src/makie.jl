@@ -189,21 +189,21 @@ scenekwargs(ctx) = Dict(
 #1D grid
 
 # Point list for node markers
-function basemesh1d(grid)
+function basemesh1d(grid, gridscale)
     coord = vec(grid[Coordinates])
     ncoord = length(coord)
     points = Vector{Point2f}(undef, 0)
     (xmin, xmax) = extrema(coord)
-    h = (xmax - xmin) / 40.0
+    h = gridscale * (xmax - xmin) / 40.0
     for i = 1:ncoord
-        push!(points, Point2f(coord[i], h))
-        push!(points, Point2f(coord[i], -h))
+        push!(points, Point2f(coord[i] * gridscale, h))
+        push!(points, Point2f(coord[i] * gridscale, -h))
     end
     points
 end
 
 # Point list for intervals
-function regionmesh1d(grid, iregion)
+function regionmesh1d(grid, gridscale, iregion)
     coord = vec(grid[Coordinates])
     points = Vector{Point2f}(undef, 0)
     cn = grid[CellNodes]
@@ -211,44 +211,44 @@ function regionmesh1d(grid, iregion)
     ncells = length(cr)
     for i = 1:ncells
         if cr[i] == iregion
-            push!(points, Point2f(coord[cn[1, i]], 0))
-            push!(points, Point2f(coord[cn[2, i]], 0))
+            push!(points, Point2f(coord[cn[1, i]] * gridscale, 0))
+            push!(points, Point2f(coord[cn[2, i]] * gridscale, 0))
         end
     end
     points
 end
 
 # Point list for boundary nodes
-function bregionmesh1d(grid, ibreg)
+function bregionmesh1d(grid, gridscale, ibreg)
     nbfaces = num_bfaces(grid)
     bfacenodes = grid[BFaceNodes]
     bfaceregions = grid[BFaceRegions]
     coord = vec(grid[Coordinates])
     points = Vector{Point2f}(undef, 0)
     (xmin, xmax) = extrema(coord)
-    h = (xmax - xmin) / 20.0
+    h = gridscale * (xmax - xmin) / 20.0
     for ibface = 1:nbfaces
         if bfaceregions[ibface] == ibreg
-            push!(points, Point2f(coord[bfacenodes[1, ibface]], h))
-            push!(points, Point2f(coord[bfacenodes[1, ibface]], -h))
+            push!(points, Point2f(coord[bfacenodes[1, ibface]] * gridscale, h))
+            push!(points, Point2f(coord[bfacenodes[1, ibface]] * gridscale, -h))
         end
     end
     points
 end
 
 # Point list for scene size
-function scenecorners1d(grid)
+function scenecorners1d(grid, gridscale)
     coord = vec(grid[Coordinates])
     (xmin, xmax) = extrema(coord)
-    h = (xmax - xmin) / 40.0
-    [Point2f(xmin, -5 * h), Point2f(xmax, 5 * h)]
+    h = gridscale * (xmax - xmin) / 40.0
+    [Point2f(xmin * gridscale, -5 * h), Point2f(xmax * gridscale, 5 * h)]
 end
 
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
     XMakie = ctx[:Plotter]
     nregions = num_cellregions(grid)
     nbregions = num_bfaceregions(grid)
-
+    gridscale = ctx[:gridscale]
     if !haskey(ctx, :scene)
         ctx[:scene] = XMakie.Axis(ctx[:figure];
                                   yticklabelsvisible = false,
@@ -262,20 +262,20 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
 
         # Set scene size with invisible markers
         XMakie.scatter!(ctx[:scene],
-                        map(g -> scenecorners1d(grid), ctx[:grid]);
+                        map(g -> scenecorners1d(grid, gridscale), ctx[:grid]);
                         color = :white,
                         markersize = 0.0,
                         strokewidth = 0,)
 
         # Draw node markers
         XMakie.linesegments!(ctx[:scene],
-                             map(g -> basemesh1d(g), ctx[:grid]);
+                             map(g -> basemesh1d(g, gridscale), ctx[:grid]);
                              color = :black,)
 
         # Colored cell regions
         for i = 1:nregions
             XMakie.linesegments!(ctx[:scene],
-                                 map(g -> regionmesh1d(g, i), ctx[:grid]);
+                                 map(g -> regionmesh1d(g, gridscale, i), ctx[:grid]);
                                  color = cmap[i],
                                  linewidth = 4,
                                  label = "c $(i)",)
@@ -284,7 +284,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
         # Colored boundary grid
         for i = 1:nbregions
             XMakie.linesegments!(ctx[:scene],
-                                 map(g -> bregionmesh1d(g, i), ctx[:grid]);
+                                 map(g -> bregionmesh1d(g, gridscale, i), ctx[:grid]);
                                  color = bcmap[i],
                                  linewidth = 4,
                                  label = "b$(i)",)
@@ -317,6 +317,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
         ctx[:title] = " "
     end
     ctx[:scalarplot1d] = true
+    gridscale = ctx[:gridscale]
     # ... keep this for the case we are unsorted
     function polysegs(grid, func)
         points = Vector{Point2f}(undef, 0)
@@ -325,8 +326,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
         for icell = 1:num_cells(grid)
             i1 = cellnodes[1, icell]
             i2 = cellnodes[2, icell]
-            x1 = coord[1, i1]
-            x2 = coord[1, i2]
+            x1 = coord[1, i1] * gridscale
+            x2 = coord[1, i2] * gridscale
             push!(points, Point2f(x1, func[i1]))
             push!(points, Point2f(x2, func[i2]))
         end
@@ -335,15 +336,15 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
 
     function polyline(grid, func)
         coord = grid[Coordinates]
-        points = [Point2f(coord[1, i], func[i]) for i = 1:length(func)]
+        points = [Point2f(coord[1, i] * gridscale, func[i]) for i = 1:length(func)]
     end
 
     coord = parentgrid[Coordinates]
     xlimits = ctx[:xlimits]
     ylimits = ctx[:limits]
 
-    xmin = coord[1, 1]
-    xmax = coord[1, end]
+    xmin = coord[1, 1] * gridscale
+    xmax = coord[1, end] * gridscale
     xauto = true
     yauto = true
     if xlimits[1] < xlimits[2]
@@ -562,7 +563,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid)
         ctx[:cmap] = cmap
         for i = 1:nregions
             XMakie.poly!(ctx[:scene],
-                         map(g -> regionmesh(g, i), ctx[:grid]);
+                         map(g -> regionmesh(g, ctx[:gridscale], i), ctx[:grid]);
                          color = cmap[i],
                          strokecolor = :black,
                          strokewidth = ctx[:linewidth],)
@@ -573,7 +574,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid)
         ctx[:bcmap] = bcmap
         for i = 1:nbregions
             lp = XMakie.linesegments!(ctx[:scene],
-                                      map(g -> bfacesegments(g, i), ctx[:grid]);
+                                      map(g -> bfacesegments(g, ctx[:gridscale], i), ctx[:grid]);
                                       label = "$(i)",
                                       color = bcmap[i],
                                       linewidth = 4,)
@@ -626,6 +627,7 @@ end
 # 2D function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid, funcs)
     XMakie = ctx[:Plotter]
+    gridscale = ctx[:gridscale]
 
     # Create GeometryBasics.mesh from grid data.
     function make_mesh(grids, funcs, elevation)
@@ -635,7 +637,6 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid
         cellnodes = [grid[CellNodes] for grid in grids]
         ncells = [num_cells(grid) for grid in grids]
         offsets = zeros(Int, ngrids)
-
         for i = 2:ngrids
             offsets[i] = offsets[i - 1] + npoints[i - 1]
         end
@@ -645,7 +646,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid
             k = 1
             for j = 1:ngrids
                 for i = 1:npoints[j]
-                    points[k] = Point3f(coords[j][1, i], coords[j][2, i], -0.1)
+                    points[k] = Point3f(coords[j][1, i] * gridscale, coords[j][2, i] * gridscale, -0.1)
                     k = k + 1
                 end
             end
@@ -654,7 +655,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid
             k = 1
             for j = 1:ngrids
                 for i = 1:npoints[j]
-                    points[k] = Point3f(coords[j][1, i], coords[j][2, i], funcs[j][i] * elevation)
+                    points[k] = Point3f(coords[j][1, i] * gridscale, coords[j][2, i] * gridscale,
+                                        funcs[j][i] * elevation * gridscale)
                     k = k + 1
                 end
             end
@@ -731,7 +733,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid
         # draw the isolines via marching triangles
         if ctx[:elevation] ≈ 0
             XMakie.linesegments!(ctx[:scene],
-                                 map(data -> marching_triangles(data.g, data.f, data.l), ctx[:contourdata]);
+                                 map(data -> marching_triangles(data.g, data.f, data.l; gridscale), ctx[:contourdata]);
                                  color = :black,
                                  linewidth = ctx[:linewidth],)
         end
@@ -746,7 +748,7 @@ end
 function vectorplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid, func)
     XMakie = ctx[:Plotter]
 
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset])
+    rc, rv = vectorsample(grid, func; gridscale = ctx[:gridscale], rasterpoints = ctx[:rasterpoints], offset = ctx[:offset])
     qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize], vconstant = ctx[:vconstant])
 
     set_plot_data!(ctx, :arrowdata, (qc = qc, qv = qv))
@@ -775,14 +777,23 @@ end
 function streamplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid, func)
     XMakie = ctx[:Plotter]
 
-    rc, rv0 = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset])
-    srv = size(rv0)
-    rv = reshape(rv0, (srv[1], srv[2], srv[3]))
+    rc, rv = vectorsample(grid, func; rasterpoints = 2 * ctx[:rasterpoints], offset = ctx[:offset], xlimits = ctx[:xlimits],
+                          ylimits = ctx[:ylimits], gridscale = ctx[:gridscale])
+
     x = rc[1]
     y = rc[2]
+
     ix = linear_interpolation((x, y), rv[1, :, :])
     iy = linear_interpolation((x, y), rv[2, :, :])
     f(x, y) = Point2(ix(x, y), iy(x, y))
+
+    xextent = x[end] - x[begin]
+    yextent = y[end] - y[begin]
+
+    maxextent = max(xextent, yextent)
+    gridstep = maxextent / (2 * ctx[:rasterpoints])
+    gridsize = (Int(ceil(xextent / gridstep)), Int(ceil(yextent / gridstep)), 2 * ctx[:rasterpoints])
+
     set_plot_data!(ctx, :streamdata, (xinterval = x[begin] .. x[end], yinterval = y[begin] .. y[end], f = f))
 
     if !haskey(ctx, :streamplot)
@@ -793,12 +804,15 @@ function streamplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid, func)
                                       scenekwargs(ctx)...,)
             add_scene!(ctx, ctx[:scene])
         end
-
         ctx[:streamplot] = XMakie.streamplot!(ctx[:scene],
                                               map(data -> data.f, ctx[:streamdata]),
                                               map(data -> data.xinterval, ctx[:streamdata]),
                                               map(data -> data.yinterval, ctx[:streamdata]);
-                                              linewidth = ctx[:linewidth], colormap = ctx[:colormap])
+                                              linewidth = ctx[:linewidth],
+                                              colormap = ctx[:colormap],
+                                              gridsize = gridsize,
+                                              arrow_size = 7.5,
+                                              stepsize = 0.01 * maxextent)
         XMakie.reset_limits!(ctx[:scene])
     end
     reveal(ctx, TP)
@@ -808,15 +822,15 @@ end
 #######################################################################################
 # 3D Grid
 
-function xyzminmax(grid::ExtendableGrid)
+function xyzminmax(grid::ExtendableGrid, gridscale)
     coord = grid[Coordinates]
     ndim = size(coord, 1)
     xyzmin = zeros(ndim)
     xyzmax = ones(ndim)
     for idim = 1:ndim
         @views mn, mx = extrema(coord[idim, :])
-        xyzmin[idim] = mn
-        xyzmax[idim] = mx
+        xyzmin[idim] = mn * gridscale
+        xyzmax[idim] = mx * gridscale
     end
     xyzmin, xyzmax
 end
@@ -869,7 +883,7 @@ function makescene3d(ctx)
             GL[1, 2] = XMakie.Colorbar(ctx[:figure];
                                        colormap = ctx[:colormap],
                                        colorrange = ctx[:crange],
-                                       ticks = map(d -> d.l, ctx[:data]),
+                                       ticks = map(d -> d.c, ctx[:data]),
                                        tickformat = "{:.2e}",
                                        width = 15,
                                        ticklabelsize = 0.5 * ctx[:fontsize],)
@@ -877,7 +891,7 @@ function makescene3d(ctx)
             GL[2, 1] = XMakie.Colorbar(ctx[:figure];
                                        colormap = ctx[:colormap],
                                        colorrange = ctx[:crange],
-                                       ticks = map(d -> d.l, ctx[:data]),
+                                       ticks = map(d -> d.c, ctx[:data]),
                                        tickformat = "{:.2e}",
                                        height = 15,
                                        ticklabelsize = 0.5 * ctx[:fontsize],
@@ -912,22 +926,24 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
     nbregions = num_bfaceregions(grid)
 
     XMakie = ctx[:Plotter]
-    xyzmin, xyzmax = xyzminmax(grid)
+    xyzmin, xyzmax = xyzminmax(grid, ctx[:gridscale])
     xyzstep = (xyzmax - xyzmin) / 100
 
-    function adjust_planes()
-        ctx[:xplanes][1] = max(xyzmin[1], min(xyzmax[1], ctx[:xplanes][1]))
-        ctx[:yplanes][1] = max(xyzmin[2], min(xyzmax[2], ctx[:yplanes][1]))
-        ctx[:zplanes][1] = max(xyzmin[3], min(xyzmax[3], ctx[:zplanes][1]))
+    function adjust_planes(xplane, yplane, zplane)
+        ctx[:ixplane] = max(xyzmin[1], min(xyzmax[1], xplane))
+        ctx[:iyplane] = max(xyzmin[2], min(xyzmax[2], yplane))
+        ctx[:izplane] = max(xyzmin[3], min(xyzmax[3], zplane))
     end
 
-    adjust_planes()
+    adjust_planes(ctx[:xplanes][1],
+                  ctx[:yplanes][1],
+                  ctx[:zplanes][1])
 
     if !haskey(ctx, :scene)
         ctx[:data] = Observable((g = grid,
-                                 x = ctx[:xplanes][1],
-                                 y = ctx[:yplanes][1],
-                                 z = ctx[:zplanes][1],
+                                 x = ctx[:ixplane],
+                                 y = ctx[:iyplane],
+                                 z = ctx[:izplane],
                                  t = ctx[:title]))
 
         ctx[:scene] = makeaxis3d(ctx)
@@ -940,7 +956,8 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         # We draw a mesh for each color.
         if ctx[:interior]
             ctx[:celldata] = map(d -> extract_visible_cells3D(d.g,
-                                                              (d.x, d.y, d.z);
+                                                              [d.x, d.y, d.z] / ctx[:gridscale];
+                                                              gridscale = ctx[:gridscale],
                                                               primepoints = hcat(xyzmin, xyzmax),
                                                               Tp = Point3f,
                                                               Tf = GLTriangleFace,),
@@ -967,7 +984,8 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
 
         ############# Visible boundary faces
         ctx[:facedata] = map(d -> extract_visible_bfaces3D(d.g,
-                                                           (d.x, d.y, d.z);
+                                                           [d.x, d.y, d.z] / ctx[:gridscale];
+                                                           gridscale = ctx[:gridscale],
                                                            primepoints = hcat(xyzmin, xyzmax),
                                                            Tp = Point3f,
                                                            Tf = GLTriangleFace,),
@@ -993,7 +1011,8 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
 
         if ctx[:outlinealpha] > 0.0
             ctx[:outlinedata] = map(d -> extract_visible_bfaces3D(d.g,
-                                                                  xyzmax;
+                                                                  xyzmax / ctx[:gridscale];
+                                                                  gridscale = ctx[:gridscale],
                                                                   primepoints = hcat(xyzmin, xyzmax),
                                                                   Tp = Point3f,
                                                                   Tf = GLTriangleFace,),
@@ -1013,23 +1032,24 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         ##### Interaction
         scene_interaction(ctx[:scene].scene, XMakie, [:z, :y, :x, :q]) do delta, key
             if key == :x
-                ctx[:xplanes][1] += delta * xyzstep[1]
-                ctx[:status][] = @sprintf("x=%.3g", ctx[:xplanes][1])
+                ctx[:ixplane] += delta * xyzstep[1]
+                ctx[:status][] = @sprintf("x=%.3g", ctx[:ixplane])
             elseif key == :y
-                ctx[:yplanes][1] += delta * xyzstep[2]
-                ctx[:status][] = @sprintf("y=%.3g", ctx[:yplanes][1])
+                ctx[:iyplane] += delta * xyzstep[2]
+                ctx[:status][] = @sprintf("y=%.3g", ctx[:iyplane])
             elseif key == :z
-                ctx[:zplanes][1] += delta * xyzstep[3]
-                ctx[:status][] = @sprintf("z=%.3g", ctx[:zplanes][1])
+                ctx[:izplane] += delta * xyzstep[3]
+                ctx[:status][] = @sprintf("z=%.3g", ctx[:izplane])
             elseif key == :q
                 ctx[:status][] = " "
             end
-            adjust_planes()
+
+            adjust_planes(ctx[:ixplane], ctx[:iyplane], ctx[:izplane])
 
             ctx[:data][] = (g = grid,
-                            x = ctx[:xplanes][1],
-                            y = ctx[:yplanes][1],
-                            z = ctx[:zplanes][1],
+                            x = ctx[:ixplane],
+                            y = ctx[:iyplane],
+                            z = ctx[:izplane],
                             t = ctx[:title])
         end
 
@@ -1039,9 +1059,9 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
 
     else
         ctx[:data][] = (g = grid,
-                        x = ctx[:xplanes][1],
-                        y = ctx[:yplanes][1],
-                        z = ctx[:zplanes][1],
+                        x = ctx[:ixplane],
+                        y = ctx[:iyplane],
+                        z = ctx[:izplane],
                         t = ctx[:title])
     end
 
@@ -1050,8 +1070,9 @@ end
 
 # 3d function
 function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid, funcs)
-    levels, crange = isolevels(ctx, funcs)
+    levels, crange, colorbarticks = isolevels(ctx, funcs)
     ctx[:crange] = crange
+    ctx[:colorbarticks] = colorbarticks
 
     nan_replacement = 0.5 * (crange[1] + crange[2])
     make_mesh(pts, fcs) = Mesh(pts, fcs)
@@ -1073,7 +1094,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
 
     XMakie = ctx[:Plotter]
     cmap = XMakie.to_colormap(ctx[:colormap])
-    xyzmin, xyzmax = xyzminmax(parentgrid)
+    xyzmin, xyzmax = xyzminmax(parentgrid, ctx[:gridscale])
     xyzstep = (xyzmax - xyzmin) / 100
 
     fstep = (crange[2] - crange[1]) / 100
@@ -1081,35 +1102,26 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
         fstep = 0.1
     end
 
-    # function adjust_planes()
-    #     ctx[:xplanes][1]=max(xyzmin[1],min(xyzmax[1],ctx[:xplanes][1]) )
-    #     ctx[:yplanes][1]=max(xyzmin[2],min(xyzmax[2],ctx[:yplanes][1]) )
-    #     ctx[:zplanes][1]=max(xyzmin[3],min(xyzmax[3],ctx[:zplanes][1]) )
-    #     ctx[:flevel]=max(fminmax[1],min(fminmax[2],ctx[:flevel]))
-    # end
+    ctx[:ixplanes] = collect(ctx[:xplanes]) * ctx[:gridscale]
+    ctx[:iyplanes] = collect(ctx[:yplanes]) * ctx[:gridscale]
+    ctx[:izplanes] = collect(ctx[:zplanes]) * ctx[:gridscale]
 
-    # adjust_planes()
-
-    ctx[:xplanes] = collect(ctx[:xplanes])
-    ctx[:yplanes] = collect(ctx[:yplanes])
-    ctx[:zplanes] = collect(ctx[:zplanes])
-
-    x = ctx[:xplanes]
-    y = ctx[:yplanes]
-    z = ctx[:zplanes]
+    x = ctx[:ixplanes]
+    y = ctx[:iyplanes]
+    z = ctx[:izplanes]
 
     ε = 1.0e-5 * (xyzmax .- xyzmin)
 
-    ctx[:xplanes] = isa(x, Number) ?
-                    collect(range(xyzmin[1] + ε[1], xyzmax[1] - ε[1]; length = ceil(x))) : x
-    ctx[:yplanes] = isa(y, Number) ?
-                    collect(range(xyzmin[2] + ε[2], xyzmax[2] - ε[2]; length = ceil(y))) : y
-    ctx[:zplanes] = isa(z, Number) ?
-                    collect(range(xyzmin[3] + ε[3], xyzmax[3] - ε[3]; length = ceil(z))) : z
+    ctx[:ixplanes] = isa(x, Number) ?
+                     collect(range(xyzmin[1] + ε[1], xyzmax[1] - ε[1]; length = ceil(x))) : x
+    ctx[:iyplanes] = isa(y, Number) ?
+                     collect(range(xyzmin[2] + ε[2], xyzmax[2] - ε[2]; length = ceil(y))) : y
+    ctx[:izplanes] = isa(z, Number) ?
+                     collect(range(xyzmin[3] + ε[3], xyzmax[3] - ε[3]; length = ceil(z))) : z
 
-    ctx[:xplanes][1] = min(xyzmax[1], ctx[:xplanes][1])
-    ctx[:yplanes][1] = min(xyzmax[2], ctx[:yplanes][1])
-    ctx[:zplanes][1] = min(xyzmax[3], ctx[:zplanes][1])
+    ctx[:ixplanes] = max.(xyzmin[1], min.(xyzmax[1], ctx[:ixplanes]))
+    ctx[:iyplanes] = max.(xyzmin[2], min.(xyzmax[2], ctx[:iyplanes]))
+    ctx[:izplanes] = max.(xyzmin[3], min.(xyzmax[3], ctx[:izplanes]))
 
     ctx[:levels] = levels
 
@@ -1117,10 +1129,11 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
         ctx[:data] = Observable((g = grids,
                                  p = parentgrid,
                                  f = funcs,
-                                 x = ctx[:xplanes],
-                                 y = ctx[:yplanes],
-                                 z = ctx[:zplanes],
+                                 x = ctx[:ixplanes],
+                                 y = ctx[:iyplanes],
+                                 z = ctx[:izplanes],
                                  l = ctx[:levels],
+                                 c = ctx[:colorbarticks],
                                  t = ctx[:title]))
 
         ctx[:scene] = makeaxis3d(ctx)
@@ -1128,7 +1141,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
         #### Transparent outline
         if ctx[:outlinealpha] > 0.0
             ctx[:outlinedata] = map(d -> extract_visible_bfaces3D(d.p,
-                                                                  xyzmax;
+                                                                  xyzmax / ctx[:gridscale];
+                                                                  gridscale = ctx[:gridscale],
                                                                   primepoints = hcat(xyzmin, xyzmax),
                                                                   Tp = Point3f,
                                                                   Tf = GLTriangleFace,),
@@ -1149,6 +1163,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
                                                          d.f,
                                                          makeplanes(xyzmin, xyzmax, d.x, d.y, d.z),
                                                          [];
+                                                         gridscale = ctx[:gridscale],
                                                          primepoints = hcat(xyzmin, xyzmax),
                                                          primevalues = crange,
                                                          tol = ctx[:tetxplane_tol],
@@ -1161,6 +1176,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
                                                          d.f,
                                                          [],
                                                          d.l;
+                                                         gridscale = ctx[:gridscale],
                                                          primepoints = hcat(xyzmin, xyzmax),
                                                          primevalues = crange,
                                                          tol = ctx[:tetxplane_tol],
@@ -1183,27 +1199,31 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
         #### Interactions
         scene_interaction(ctx[:scene].scene, XMakie, [:z, :y, :x, :l, :q]) do delta, key
             if key == :x
-                ctx[:xplanes] .+= delta * xyzstep[1]
-                ctx[:status][] = "x=[" * mapreduce(x -> @sprintf("%.3g,", x), *, ctx[:xplanes]) * "]"
+                ctx[:ixplanes] .+= delta * xyzstep[1]
+                ctx[:status][] = "x=[" * mapreduce(x -> @sprintf("%.3g,", x), *, ctx[:ixplanes][1]) * "]"
             elseif key == :y
-                ctx[:yplanes] .+= delta * xyzstep[2]
-                ctx[:status][] = "y=[" * mapreduce(y -> @sprintf("%.3g,", y), *, ctx[:yplanes]) * "]"
+                ctx[:iyplanes] .+= delta * xyzstep[2]
+                ctx[:status][] = "y=[" * mapreduce(y -> @sprintf("%.3g,", y), *, ctx[:iyplanes][1]) * "]"
             elseif key == :z
-                ctx[:zplanes] .+= delta * xyzstep[3]
-                ctx[:status][] = "z=[" * mapreduce(z -> @sprintf("%.3g,", z), *, ctx[:zplanes]) * "]"
+                ctx[:izplanes] .+= delta * xyzstep[3]
+                ctx[:status][] = "z=[" * mapreduce(z -> @sprintf("%.3g,", z), *, ctx[:izplanes][1]) * "]"
             elseif key == :l
                 ctx[:levels] .+= delta * fstep
                 ctx[:status][] = "l=[" * mapreduce(l -> @sprintf("%.3g,", l), *, ctx[:levels]) * "]"
             elseif key == :q
                 ctx[:status][] = " "
             end
-            #            adjust_planes()
+
+            ctx[:ixplanes] = max.(xyzmin[1], min.(xyzmax[1], ctx[:ixplanes]))
+            ctx[:iyplanes] = max.(xyzmin[2], min.(xyzmax[2], ctx[:iyplanes]))
+            ctx[:izplanes] = max.(xyzmin[3], min.(xyzmax[3], ctx[:izplanes]))
+
             ctx[:data][] = (g = grids,
                             p = parentgrid,
                             f = funcs,
-                            x = ctx[:xplanes],
-                            y = ctx[:yplanes],
-                            z = ctx[:zplanes],
+                            x = ctx[:ixplanes],
+                            y = ctx[:iyplanes],
+                            z = ctx[:izplanes],
                             l = ctx[:levels],
                             t = ctx[:title])
         end
@@ -1213,9 +1233,9 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grids, parentgrid
         ctx[:data][] = (g = grids,
                         p = parentgrid,
                         f = funcs,
-                        x = ctx[:xplanes],
-                        y = ctx[:yplanes],
-                        z = ctx[:zplanes],
+                        x = ctx[:ixplanes],
+                        y = ctx[:iyplanes],
+                        z = ctx[:izplanes],
                         l = ctx[:levels],
                         t = ctx[:title])
     end
@@ -1247,3 +1267,16 @@ end
 # Christophe Meyer  4 hours ago
 # Thanks!  lines(x, y, axis = (targetlimits = lims,))  indeed makes the limits update.^
 # I found that autolimits!(axis) gave good results, even better than me manually computing limits!
+
+function customplot!(ctx, TP::Type{MakieType}, func)
+    XMakie = ctx[:Plotter]
+    if !haskey(ctx, :scene)
+        ctx[:scene] = XMakie.Axis(ctx[:figure];
+                                  title = ctx[:title],
+                                  aspect = XMakie.DataAspect(),
+                                  scenekwargs(ctx)...,)
+        add_scene!(ctx, ctx[:scene])
+    end
+    func(ctx[:scene])
+    reveal(ctx, TP)
+end
