@@ -397,3 +397,11 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grids, parentgrid
     @warn "3D Scalarplot with Plots backend is not available."
     reveal(ctx, TP)
 end
+
+function customplot!(ctx, TP::Type{PlotsType}, func)
+    if !haskey(ctx, :ax)
+        ctx[:ax] = Plots.plot(; title = ctx[:title])
+    end
+    func(ctx[:ax])
+    reveal(ctx, TP)
+end

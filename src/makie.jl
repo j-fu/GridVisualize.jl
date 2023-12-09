@@ -1267,3 +1267,16 @@ end
 # Christophe Meyer  4 hours ago
 # Thanks!  lines(x, y, axis = (targetlimits = lims,))  indeed makes the limits update.^
 # I found that autolimits!(axis) gave good results, even better than me manually computing limits!
+
+function customplot!(ctx, TP::Type{MakieType}, func)
+    XMakie = ctx[:Plotter]
+    if !haskey(ctx, :scene)
+        ctx[:scene] = XMakie.Axis(ctx[:figure];
+                                  title = ctx[:title],
+                                  aspect = XMakie.DataAspect(),
+                                  scenekwargs(ctx)...,)
+        add_scene!(ctx, ctx[:scene])
+    end
+    func(ctx[:scene])
+    reveal(ctx, TP)
+end

@@ -731,3 +731,19 @@ function streamplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid, func)
 
     reveal(ctx, TP)
 end
+
+function customplot!(ctx, TP::Type{PyPlotType}, func)
+    PyPlot = ctx[:Plotter]
+    if !haskey(ctx, :ax)
+        ctx[:ax] = ctx[:figure].add_subplot(ctx[:layout]..., ctx[:iplot])
+    end
+    # if ctx[:clear]
+    #     if haskey(ctx, :cbar)
+    #         ctx[:cbar].remove()
+    #     end
+    #     ctx[:ax].remove()
+    #     ctx[:ax] = ctx[:figure].add_subplot(ctx[:layout]..., ctx[:iplot])
+    # end
+    func(ctx[:ax])
+    reveal(ctx, TP)
+end

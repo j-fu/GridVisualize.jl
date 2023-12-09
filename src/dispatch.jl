@@ -670,6 +670,50 @@ function streamplot(X::AbstractVector,
                     kwargs...,)
     streamplot(simplexgrid(X, Y, Z), func; kwargs...)
 end
+###################################################################################
+"$(TYPEDSIGNATURES)"
+function customplot!(ctx::SubVisualizer, func; kwargs...)
+    _update_context!(ctx, Dict(:clear => true, :show => false, :reveal => false))
+    _update_context!(ctx, kwargs)
+    if ctx[:spacing] != nothing
+        @warn "`spacing` has been removed from keyword arguments, use `rasterpoints` to control spacing"
+    end
+    customplot!(ctx, plottertype(ctx[:Plotter]), func)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Variant for do block syntax.
+"""
+function customplot!(func, ctx::SubVisualizer; kwargs...)
+    customplot!(ctx, func; kwargs...)
+end
+
+"$(TYPEDSIGNATURES)"
+function customplot!(p::GridVisualizer, func; kwargs...)
+    customplot!(p[1, 1], func; kwargs...)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Variant for do block syntax.
+"""
+function customplot!(func, p::GridVisualizer; kwargs...)
+    customplot!(p[1, 1], func; kwargs...)
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Custom user plot.
+"""
+function customplot(func; Plotter = default_plotter(), kwargs...)
+    customplot!(GridVisualizer(; Plotter = Plotter, kwargs...), func; show = true)
+end
+
+###################################################################################
 
 """
 $(TYPEDSIGNATURES)
@@ -727,6 +771,8 @@ streamplot!(ctx::Nothing, grid::ExtendableGrid, func; kwargs...) = nothing
 streamplot!(ctx::Nothing, grid::ExtendableGrid, func::Function; kwargs...) = nothing
 streamplot!(ctx, ::Type{Nothing}, ::Type{Val{2}}, grid, func) = nothing
 streamplot!(ctx, ::Type{Nothing}, ::Type{Val{3}}, grid, func) = nothing
+
+customplot!(ctx::Nothing, func::Function; kwargs...) = nothing
 
 save(fname, scene, Plotter::Nothing, ::Type{Nothing}) = nothing
 displayable(ctx, Any) = nothing

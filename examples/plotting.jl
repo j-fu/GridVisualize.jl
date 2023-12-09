@@ -129,7 +129,7 @@ end
 # Stream plots are currently only available with PyPlot and Makie
 function plotting_stream2d(; Plotter = default_plotter(), n = 50, kwargs...)
     g, f = vec2d(; n = n)
-    GridVisualize.streamplot(g, f; Plotter = Plotter, spacing = 0.01, kwargs...)
+    GridVisualize.streamplot(g, f; Plotter = Plotter, rasterpoints = 100, kwargs...)
 end
 # ![](plotting_stream2d.svg)
 
@@ -216,8 +216,8 @@ function plotting_multiscene(; Plotter = default_plotter(), resolution = (1000, 
 end
 # ![](plotting_multiscene.svg)
 
-# ## Plots of functions on subgrids interfaces
-# We can jointly plot functions on different subgrids whic
+# ## Plots of functions on subgrids
+# We can jointly plot functions on different subgrids which
 # e.g. model a particle density jumping at a heterointerface
 # Currently supported for PyPlot and Makie
 #
@@ -306,3 +306,18 @@ function plotting_jfunc3d(;
 end
 
 # ![](plotting_jfunc3d.svg)
+
+# ## Custom plots
+function plotting_custom(; Plotter = default_plotter(), kwargs...)
+    vis = GridVisualizer(; Plotter = Plotter)
+    grid = grid2d()
+    gridplot!(vis, grid)
+    customplot!(vis) do ax
+        ismakie(Plotter) && Plotter.scatter!(ax, rand(10), rand(10), fill(0.1, 10); color = :blue, markersize = 20)
+        ispyplot(Plotter) && ax.scatter(rand(10), rand(10); s = 500)
+        isplots(Plotter) && Plotter.scatter!(ax, rand(10), rand(10); color = :blue, markersize = 10, label = nothing)
+    end
+    reveal(vis)
+end
+
+# ![](plotting_custom.svg)
