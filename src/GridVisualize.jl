@@ -18,6 +18,7 @@ using ExtendableGrids
 
 include("dispatch.jl")
 include("common.jl")
+export quiverdata, vectorsample
 include("pyplot.jl")
 include("makie.jl")
 include("vtkview.jl")
@@ -29,6 +30,7 @@ export scalarplot, scalarplot!
 export gridplot, gridplot!
 export vectorplot, vectorplot!
 export streamplot, streamplot!
+export customplot, customplot!
 export save, reveal, backend!
 export isplots, isvtkview, ispyplot, ismakie, isplutovista
 export GridVisualizer, SubVisualizer

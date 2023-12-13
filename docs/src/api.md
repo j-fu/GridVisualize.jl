@@ -45,10 +45,19 @@ streamplot
 streamplot!
 ```
 
+## Custom plots
+```@docs
+customplot
+customplot!
+```
 
 ## Keyword Arguments
 ```@docs
 available_kwargs
 ```
 
-    
+## Supporting methods
+```@docs
+vectorsample
+quiverdata
+```

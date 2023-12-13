@@ -98,7 +98,7 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)
     coord = grid[Coordinates]
     cellregions = grid[CellRegions]
     cellnodes = grid[CellNodes]
-    coord = grid[Coordinates]
+    coord = grid[Coordinates] * ctx[:gridscale]
     ncellregions = grid[NumCellRegions]
     bfacenodes = grid[BFaceNodes]
     bfaceregions = grid[BFaceRegions]
@@ -181,7 +181,7 @@ function scalarplot!(ctx,
     for ifunc = 1:nfuncs
         func = funcs[ifunc]
         grid = grids[ifunc]
-        coord = grid[Coordinates]
+        coord = grid[Coordinates] * ctx[:gridscale]
 
         if ifunc == 1
             PlutoVista.plot!(ctx[:figure],
@@ -228,7 +228,6 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid)
     nbregions = num_bfaceregions(grid)
     cmap = region_cmap(nregions)
     bcmap = bregion_cmap(nbregions)
-
     PlutoVista = ctx[:Plotter]
     pts = grid[Coordinates]
     tris = grid[CellNodes]
@@ -271,7 +270,7 @@ function scalarplot!(ctx,
     end
 
     allcoords = hcat(coords...)
-
+    levels, crange, colorbarticks = isolevels(ctx, funcs)
     allcellnodes = Matrix{Int}(undef, 3, sum(ncells))
     k = 1
     for j = 1:ngrids
@@ -290,8 +289,8 @@ function scalarplot!(ctx,
                            allcellnodes,
                            vcat(funcs...);
                            colormap = ctx[:colormap],
-                           levels = ctx[:levels],
-                           colorbarticks = ctx[:colorbarticks],
+                           levels,
+                           colorbarticks = colorbarticks,
                            limits = ctx[:limits],
                            backend = ctx[:backend],
                            zoom = ctx[:zoom],
@@ -307,7 +306,7 @@ function vectorplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid, func)
     PlutoVista = ctx[:Plotter]
     PlutoVista.backend!(ctx[:figure]; backend = ctx[:backend], datadim = 2)
 
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset])
+    rc, rv = vectorsample(grid, func; rasterpoints = ctx[:rasterpoints], offset = ctx[:offset], gridscale = ctx[:gridscale])
     qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize])
 
     PlutoVista.quiver2d!(ctx[:figure], qc, qv)

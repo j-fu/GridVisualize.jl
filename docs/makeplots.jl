@@ -75,6 +75,13 @@ function makeplots(picdir; Plotter = GLMakie, extension = "png")
     fname = joinpath(picdir, "plotting_movie." * "gif")
     p = plotting_movie(; filename = fname, Plotter = Plotter)
     @test isfile(fname)
-    println("plotting_movie")
+    println("movie")
+
+    p = plotting_custom(; Plotter = Plotter)
+    fname = joinpath(picdir, "plotting_custom." * extension)
+    save(fname, p; Plotter = Plotter)
+    @test isfile(fname)
+    println("custom")
+
     true
 end

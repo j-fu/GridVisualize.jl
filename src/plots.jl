@@ -92,14 +92,15 @@ function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grid)
     bfaceregions = grid[BFaceRegions]
     nbfaceregions = grid[NumBFaceRegions]
 
-    xmin = minimum(coord)
-    xmax = maximum(coord)
+    gridscale = ctx[:gridscale]
+    xmin = minimum(coord) * gridscale
+    xmax = maximum(coord) * gridscale
     h = (xmax - xmin) / 20.0
 
     cmap = region_cmap(ncellregions)
     for icell = 1:num_cells(grid)
-        x1 = coord[1, cellnodes[1, icell]]
-        x2 = coord[1, cellnodes[2, icell]]
+        x1 = coord[1, cellnodes[1, icell]] * gridscale
+        x2 = coord[1, cellnodes[2, icell]] * gridscale
         Plots.plot!(p, [x1, x1], [-h, h]; linewidth = 0.5, color = :black, label = "")
         Plots.plot!(p, [x2, x2], [-h, h]; linewidth = 0.5, color = :black, label = "")
         Plots.plot!(p,
@@ -113,7 +114,7 @@ function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grid)
     cmap = bregion_cmap(nbfaceregions)
     for ibface = 1:num_bfaces(grid)
         if bfaceregions[ibface] > 0
-            x1 = coord[1, bfacenodes[1, ibface]]
+            x1 = coord[1, bfacenodes[1, ibface]] * gridscale
             Plots.plot!(p,
                         [x1, x1],
                         [-2 * h, 2 * h];
@@ -133,7 +134,7 @@ function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}}, grid)
     p = ctx[:ax]
     cellregions = grid[CellRegions]
     cellnodes = grid[CellNodes]
-    coord = grid[Coordinates]
+    coord = grid[Coordinates] * ctx[:gridscale]
     ncellregions = grid[NumCellRegions]
     bfacenodes = grid[BFaceNodes]
     bfaceregions = grid[BFaceRegions]
@@ -207,7 +208,7 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grids, parentgrid
     end
     p = ctx[:ax]
 
-    coord = grid[Coordinates]
+    coord = grid[Coordinates] * ctx[:gridscale]
     xmin = coord[1, 1]
     xmax = coord[1, end]
     ymin = func[1]
@@ -260,7 +261,7 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grids, parentgrid
     else
         markevery = ctx[:markevery]
         markershape = ctx[:markershape]
-        X = vec(grid[Coordinates])
+        X = vec(coord)
         if markershape == :none
             Plots.plot!(p,
                         X,
@@ -316,13 +317,13 @@ end
 $(SIGNATURES)
 Return rectangular grid data + function to be splatted into Plots calls
 """
-function rectdata(grid, U)
+function rectdata(grid, gridscale, U)
     if dim_grid(grid) == 1 && haskey(grid, XCoordinates)
-        return grid[XCoordinates], U
+        return grid[XCoordinates] * gridscale, U
     end
     if dim_grid(grid) == 2 && haskey(grid, XCoordinates) && haskey(grid, YCoordinates)
-        X = grid[XCoordinates]
-        Y = grid[YCoordinates]
+        X = grid[XCoordinates] * gridscale
+        Y = grid[YCoordinates] * gridscale
         return X, Y, transpose(reshape(U, length(X), length(Y)))
     end
     nothing
@@ -331,7 +332,7 @@ end
 function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}}, grids, parentgrid, funcs)
     grid = grids[1]
     func = funcs[1]
-    rdata = rectdata(grid, func)
+    rdata = rectdata(grid, ctx[:gridscale], func)
     Plots = ctx[:Plotter]
     if !haskey(ctx, :ax)
         ctx[:ax] = Plots.plot(; title = ctx[:title])
@@ -343,7 +344,13 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}}, grids, parentgrid
     p = ctx[:ax]
 
     levels, crange, colorbarticks = isolevels(ctx, func)
-    colorlevels = collect(crange[1]:((crange[2] - crange[1]) / (ctx[:colorlevels] - 1)):crange[2])
+    eps = 1.0e-5
+    if crange[1] == crange[2]
+        eps = 1.0e-5
+    else
+        eps = (crange[2] - crange[1]) * 1.0e-15
+    end
+    colorlevels = range(crange[1] - eps, crange[2] + eps; length = ctx[:colorlevels])
 
     Plots.contourf!(p,
                     rdata...;
@@ -362,7 +369,7 @@ function vectorplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}}, grid, func)
         ctx[:ax] = Plots.plot(; title = ctx[:title])
     end
     p = ctx[:ax]
-    rc, rv = vectorsample(grid, func; spacing = ctx[:spacing], offset = ctx[:offset])
+    rc, rv = vectorsample(grid, func; gridscale = ctx[:gridscale], rasterpoints = ctx[:rasterpoints], offset = ctx[:offset])
     qc, qv = quiverdata(rc, rv; vscale = ctx[:vscale], vnormalize = ctx[:vnormalize])
 
     Plots.quiver!(p, qc[1, :], qc[2, :]; quiver = (qv[1, :], qv[2, :]), color = :black)
@@ -388,5 +395,13 @@ function scalarplot!(ctx, TP::Type{PlotsType}, ::Type{Val{3}}, grids, parentgrid
         ctx[:ax] = Plots.plot(; title = ctx[:title])
     end
     @warn "3D Scalarplot with Plots backend is not available."
+    reveal(ctx, TP)
+end
+
+function customplot!(ctx, TP::Type{PlotsType}, func)
+    if !haskey(ctx, :ax)
+        ctx[:ax] = Plots.plot(; title = ctx[:title])
+    end
+    func(ctx[:ax])
     reveal(ctx, TP)
 end
