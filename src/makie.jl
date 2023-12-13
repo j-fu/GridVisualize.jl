@@ -636,43 +636,83 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid
         ncells = [num_cells(grid) for grid in grids]
         offsets = zeros(Int, ngrids)
 
-        for i = 2:ngrids
-            offsets[i] = offsets[i - 1] + npoints[i - 1]
-        end
-
-        if elevation ≈ 0.0
-            points = Vector{Point3f}(undef, sum(npoints))
+        if ctx[:cellwise]
+            for i = 2:ngrids
+                offsets[i] = offsets[i - 1] + ncells[i-1]*3
+            end
+    
+            if elevation ≈ 0.0
+                points = Vector{Point3f}(undef, sum(ncells)*3)
+                k = 1
+                for j = 1:ngrids
+                    for i = 1:ncells[j], n = 1 : 3
+                        points[k] = Point3f(coords[j][1, cellnodes[j][n,i]], coords[j][2, cellnodes[j][n,i]], -0.1)
+                        k = k + 1
+                    end
+                end
+            else
+                points = Vector{Point3f}(undef, sum(npoints)*3)
+                k = 1
+                for j = 1:ngrids
+                    for i = 1:ncells, n = 1 : 3
+                        points[k] = Point3f(coords[j][1, cellnodes[j][n,i]], coords[j][2, cellnodes[j][n,i]], funcs[j][i] * elevation)
+                        k = k + 1
+                    end
+                end
+            end
+            faces = Vector{TriangleFace{Int64}}(undef, sum(ncells))
             k = 1
             for j = 1:ngrids
-                for i = 1:npoints[j]
-                    points[k] = Point3f(coords[j][1, i], coords[j][2, i], -0.1)
+                for i = 1:ncells[j]
+                    faces[k] = TriangleFace((i-1)*3 + 1 + offsets[j],
+                                            (i-1)*3 + 2 + offsets[j],
+                                            (i-1)*3 + 3 + offsets[j])
                     k = k + 1
                 end
             end
         else
-            points = Vector{Point3f}(undef, sum(npoints))
+            for i = 2:ngrids
+                offsets[i] = offsets[i - 1] + npoints[i - 1]
+            end
+
+            if elevation ≈ 0.0
+                points = Vector{Point3f}(undef, sum(npoints))
+                k = 1
+                for j = 1:ngrids
+                    for i = 1:npoints[j]
+                        points[k] = Point3f(coords[j][1, i], coords[j][2, i], -0.1)
+                        k = k + 1
+                    end
+                end
+            else
+                points = Vector{Point3f}(undef, sum(npoints))
+                k = 1
+                for j = 1:ngrids
+                    for i = 1:npoints[j]
+                        points[k] = Point3f(coords[j][1, i], coords[j][2, i], funcs[j][i] * elevation)
+                        k = k + 1
+                    end
+                end
+            end
+            faces = Vector{TriangleFace{Int64}}(undef, sum(ncells))
             k = 1
             for j = 1:ngrids
-                for i = 1:npoints[j]
-                    points[k] = Point3f(coords[j][1, i], coords[j][2, i], funcs[j][i] * elevation)
+                for i = 1:ncells[j]
+                    faces[k] = TriangleFace(cellnodes[j][1, i] + offsets[j],
+                                            cellnodes[j][2, i] + offsets[j],
+                                            cellnodes[j][3, i] + offsets[j])
                     k = k + 1
                 end
             end
         end
-        faces = Vector{TriangleFace{Int64}}(undef, sum(ncells))
-        k = 1
-        for j = 1:ngrids
-            for i = 1:ncells[j]
-                faces[k] = TriangleFace(cellnodes[j][1, i] + offsets[j],
-                                        cellnodes[j][2, i] + offsets[j],
-                                        cellnodes[j][3, i] + offsets[j])
-                k = k + 1
-            end
-        end
         Mesh(points, faces)
     end
-
-    levels, crange, ctx[:cbarticks] = isolevels(ctx, funcs)
+    
+    if ctx[:cellwise]
+        levels, crange, ctx[:cbarticks] = isolevels(ctx, [view(funcs[j],:) for j = 1 : length(funcs)])
+    else
+        levels, crange, ctx[:cbarticks] = isolevels(ctx, funcs)
+    end
 
     eps = 1.0e-1
     if crange[1] == crange[2]
@@ -729,7 +769,7 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid
                                          colormap = ctx[:colormap],)
 
         # draw the isolines via marching triangles
-        if ctx[:elevation] ≈ 0
+        if ctx[:elevation] ≈ 0 && !ctx[:cellwise] 
             XMakie.linesegments!(ctx[:scene],
                                  map(data -> marching_triangles(data.g, data.f, data.l), ctx[:contourdata]);
                                  color = :black,
