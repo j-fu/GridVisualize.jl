@@ -73,15 +73,14 @@ end
 Collect isoline snippets on triangles ready for linesegments!
 """
 function GridVisualizeTools.marching_triangles(grid::ExtendableGrid, func, levels; gridscale = 1.0)
-    coord::Matrix{Float64} = grid[Coordinates] * gridscale
-    cellnodes::Matrix{Int32} = grid[CellNodes]
-    marching_triangles(coord, cellnodes, func, levels)
+    ls=LinearSimplices(grid,func;gridscale)
+    vcat(marching_triangles(ls,levels)...)
 end
 
 function GridVisualizeTools.marching_triangles(grids::Vector{ExtendableGrid{Tv, Ti}}, funcs, levels; gridscale = 1.0) where {Tv, Ti}
-    coords = [grid[Coordinates] * gridscale for grid in grids]
-    cellnodes = [grid[CellNodes] for grid in grids]
-    marching_triangles(coords, cellnodes, funcs, levels)
+    all_ls = [LinearSimplices(grids[i],funcs[i];gridscale) for i=1:length(grids)]
+    all_lines=vcat([marching_triangles(ls,levels) for ls in all_ls]...)
+    vcat(all_lines...)
 end
 
 ##############################################
