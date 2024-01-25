@@ -4,14 +4,13 @@ struct LinearSimplices{D,Tc,Ti,Tf} <: LinearSimplexIterator{D}
     values::Vector{Tf}
     gridscale::Tc
     range::StepRange{Int,Int}
-    ichunk::Int
 end
 
 function LinearSimplices(coord::Matrix{Tc},cn::Matrix{Ti},f::Vector{Tf};gridscale=1.0, nthreads=Threads.nthreads()) where {Tc,Ti,Tf}
     ncells=size(cn,2)
     dim=size(coord,1)
-    map(chunks(1:ncells,nthreads)) do c
-	LinearSimplices{dim,Tc,Ti,Tf}(coord,cn,f,gridscale,c...)
+    map(enumerate(chunks(1:ncells;n=nthreads))) do c
+	LinearSimplices{dim,Tc,Ti,Tf}(coord,cn,f,gridscale,last(c))
     end
 end	
 
