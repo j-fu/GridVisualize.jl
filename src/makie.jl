@@ -704,6 +704,8 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grids, parentgrid
                                           title = map(data -> data.t, ctx[:contourdata]),
                                           aspect = aspect,
                                           autolimitaspect = autolimitaspect,
+                                          xlabel = ctx[:xlabel],
+                                          ylabel = ctx[:ylabel],
                                           scenekwargs(ctx)...,)
             else
                 ctx[:scene] = XMakie.Axis3(ctx[:figure];
