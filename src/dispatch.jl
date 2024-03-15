@@ -309,7 +309,7 @@ function default_plot_kwargs()
                                            :markershape => Pair(:none,
                                                                 "1D plot marker shape: one of [:none, :circle, :star5, :diamond, :hexagon, :cross, :xcross, :utriangle, :dtriangle, :rtriangle, :ltriangle, :pentagon, :+, :x]"),
                                            :color => Pair((0.0, 0.0, 0.0), "1D plot line color"),
-                                           :cellwise => Pair(false, "1D plots cellwise; unmaintained and can be slow)"),
+                                           :cellwise => Pair(false, "plots cellwise; experimental, only supported by some plots+backends"),
                                            :label => Pair("", "1D plot label"),
                                            :levels => Pair(7, "array of isolevels or number of isolevels for contour plots"),
                                            :elevation => Pair(0.0, "2D plot height factor for elevation"),
