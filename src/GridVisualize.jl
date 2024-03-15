@@ -14,7 +14,11 @@ using Interpolations: linear_interpolation
 using IntervalSets
 
 using GridVisualizeTools
+using ChunkSplitters
 using ExtendableGrids
+
+include("griditerator.jl")
+export LinearSimplices
 
 include("dispatch.jl")
 include("common.jl")

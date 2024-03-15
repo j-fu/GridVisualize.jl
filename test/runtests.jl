@@ -2,6 +2,9 @@ using Test, ExtendableGrids, GridVisualize, Pkg
 import CairoMakie
 CairoMakie.activate!(; type = "svg", visible = false)
 
+
+include("griditerators.jl")
+
 plotting = joinpath(@__DIR__, "..", "examples", "plotting.jl")
 include(plotting)
 include("../docs/makeplots.jl")
