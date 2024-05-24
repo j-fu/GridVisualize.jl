@@ -396,7 +396,6 @@ function scalarplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grids, parentgrid
                                 map(a -> a[1:ctx[:markevery]:end], ctx[:lines][l]);
                                 color = RGB(ctx[:color]),
                                 marker = ctx[:markershape],
-                                markercolor = RGB(ctx[:color]),
                                 markersize = ctx[:markersize],)
             end
 
@@ -977,8 +976,6 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                     XMakie.wireframe!(ctx[:scene],
                                       map(d -> d[i], ctx[:cellmeshes]);
                                       color = :black,
-                                      strokecolor = :black,
-                                      strokewidth = ctx[:linewidth],
                                       linewidth = ctx[:linewidth],)
                 end
             end
@@ -1004,7 +1001,6 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
                 XMakie.wireframe!(ctx[:scene],
                                   map(d -> d[i], ctx[:facemeshes]);
                                   color = :black,
-                                  strokecolor = :black,
                                   linewidth = ctx[:linewidth],)
             end
         end
