@@ -134,14 +134,13 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{1}}, grid)
     ax = ctx[:ax]
     fig = ctx[:figure]
 
-    cellregions = grid[CellRegions]
+    cellregions = cellcolors(grid, ctx[:cellcoloring])
+    ncellregions = num_cellcolors(grid, ctx[:cellcoloring])
     cellnodes = grid[CellNodes]
     coord = grid[Coordinates]
-    ncellregions = grid[NumCellRegions]
     bfacenodes = grid[BFaceNodes]
     bfaceregions = grid[BFaceRegions]
     nbfaceregions = grid[NumBFaceRegions]
-    ncellregions = grid[NumCellRegions]
 
     crflag = ones(Bool, ncellregions)
     brflag = ones(Bool, nbfaceregions)
@@ -213,11 +212,10 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid)
     end
     ax = ctx[:ax]
     fig = ctx[:figure]
-    cellregions = grid[CellRegions]
+    cellregions = cellcolors(grid, ctx[:cellcoloring])
+    ncellregions = num_cellcolors(grid, ctx[:cellcoloring])
     cellnodes = grid[CellNodes]
-    ncellregions = grid[NumCellRegions]
     nbfaceregions = grid[NumBFaceRegions]
-    ncellregions = grid[NumCellRegions]
     if nbfaceregions > 0
         bfacenodes = grid[BFaceNodes]
         bfaceregions = grid[BFaceRegions]
@@ -229,7 +227,7 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{2}}, grid)
     tridat = tridata(grid, ctx[:gridscale])
     cmap = region_cmap(ncellregions)
     cdata = ax.tripcolor(tridat...;
-                         facecolors = grid[CellRegions],
+                         facecolors = cellcolors(grid, ctx[:cellcoloring]),
                          cmap = PyPlot.ColorMap(cmap, length(cmap)),
                          vmin = 1.0,
                          vmax = length(cmap),)
@@ -310,6 +308,7 @@ function gridplot!(ctx, TP::Type{PyPlotType}, ::Type{Val{3}}, grid)
 
     if ctx[:interior]
         regpoints0, regfacets0 = extract_visible_cells3D(grid, xyzcut; gridscale = ctx[:gridscale],
+                                                         cellcoloring = ctx[:cellcoloring],
                                                          primepoints = hcat(xyzmin, xyzmax))
         regfacets = [reshape(reinterpret(Int32, regfacets0[i]), (3, length(regfacets0[i]))) for
                      i = 1:nregions]

@@ -96,14 +96,13 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{1}}, grid)
     PlutoVista.backend!(ctx[:figure]; backend = ctx[:backend], datadim = 1)
 
     coord = grid[Coordinates]
-    cellregions = grid[CellRegions]
+    cellregions = cellcolors(grid, ctx[:cellcoloring])
+    ncellregions = num_cellcolors(grid, ctx[:cellcoloring])
     cellnodes = grid[CellNodes]
     coord = grid[Coordinates] * ctx[:gridscale]
-    ncellregions = grid[NumCellRegions]
     bfacenodes = grid[BFaceNodes]
     bfaceregions = grid[BFaceRegions]
     nbfaceregions = grid[NumBFaceRegions]
-    ncellregions = grid[NumCellRegions]
 
     crflag = ones(Bool, ncellregions)
     brflag = ones(Bool, nbfaceregions)
@@ -224,14 +223,14 @@ function scalarplot!(ctx,
 end
 
 function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid)
-    nregions = num_cellregions(grid)
+    nregions = num_cellcolors(grid, ctx[:cellcoloring])
     nbregions = num_bfaceregions(grid)
     cmap = region_cmap(nregions)
     bcmap = bregion_cmap(nbregions)
     PlutoVista = ctx[:Plotter]
     pts = grid[Coordinates]
     tris = grid[CellNodes]
-    markers = grid[CellRegions]
+    markers = cellcolors(grid, ctx[:cellcoloring])
     edges = grid[BFaceNodes]
     edgemarkers = grid[BFaceRegions]
 
@@ -316,8 +315,8 @@ end
 function streamplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid, func) end
 
 function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)
-    nregions = num_cellregions(grid)
     nbregions = num_bfaceregions(grid)
+    nregions = num_cellcolors(grid, ctx[:cellcoloring])
     cmap = region_cmap(nregions)
     bcmap = bregion_cmap(nbregions)
 
@@ -325,7 +324,7 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)
     pts = grid[Coordinates]
     tris = grid[CellNodes]
     faces = grid[BFaceNodes]
-    markers = grid[CellRegions]
+    markers = cellcolors(grid, ctx[:cellcoloring])
     facemarkers = grid[BFaceRegions]
 
     PlutoVista.backend!(ctx[:figure]; backend = ctx[:backend], datadim = 3)

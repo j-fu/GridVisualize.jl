@@ -203,11 +203,11 @@ function basemesh1d(grid, gridscale)
 end
 
 # Point list for intervals
-function regionmesh1d(grid, gridscale, iregion)
+function regionmesh1d(grid, gridscale, iregion; cellcoloring = :cellregions)
     coord = vec(grid[Coordinates])
     points = Vector{Point2f}(undef, 0)
     cn = grid[CellNodes]
-    cr = grid[CellRegions]
+    cr = cellcolors(grid, cellcoloring)
     ncells = length(cr)
     for i = 1:ncells
         if cr[i] == iregion
@@ -275,7 +275,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{1}}, grid)
         # Colored cell regions
         for i = 1:nregions
             XMakie.linesegments!(ctx[:scene],
-                                 map(g -> regionmesh1d(g, gridscale, i), ctx[:grid]);
+                                 map(g -> regionmesh1d(g, gridscale, i; cellcoloring = ctx[:cellcoloring]), ctx[:grid]);
                                  color = cmap[i],
                                  linewidth = 4,
                                  label = "c $(i)",)
@@ -562,7 +562,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid)
         ctx[:cmap] = cmap
         for i = 1:nregions
             XMakie.poly!(ctx[:scene],
-                         map(g -> regionmesh(g, ctx[:gridscale], i), ctx[:grid]);
+                         map(g -> regionmesh(g, ctx[:gridscale], i; cellcoloring = ctx[:cellcoloring]), ctx[:grid]);
                          color = cmap[i],
                          strokecolor = :black,
                          strokewidth = ctx[:linewidth],)
@@ -958,6 +958,7 @@ function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{3}}, grid)
         if ctx[:interior]
             ctx[:celldata] = map(d -> extract_visible_cells3D(d.g,
                                                               [d.x, d.y, d.z] / ctx[:gridscale];
+                                                              cellcoloring = ctx[:cellcoloring],
                                                               gridscale = ctx[:gridscale],
                                                               primepoints = hcat(xyzmin, xyzmax),
                                                               Tp = Point3f,
