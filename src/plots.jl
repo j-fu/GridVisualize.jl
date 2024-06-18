@@ -84,10 +84,10 @@ function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{1}}, grid)
     end
     p = ctx[:ax]
 
-    cellregions = grid[CellRegions]
+    cellregions = cellcolors(grid, ctx[:cellcoloring])
+    ncellregions = num_cellcolors(grid, ctx[:cellcoloring])
     cellnodes = grid[CellNodes]
     coord = grid[Coordinates]
-    ncellregions = grid[NumCellRegions]
     bfacenodes = grid[BFaceNodes]
     bfaceregions = grid[BFaceRegions]
     nbfaceregions = grid[NumBFaceRegions]
@@ -132,10 +132,10 @@ function gridplot!(ctx, TP::Type{PlotsType}, ::Type{Val{2}}, grid)
         ctx[:ax] = Plots.plot(; title = ctx[:title])
     end
     p = ctx[:ax]
-    cellregions = grid[CellRegions]
+    cellregions = cellcolors(grid, ctx[:cellcoloring])
+    ncellregions = num_cellcolors(grid, ctx[:cellcoloring])
     cellnodes = grid[CellNodes]
     coord = grid[Coordinates] * ctx[:gridscale]
-    ncellregions = grid[NumCellRegions]
     bfacenodes = grid[BFaceNodes]
     bfaceregions = grid[BFaceRegions]
     nbfaceregions = grid[NumBFaceRegions]

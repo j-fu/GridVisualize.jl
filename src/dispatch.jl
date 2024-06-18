@@ -336,6 +336,8 @@ function default_plot_kwargs()
                                            :zplanes => Pair([prevfloat(Inf)], "3D z plane positions or number thereof"),
                                            :zoom => Pair(1.0, "Zoom level"),
                                            :gridscale => Pair(1, "Grid scale factor. Will be applied also to planes, spacing"),
+                                           :cellcoloring => Pair(:cellregions,
+                                                                 "Coloring of cells: one of [:cellregions, :pcolors, :partitions]"),
                                            :azim => Pair(-60, "3D azimuth angle  (in degrees)"),
                                            :elev => Pair(30, "3D elevation angle  (in degrees)"),
                                            :perspectiveness => Pair(0.25,

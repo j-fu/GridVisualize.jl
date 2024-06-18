@@ -38,7 +38,7 @@ function gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{2}}, grid)
     cmap = region_cmap(nregions)
     bcmap = bregion_cmap(nbregions)
     for i = 1:nregions
-        mesh = regionmesh(grid, i)
+        mesh = regionmesh(grid, i; cellcoloring = ctx[:cellcoloring])
         MeshCat.setobject!(vis["interior"]["r$(i)"],
                            mesh,
                            MeshCat.MeshLambertMaterial(; color = RGBA{Float32}(cmap[i], 1.0)))
@@ -86,6 +86,7 @@ function gridplot!(ctx, TP::Type{MeshCatType}, ::Type{Val{3}}, grid)
     if ctx[:interior]
         pts, fcs = extract_visible_cells3D(grid,
                                            xyzcut;
+                                           cellcoloring = ctx[:cellcoloring],
                                            primepoints = hcat(xyzmin, xyzmax),
                                            Tp = Point3f,
                                            Tf = GLTriangleFace,)

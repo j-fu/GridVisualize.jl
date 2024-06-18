@@ -9,14 +9,15 @@ Return corresponding points and facets for each region for drawing as mesh (Maki
 or trisurf (pyplot)
 """
 function GridVisualizeTools.extract_visible_cells3D(grid::ExtendableGrid, xyzcut;
+                                                    cellcoloring = :cellregions,
                                                     gridscale = 1.0,
                                                     primepoints = zeros(0, 0),
                                                     Tp = SVector{3, Float32},
                                                     Tf = SVector{3, Int32})
     coord = grid[Coordinates] * gridscale
     cellnodes = grid[CellNodes]
-    cellregions = grid[CellRegions]
-    nregions = grid[NumCellRegions]
+    cellregions = cellcolors(grid, cellcoloring)
+    nregions = num_cellcolors(grid, cellcoloring)
     extract_visible_cells3D(coord, cellnodes, cellregions, nregions, [xyzcut...] * gridscale;
                             primepoints = primepoints,
                             Tp = Tp, Tf = Tf)
@@ -86,10 +87,10 @@ end
 
 ##############################################
 # Create meshes from grid data
-function regionmesh(grid, gridscale, iregion)
+function regionmesh(grid, gridscale, iregion; cellcoloring = :cellregions)
     coord = grid[Coordinates]
     cn = grid[CellNodes]
-    cr = grid[CellRegions]
+    cr = cellcolors(grid, cellcoloring)
     @views points = [Point2f(coord[:, i] * gridscale) for i = 1:size(coord, 2)]
     faces = Vector{GLTriangleFace}(undef, 0)
     for i = 1:length(cr)
@@ -424,4 +425,38 @@ function bary!(λ, invA, L2G, x)
         end
     end
     ExtendableGrids.postprocess_xreftest!(λ, Triangle2D)
+end
+
+function cellcolors(grid, coloring)
+    xr = grid[CellRegions]
+    if coloring == :partitions
+        xr = similar(xr)
+        for icol in pcolors(grid)
+            for ipart in pcolor_partitions(grid, icol)
+                for icell in partition_cells(grid, ipart)
+                    xr[icell] = ipart
+                end
+            end
+        end
+    elseif coloring == :pcolors
+        xr = similar(xr)
+        for icol in pcolors(grid)
+            for ipart in pcolor_partitions(grid, icol)
+                for icell in partition_cells(grid, ipart)
+                    xr[icell] = icol
+                end
+            end
+        end
+    end
+    xr
+end
+
+function num_cellcolors(grid, coloring)
+    if coloring == :partitions
+        num_partitions(grid)
+    elseif coloring == :pcolors
+        num_pcolors(grid)
+    else
+        num_cellregions(grid)
+    end
 end
