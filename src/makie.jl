@@ -528,7 +528,7 @@ end
 function gridplot!(ctx, TP::Type{MakieType}, ::Type{Val{2}}, grid)
     XMakie = ctx[:Plotter]
 
-    nregions = num_cellregions(grid)
+    nregions = num_cellcolors(grid, ctx[:cellcoloring])
 
     nbregions = num_bfaceregions(grid)
 
