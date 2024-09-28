@@ -476,6 +476,15 @@ function scalarplot!(ctx::SubVisualizer, X::AbstractVector, func; kwargs...)
 end
 
 "$(TYPEDSIGNATURES)"
+function scalarplot!(ctx::SubVisualizer,
+                    coord::AbstractMatrix,
+                    cellnodes::AbstractMatrix,
+                    func;
+                    kwargs...,)
+    scalarplot!(ctx,simplexgrid(coord,cellnodes), func; kwargs...)
+end
+
+"$(TYPEDSIGNATURES)"
 function scalarplot!(ctx::GridVisualizer, X::AbstractVector, func; kwargs...)
     scalarplot!(ctx, simplexgrid(X), func; kwargs...)
 end
@@ -498,6 +507,16 @@ function scalarplot!(ctx::GridVisualizer,
                      kwargs...,)
     scalarplot!(ctx, simplexgrid(X, Y, Z), func; kwargs...)
 end
+
+"$(TYPEDSIGNATURES)"
+function scalarplot!(ctx::GridVisualizer,
+                    coord::AbstractMatrix,
+                    cellnodes::AbstractMatrix,
+                    func;
+                    kwargs...,)
+    scalarplot!(ctx,simplexgrid(coord,cellnodes), func; kwargs...)
+end
+
 
 """
 $(TYPEDSIGNATURES)
@@ -544,6 +563,14 @@ function scalarplot(X::AbstractVector,
                     func;
                     kwargs...,)
     scalarplot(simplexgrid(X, Y, Z), func; kwargs...)
+end
+
+"$(TYPEDSIGNATURES)"
+function scalarplot(coord::AbstractMatrix,
+                    cellnodes::AbstractMatrix,
+                    func;
+                    kwargs...,)
+    scalarplot(simplexgrid(coord,cellnodes), func; kwargs...)
 end
 
 ###################################################################################
