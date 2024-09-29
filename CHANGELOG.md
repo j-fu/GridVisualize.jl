@@ -1,11 +1,11 @@
 # Changelog
 
 
-## [1.9.0] 2024-09-29
+## [1.8.0] - 2024-09-29
 
-- Allow plotting of grids without boundary info
+- Allow plotting using grids without boundary info
 
-- Add dispatches for scalarplot(coord, cellnodes, func; kwargs...)
+- Add dispatches for plotting with 'coord, cellnodes'
 
 
 ## [1.7.0] - 2024-06-18
