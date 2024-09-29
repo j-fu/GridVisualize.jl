@@ -234,6 +234,14 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{2}}, grid)
     edges = grid[BFaceNodes]
     edgemarkers = grid[BFaceRegions]
 
+    if size(edges,2) ==0
+        edges=nothing
+    end
+    if size(edgemarkers,1) == 0
+        edgemarkers=nothing
+        edgecolormap=nothing
+    end
+    
     PlutoVista.backend!(ctx[:figure]; backend = ctx[:backend], datadim = 2)
     PlutoVista.trimesh!(ctx[:figure],
                         pts,
@@ -327,6 +335,15 @@ function gridplot!(ctx, TP::Type{PlutoVistaType}, ::Type{Val{3}}, grid)
     markers = cellcolors(grid, ctx[:cellcoloring])
     facemarkers = grid[BFaceRegions]
 
+    if size(faces,2) ==0
+        faces=nothing
+    end
+    if size(facemarkers,1) == 0
+        facemarkers=nothing
+        facecolormap=nothing
+    end
+
+    
     PlutoVista.backend!(ctx[:figure]; backend = ctx[:backend], datadim = 3)
     PlutoVista.tetmesh!(ctx[:figure],
                         pts,
@@ -357,6 +374,19 @@ function scalarplot!(ctx,
     PlutoVista = ctx[:Plotter]
     nbregions = num_bfaceregions(parentgrid)
     bcmap = bregion_cmap(nbregions)
+    
+    faces = parentgrid[BFaceNodes]
+    facemarkers = parentgrid[BFaceRegions]
+    facecolormap = bcmap
+
+    if size(faces,2) ==0
+        faces=nothing
+    end
+    if size(facemarkers,1) == 0
+        facemarkers=nothing
+        facecolormap=nothing
+    end
+    
     PlutoVista.backend!(ctx[:figure]; backend = ctx[:backend], datadim = 3)
     PlutoVista.tetcontour!(ctx[:figure],
                            [grid[Coordinates] for grid in grids],
@@ -369,9 +399,9 @@ function scalarplot!(ctx,
                            yplanes = ctx[:yplanes],
                            zplanes = ctx[:zplanes],
                            limits = ctx[:limits],
-                           faces = parentgrid[BFaceNodes],
-                           facemarkers = parentgrid[BFaceRegions],
-                           facecolormap = bcmap,
+                           faces  = faces,
+                           facemarkers = facemarkers,
+                           facecolormap = facecolormap,
                            outlinealpha = ctx[:outlinealpha],
                            levelalpha = ctx[:levelalpha],
                            zoom = ctx[:zoom],

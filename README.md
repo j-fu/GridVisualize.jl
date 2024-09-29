@@ -29,7 +29,15 @@ This works for  1/2/3D grids and either a function  represented by its
 values on  the nodes of the  grid, or a scalar  function of 1, 2  or 3
 variables, respectively. Vector and stream plots are currenly available for 2D only.
 
-
+The `grid` argument should be an `ExtendableGrid` as defined by the [ExtendableGrids.jl](https://github.com/j-fu/ExtendableGrids.jl) package.
+Instead of `grid`, the following arguments can be passed in order to describe a grid (which then is internally created on-the-fly):
+- An `AbstractVector` `X` specifying an 1D grid
+- `AbstractVector`s `X,Y` specifying a 2D grid
+- `AbstractVector`s `X,Y,Z` specifying a 3D grid
+- `coord, cellnodes`, where `coord` is a `dim x nn` matrix of point coordinates and
+  `cellnodes` is as `dim+1 x nc` connectivity matrix of simplex node indices, describing
+  a `dim`-dimensional simplex grid with `nn` nodes and `nc` simplices.
+  
 Plot appearance can be tweaked by a number of
 [keyword arguments](https://j-fu.github.io/GridVisualize.jl/dev/api/#GridVisualize.available_kwargs).
 
