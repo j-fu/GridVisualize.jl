@@ -392,6 +392,37 @@ function gridplot!(p::GridVisualizer, grid::ExtendableGrid; kwargs...)
     gridplot!(p[1, 1], grid; kwargs...)
 end
 
+"$(TYPEDSIGNATURES)"
+function gridplot!(vis::Union{SubVisualizer,GridVisualizer}, X::AbstractVector; kwargs...)
+    gridplot!(vis,simplexgrid(X); kwargs...)
+end
+
+"$(TYPEDSIGNATURES)"
+function gridplot!(vis::Union{SubVisualizer,GridVisualizer},
+                   X::AbstractVector,
+                   Y::AbstractVector; kwargs...)
+
+    gridplot!(vis,simplexgrid(X,Y); kwargs...)
+end
+
+"$(TYPEDSIGNATURES)"
+function gridplot!(vis::Union{SubVisualizer,GridVisualizer},
+                   X::AbstractVector,
+                   Y::AbstractVector,
+                   Z::AbstractVector; kwargs...)
+
+    gridplot!(vis,simplexgrid(X,Y,Z); kwargs...)
+end
+
+"$(TYPEDSIGNATURES)"
+function gridplot!(vis::Union{SubVisualizer,GridVisualizer},
+                   coord::AbstractMatrix,
+                   cellnodes::AbstractMatrix,
+                   kwargs...)
+    gridplot!(vis,simplexgrid(coord,cellnodes); kwargs...)
+end
+
+
 """
 $(TYPEDSIGNATURES)
 
@@ -401,6 +432,33 @@ Keyword arguments: see [`available_kwargs`](@ref)
 """
 function gridplot(grid::ExtendableGrid; Plotter = default_plotter(), kwargs...)
     gridplot!(GridVisualizer(; Plotter = Plotter, show = true, kwargs...), grid)
+end
+
+
+"$(TYPEDSIGNATURES)"
+function gridplot(X::AbstractVector; kwargs...)
+    gridplot(simplexgrid(X); kwargs...)
+end
+
+"$(TYPEDSIGNATURES)"
+function gridplot( X::AbstractVector,
+                   Y::AbstractVector; kwargs...)
+    gridplot(simplexgrid(X,Y); kwargs...)
+end
+
+"$(TYPEDSIGNATURES)"
+function gridplot(X::AbstractVector,
+                   Y::AbstractVector,
+                   Z::AbstractVector; kwargs...)
+
+    gridplot(simplexgrid(X,Y,Z); kwargs...)
+end
+
+"$(TYPEDSIGNATURES)"
+function gridplot(coord::AbstractMatrix,
+                  cellnodes::AbstractMatrix;
+                  kwargs...)
+    gridplot(simplexgrid(coord,cellnodes); kwargs...)
 end
 
 ###################################################################################
@@ -617,6 +675,15 @@ function vectorplot!(ctx::GridVisualizer,
                      kwargs...,)
     vectorplot!(ctx, simplexgrid(X, Y, Z), func; kwargs...)
 end
+"$(TYPEDSIGNATURES)"
+function vectorplot!(ctx::GridVisualizer,
+                     coord::AbstractMatrix,
+                     cellnodes::AbstractMatrix,
+                     func;
+                     kwargs...,)
+    vectorplot!(ctx, simplexgrid(coord,cellnodes), func; kwargs...)
+end
+
 
 """
 $(TYPEDSIGNATURES)
@@ -637,6 +704,13 @@ function vectorplot(X::AbstractVector,
                     func;
                     kwargs...,)
     vectorplot(simplexgrid(X, Y, Z), func; kwargs...)
+end
+"$(TYPEDSIGNATURES)"
+function vectorplot(coord::AbstractMatrix,
+                    cellnodes::AbstractMatrix,
+                    func;
+                    kwargs...,)
+    vectorplot(simplexgrid(coord,cellnodes), func; kwargs...)
 end
 
 ###################################################################################
@@ -668,6 +742,7 @@ function streamplot!(ctx::GridVisualizer,
                      kwargs...,)
     streamplot!(ctx, simplexgrid(X, Y), func; kwargs...)
 end
+
 "$(TYPEDSIGNATURES)"
 function streamplot!(ctx::GridVisualizer,
                      X::AbstractVector,
@@ -677,6 +752,17 @@ function streamplot!(ctx::GridVisualizer,
                      kwargs...,)
     streamplot!(ctx, simplexgrid(X, Y, Z), func; kwargs...)
 end
+
+"$(TYPEDSIGNATURES)"
+function streamplot!(ctx::GridVisualizer,
+                     coord::AbstractMatrix,
+                     cellnodes::AbstractMatrix,
+                     func;
+                     kwargs...,)
+    streamplot!(ctx, simplexgrid(coord,cellnodes), func; kwargs...)
+end
+
+
 
 """
 $(TYPEDSIGNATURES)
@@ -691,6 +777,7 @@ end
 function streamplot(X::AbstractVector, Y::AbstractVector, func; kwargs...)
     streamplot(simplexgrid(X, Y), func; kwargs...)
 end
+
 "$(TYPEDSIGNATURES)"
 function streamplot(X::AbstractVector,
                     Y::AbstractVector,
@@ -699,6 +786,15 @@ function streamplot(X::AbstractVector,
                     kwargs...,)
     streamplot(simplexgrid(X, Y, Z), func; kwargs...)
 end
+
+"$(TYPEDSIGNATURES)"
+function streamplot( coord::AbstractMatrix,
+                     cellnodes::AbstractMatrix,
+                     func;
+                     kwargs...,)
+    streamplot(simplexgrid(coord,cellnodes), func; kwargs...)
+end
+
 ###################################################################################
 "$(TYPEDSIGNATURES)"
 function customplot!(ctx::SubVisualizer, func; kwargs...)
